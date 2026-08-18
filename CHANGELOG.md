@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/Endika/agora/compare/v0.8.0...v0.8.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **pwa:** show a setup notice when supabase config is missing ([aec1cf7](https://github.com/Endika/agora/commit/aec1cf7e77e1004f349181df3b57672da0b87544))
+
 ## [0.8.0](https://github.com/Endika/agora/compare/v0.7.0...v0.8.0) (2026-08-18)
 
 
