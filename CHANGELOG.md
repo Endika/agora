@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/Endika/agora/compare/v0.10.0...v0.11.0) (2026-08-18)
+
+
+### Features
+
+* **proposal:** add editing, archive and a formatting toolbar ([fa47ac7](https://github.com/Endika/agora/commit/fa47ac7ffbe1265ffcae276cfc1cad16134fd977))
+
 ## [0.10.0](https://github.com/Endika/agora/compare/v0.9.0...v0.10.0) (2026-08-18)
 
 
