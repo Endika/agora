@@ -8,14 +8,16 @@ import { IdentityDialog } from '@/presentation/components/identity/IdentityDialo
 import { ShareAgoraDialog } from '@/presentation/components/identity/ShareAgoraDialog'
 import { ExportButtons } from '@/presentation/components/history/ExportButtons'
 import { HistoryPanel } from '@/presentation/components/history/HistoryPanel'
+import type { OnlineDetector } from '@/domain/ports/OnlineDetector'
 import { InstallPrompt } from '@/presentation/components/pwa/InstallPrompt'
+import { SyncStatus } from '@/presentation/components/pwa/SyncStatus'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora } from '@/presentation/routing'
 
-export function AgoraApp() {
+export function AgoraApp({ network }: { network: OnlineDetector }) {
   const { t } = useTranslation()
-  const { slug, board, status, error, reload, visited } = useBoard()
+  const { slug, board, status, error, reload, visited, queue, sync } = useBoard()
   const [switching, setSwitching] = useState(false)
   const knownAgoras = visited.list()
 
@@ -38,6 +40,8 @@ export function AgoraApp() {
         </header>
 
         <InstallPrompt />
+
+        <SyncStatus queue={queue} network={network} onReconnect={sync} />
 
         {status === 'loading' && <p role="status">{t('common.loading')}</p>}
 

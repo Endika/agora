@@ -1,10 +1,12 @@
 import { uuidv7 } from 'uuidv7'
-import type { ProposalImages } from '@/domain/ports/ProposalImages'
-import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
-import type { BoardRepository } from '@/domain/repositories/BoardRepository'
+import type { Wiring } from '@/App'
 import { DeviceIdentity } from '@/infrastructure/identity/DeviceIdentity'
 import { VisitedAgoras } from '@/infrastructure/identity/VisitedAgoras'
 import { SupabaseProposalImages } from '@/infrastructure/images/SupabaseProposalImages'
+import { BrowserOnlineDetector } from '@/infrastructure/network/OnlineDetector'
+import { IdbActionQueue } from '@/infrastructure/sync/IdbActionQueue'
+import { QueueReplayer } from '@/infrastructure/sync/QueueReplayer'
+import { QueuingBoardRepository } from '@/infrastructure/sync/QueuingBoardRepository'
 import { CachingBoardRepository } from '@/infrastructure/persistence/CachingBoardRepository'
 import { IdbBoardStore } from '@/infrastructure/persistence/IdbBoardStore'
 import { SupabaseBoardRepository } from '@/infrastructure/persistence/SupabaseBoardRepository'
@@ -22,17 +24,26 @@ export function agoraSlug(): string {
  * A missing configuration is returned, not thrown: the app has to be able to render a message about
  * it rather than dying with a blank page.
  */
-export function buildApp():
-  | { repo: BoardRepository; visited: VisitedAgorasStore; images: ProposalImages }
-  | { error: string } {
+export function buildApp(): Wiring | { error: string } {
   try {
     const client = createAgoraClient()
+    const queue = new IdbActionQueue()
+    const network = BrowserOnlineDetector
+
+    // Caching(Queuing(Supabase)): reads come off the device, writes survive having no coverage, and the
+    // cache is what the UI renders either way.
     const remote = new SupabaseBoardRepository(client, DeviceIdentity.token, agoraSlug)
-    const repo = new CachingBoardRepository(remote, new IdbBoardStore())
+    const queuing = new QueuingBoardRepository(remote, queue, network)
+    const repo = new CachingBoardRepository(queuing, new IdbBoardStore())
+    const replayer = new QueueReplayer(remote, queue)
+
     return {
       repo,
       visited: VisitedAgoras,
       images: new SupabaseProposalImages(client, repo),
+      queue,
+      network,
+      replay: () => replayer.run(),
     }
   } catch (cause) {
     return { error: cause instanceof Error ? cause.message : String(cause) }
