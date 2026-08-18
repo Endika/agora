@@ -79,5 +79,9 @@
     "closeConfirm": "Itxi",
     "complete": "Eginda markatu",
     "round": "{{round}}. txanda"
+  },
+  "setup": {
+    "heading": "Agora ez dago konfiguratuta",
+    "explain": "Zerbitzariarekiko konexioa falta da, beraz ezin da agora bat ireki. Lokalean bazabiltza, kopiatu .env.example .env.local izenera eta bete bi aldagaiak."
   }
 }
