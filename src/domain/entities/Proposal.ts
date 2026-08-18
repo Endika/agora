@@ -26,12 +26,10 @@ export interface ExpenseShare {
   optedIn: boolean
 }
 
-export interface LiquidationSnapshot {
+export interface PaymentSnapshot {
   id: string
+  participantId: string
   cents: number
-  paidBy: string | null
-  affects: string[]
-  paidShares: string[]
   createdAt: string
 }
 
@@ -71,6 +69,6 @@ export interface Proposal {
   pending: string[]
   images: ProposalImage[]
   shares: ExpenseShare[]
-  liquidations: LiquidationSnapshot[]
+  payments: PaymentSnapshot[]
   links: ProposalLink[]
 }

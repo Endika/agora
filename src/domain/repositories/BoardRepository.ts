@@ -100,17 +100,11 @@ export interface BoardRepository {
   setThreadResolved(input: { threadId: string; resolved: boolean }): Promise<void>
 
   setExpenseShare(input: { proposalId: string; optedIn: boolean }): Promise<void>
-  addLiquidation(input: {
-    id: string
-    proposalId: string
-    cents: number
-    affects: string[]
-  }): Promise<void>
-  setLiquidationSharePaid(input: {
-    liquidationId: string
-    participantId: string
-    paid: boolean
-  }): Promise<void>
+  /** Money I have put in towards my share. */
+  addPayment(input: { id: string; proposalId: string; cents: number }): Promise<void>
+  removePayment(paymentId: string): Promise<void>
+  /** Fetched when somebody opens it, never shipped with the board. */
+  history(input: { slug: string; limit?: number }): Promise<HistoryEntry[]>
   attachImage(input: {
     id: string
     proposalId: string

@@ -44,13 +44,11 @@ const proposal = z.object({
     }),
   ),
   shares: z.array(z.object({ participantId: z.string(), optedIn: z.boolean() })),
-  liquidations: z.array(
+  payments: z.array(
     z.object({
       id: z.string(),
+      participantId: z.string(),
       cents: z.number().int(),
-      paidBy: z.string().nullable(),
-      affects: z.array(z.string()),
-      paidShares: z.array(z.string()),
       createdAt: z.string(),
     }),
   ),
@@ -113,6 +111,17 @@ const comment = z.object({
 })
 
 export const commentsSchema = z.array(comment)
+
+const historyEntry = z.object({
+  id: z.string(),
+  proposalId: z.string().nullable(),
+  participantId: z.string().nullable(),
+  type: z.string(),
+  description: z.string(),
+  createdAt: z.string(),
+})
+
+export const historySchema = z.array(historyEntry)
 
 export const previewSchema = z.object({
   slug: z.string(),

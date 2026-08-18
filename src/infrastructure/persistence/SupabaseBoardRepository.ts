@@ -5,11 +5,13 @@ import type {
   BoardSnapshot,
   Comment,
   DeleteResult,
+  HistoryEntry,
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
 import {
   commentsSchema,
+  historySchema,
   deleteResultSchema,
   identitySchema,
   parseBoard,
@@ -209,32 +211,27 @@ export class SupabaseBoardRepository implements BoardRepository {
     })
   }
 
-  async addLiquidation(input: {
-    id: string
-    proposalId: string
-    cents: number
-    affects: string[]
-  }): Promise<void> {
-    await this.rpc('add_liquidation', {
+  async addPayment(input: { id: string; proposalId: string; cents: number }): Promise<void> {
+    await this.rpc('add_payment', {
       p_device_token: this.deviceToken(),
       p_id: input.id,
       p_proposal: input.proposalId,
       p_cents: input.cents,
-      p_affects: input.affects,
     })
   }
 
-  async setLiquidationSharePaid(input: {
-    liquidationId: string
-    participantId: string
-    paid: boolean
-  }): Promise<void> {
-    await this.rpc('set_liquidation_share_paid', {
-      p_device_token: this.deviceToken(),
-      p_liquidation: input.liquidationId,
-      p_participant: input.participantId,
-      p_paid: input.paid,
-    })
+  async removePayment(paymentId: string): Promise<void> {
+    await this.rpc('remove_payment', { p_device_token: this.deviceToken(), p_id: paymentId })
+  }
+
+  async history(input: { slug: string; limit?: number }): Promise<HistoryEntry[]> {
+    return historySchema.parse(
+      await this.rpc('get_history', {
+        p_slug: input.slug,
+        p_device_token: this.deviceToken(),
+        p_limit: input.limit ?? 50,
+      }),
+    )
   }
 
   async attachImage(input: {

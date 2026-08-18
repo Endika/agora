@@ -30,7 +30,7 @@ const board = {
       pending: ['p1'],
       images: [],
       shares: [],
-      liquidations: [],
+      payments: [],
       links: [],
     },
   ],

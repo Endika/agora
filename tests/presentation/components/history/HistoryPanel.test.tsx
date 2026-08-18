@@ -1,21 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import { HistoryPanel } from '@/presentation/components/history/HistoryPanel'
-import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
+import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { makeProposal } from '../../../domain/support/makeProposal'
 import { renderWithBoard } from '../../support/renderWithBoard'
 
-const board = (history: BoardSnapshot['history']): BoardSnapshot => ({
-  version: '2026-09-01T10:00:00.000Z',
-  group: { id: 'g', slug: 'abcd1234', name: 'Cuadrilla' },
-  me: { id: 'p1', name: 'Endika' },
-  participants: [{ id: 'p1', name: 'Endika' }],
-  proposals: [makeProposal({ id: 'pr1', title: 'Viaje a la costa' })],
-  threads: [],
-  history,
-})
-
-const entry = (over: Partial<BoardSnapshot['history'][number]>) => ({
+const entry = (over: Partial<HistoryEntry>): HistoryEntry => ({
   id: 'h1',
   proposalId: 'pr1',
   participantId: 'p1',
@@ -25,38 +16,62 @@ const entry = (over: Partial<BoardSnapshot['history'][number]>) => ({
   ...over,
 })
 
+/** The panel fetches history itself, so the fake is seeded and the board only supplies names and titles. */
+async function panelWith(entries: HistoryEntry[]) {
+  const repo = new InMemoryBoardRepository()
+  const { slug, participantId } = await repo.createAgora({
+    name: 'Cuadrilla',
+    creatorName: 'Endika',
+  })
+  repo.seedHistory(
+    slug,
+    entries.map((item) => ({
+      ...item,
+      participantId: item.participantId === null ? null : participantId,
+    })),
+  )
+
+  const board: BoardSnapshot = {
+    version: '2026-09-01T10:00:00.000Z',
+    group: { id: 'g', slug, name: 'Cuadrilla' },
+    me: { id: participantId, name: 'Endika' },
+    participants: [{ id: participantId, name: 'Endika' }],
+    proposals: [makeProposal({ id: 'pr1', title: 'Viaje a la costa' })],
+    threads: [],
+    history: [],
+  }
+
+  return { repo, slug, ...renderWithBoard(<HistoryPanel board={board} />, { repo, slug }) }
+}
+
 describe('HistoryPanel', () => {
-  it('names nobody for something nobody did, and says it in Spanish', () => {
+  it('fetches the history rather than expecting it in the board', async () => {
+    const { repo } = await panelWith([entry({})])
+    expect(await screen.findByText('Endika propuso «Viaje a la costa»')).toBeInTheDocument()
+    // The whole point of the change: history is a call, not part of every board read.
+    expect(repo.calls).toContain('history')
+  })
+
+  it('names nobody for something nobody did, and says it in Spanish', async () => {
     // What went wrong before: "Alguien quedó approved".
-    renderWithBoard(
-      <HistoryPanel
-        board={board([entry({ type: 'resolved', participantId: null, description: 'approved' })])}
-      />,
-    )
-    expect(screen.getByText('«Viaje a la costa» quedó Aprobada')).toBeInTheDocument()
+    await panelWith([entry({ type: 'resolved', participantId: null, description: 'approved' })])
+    expect(await screen.findByText('«Viaje a la costa» quedó Aprobada')).toBeInTheDocument()
     expect(screen.queryByText(/Alguien/)).not.toBeInTheDocument()
     expect(screen.queryByText(/approved/)).not.toBeInTheDocument()
   })
 
-  it('says who did what, and to which proposal', () => {
-    renderWithBoard(<HistoryPanel board={board([entry({})])} />)
-    expect(screen.getByText('Endika propuso «Viaje a la costa»')).toBeInTheDocument()
+  it('shows a payment as money, not as a pile of cents', async () => {
+    await panelWith([entry({ type: 'payment_added', description: '4000' })])
+    expect(await screen.findByText(/40,00\s€/)).toBeInTheDocument()
   })
 
-  it('shows a recorded payment as money, not as a pile of cents', () => {
-    renderWithBoard(
-      <HistoryPanel board={board([entry({ type: 'liquidation_added', description: '4000' })])} />,
-    )
-    expect(screen.getByText(/40,00 €/)).toBeInTheDocument()
+  it('falls back to the raw type rather than dropping an entry it does not know', async () => {
+    await panelWith([entry({ type: 'something_new' })])
+    expect(await screen.findByText('Endika: something_new')).toBeInTheDocument()
   })
 
-  it('falls back to the raw type rather than dropping an entry it does not know', () => {
-    renderWithBoard(<HistoryPanel board={board([entry({ type: 'something_new' })])} />)
-    expect(screen.getByText('Endika: something_new')).toBeInTheDocument()
-  })
-
-  it('handles an entry about a proposal that is no longer there', () => {
-    renderWithBoard(<HistoryPanel board={board([entry({ proposalId: 'gone' })])} />)
-    expect(screen.getByText('Endika propuso «una propuesta»')).toBeInTheDocument()
+  it('handles an entry about a proposal that is no longer there', async () => {
+    await panelWith([entry({ proposalId: 'gone' })])
+    expect(await screen.findByText('Endika propuso «una propuesta»')).toBeInTheDocument()
   })
 })
