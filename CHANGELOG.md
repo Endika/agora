@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/Endika/agora/compare/v0.12.0...v0.12.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **db:** separate participants sharing a device token ([de602f9](https://github.com/Endika/agora/commit/de602f990b4510cab1c0d46c50960fd5de8862dc))
+
 ## [0.12.0](https://github.com/Endika/agora/compare/v0.11.0...v0.12.0) (2026-08-18)
 
 
