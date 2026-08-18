@@ -14,8 +14,15 @@ export function agoraSlug(): string {
 /**
  * The composition root: the only place that knows which adapters exist. Components receive a
  * BoardRepository and cannot import an adapter — ESLint enforces it.
+ *
+ * A missing configuration is returned, not thrown: the app has to be able to render a message about
+ * it rather than dying with a blank page.
  */
-export function buildBoardRepository(): BoardRepository {
-  const remote = new SupabaseBoardRepository(createAgoraClient(), DeviceIdentity.token, agoraSlug)
-  return new CachingBoardRepository(remote, new IdbBoardStore())
+export function buildBoardRepository(): { repo: BoardRepository } | { error: string } {
+  try {
+    const remote = new SupabaseBoardRepository(createAgoraClient(), DeviceIdentity.token, agoraSlug)
+    return { repo: new CachingBoardRepository(remote, new IdbBoardStore()) }
+  } catch (cause) {
+    return { error: cause instanceof Error ? cause.message : String(cause) }
+  }
 }

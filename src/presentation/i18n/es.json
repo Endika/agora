@@ -79,5 +79,9 @@
     "closeConfirm": "Cerrar",
     "complete": "Marcar como hecha",
     "round": "Ronda {{round}}"
+  },
+  "setup": {
+    "heading": "Agora no está configurada",
+    "explain": "Falta la conexión con el servidor, así que no se puede abrir ningún ágora. Si estás en local, copia .env.example a .env.local y rellena las dos variables."
   }
 }
