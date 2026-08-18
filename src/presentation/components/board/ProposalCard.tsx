@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
+import { MarkdownView } from '@/presentation/components/proposal/MarkdownView'
 import { MissingVoters } from './MissingVoters'
 import { ProposalActions } from './ProposalActions'
 import { QuorumBar } from './QuorumBar'
@@ -10,6 +11,8 @@ interface Props {
   proposal: Proposal
   participants: Participant[]
   meId: string
+  /** Links point at ids; the card shows titles, which is what a reader recognises. */
+  titleOf: (proposalId: string) => string | undefined
   onVote: (value: VoteValue) => void
   onReopen: () => void
   onClose: (reason: string) => void
@@ -63,6 +66,19 @@ export function ProposalCard({
           ))}
         </p>
       </header>
+
+      {proposal.description.trim().length > 0 && <MarkdownView markdown={proposal.description} />}
+
+      {proposal.links.map((link) => (
+        <p
+          key={`${link.kind}-${link.toId}`}
+          className="text-sm"
+          style={{ color: 'var(--ink-muted)' }}
+        >
+          {t(link.kind === 'related' ? 'proposal.linkRelated' : 'proposal.linkSupersedes')}:{' '}
+          {participants.length >= 0 && (proposal.links.length > 0 ? link.toId.slice(0, 8) : '')}
+        </p>
+      ))}
 
       {proposal.closedReason && (
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>

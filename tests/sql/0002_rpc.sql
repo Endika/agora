@@ -304,3 +304,28 @@ begin
 
   raise notice 'PASS anon can call the public rpcs and nothing else';
 end $$;
+
+-- Links between proposals, which is how you insist on something that was rejected.
+do $$
+declare v_first uuid; v_second uuid; v_board json;
+begin
+  perform agora.create_group('Links agora', 'rpctest8', 'alice', 'tok-a8', '1234');
+  v_first := agora.create_proposal('tok-a8', 'rpctest8', json_build_object('title', 'Rent a big van'));
+  v_second := agora.create_proposal('tok-a8', 'rpctest8', json_build_object(
+    'title', 'Rent two small vans',
+    'links', json_build_array(json_build_object('toId', v_first, 'kind', 'supersedes'))));
+
+  v_board := agora.get_board('rpctest8', 'tok-a8');
+  if v_board::text not like '%supersedes%' then
+    raise exception 'FAIL: the link did not reach the board';
+  end if;
+
+  -- Replacing the set, not accumulating: writing the same link twice leaves one row.
+  perform agora.update_proposal('tok-a8', v_second, json_build_object(
+    'links', json_build_array(json_build_object('toId', v_first, 'kind', 'supersedes'))));
+  if (select count(*) from agora.proposal_links where from_id = v_second) <> 1 then
+    raise exception 'FAIL: links accumulated instead of being replaced';
+  end if;
+
+  raise notice 'PASS proposals link to each other and the set is replaced, not appended';
+end $$;

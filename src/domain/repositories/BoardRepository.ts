@@ -50,6 +50,7 @@ export interface NewProposal {
   deadline?: string | null
   estimatedCents?: number | null
   tags?: string[]
+  links?: { toId: string; kind: 'related' | 'supersedes' }[]
 }
 
 export interface Identity {
