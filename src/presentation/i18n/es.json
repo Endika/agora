@@ -186,18 +186,21 @@
   "history": {
     "heading": "Historial",
     "empty": "Todavía no ha pasado nada.",
-    "agora_created": "creó el ágora",
-    "joined": "se unió",
-    "claimed": "entró desde otro móvil",
-    "proposal_created": "propuso",
-    "proposal_edited": "editó la propuesta",
-    "resolved": "quedó",
-    "reopened": "reabrió la votación",
-    "closed": "cerró la propuesta",
-    "completed": "marcó como hecha",
-    "thread_opened": "abrió un hilo",
-    "liquidation_added": "registró un pago",
-    "someone": "Alguien"
+    "line": {
+      "agora_created": "{{name}} creó el ágora",
+      "joined": "{{name}} se unió",
+      "claimed": "{{name}} entró desde otro móvil",
+      "proposal_created": "{{name}} propuso «{{title}}»",
+      "proposal_edited": "{{name}} editó «{{title}}»",
+      "resolved": "«{{title}}» quedó {{detail}}",
+      "reopened": "{{name}} reabrió la votación de «{{title}}»",
+      "closed": "{{name}} cerró «{{title}}»: {{detail}}",
+      "completed": "{{name}} marcó «{{title}}» como hecha",
+      "thread_opened": "{{name}} abrió un hilo en «{{title}}»",
+      "liquidation_added": "{{name}} registró un pago de {{detail}} en «{{title}}»",
+      "fallback": "{{name}}: {{type}}",
+      "deletedProposal": "una propuesta"
+    }
   },
   "export": {
     "heading": "Llévate el tablón",

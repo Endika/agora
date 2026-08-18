@@ -186,18 +186,21 @@
   "history": {
     "heading": "History",
     "empty": "Nothing has happened yet.",
-    "agora_created": "created the agora",
-    "joined": "joined",
-    "claimed": "came in from another phone",
-    "proposal_created": "proposed",
-    "proposal_edited": "edited the proposal",
-    "resolved": "resolved to",
-    "reopened": "reopened the vote",
-    "closed": "closed the proposal",
-    "completed": "marked as done",
-    "thread_opened": "opened a thread",
-    "liquidation_added": "recorded a payment",
-    "someone": "Somebody"
+    "line": {
+      "agora_created": "{{name}} created the agora",
+      "joined": "{{name}} joined",
+      "claimed": "{{name}} came in from another phone",
+      "proposal_created": "{{name}} proposed “{{title}}”",
+      "proposal_edited": "{{name}} edited “{{title}}”",
+      "resolved": "“{{title}}” resolved to {{detail}}",
+      "reopened": "{{name}} reopened the vote on “{{title}}”",
+      "closed": "{{name}} closed “{{title}}”: {{detail}}",
+      "completed": "{{name}} marked “{{title}}” as done",
+      "thread_opened": "{{name}} opened a thread on “{{title}}”",
+      "liquidation_added": "{{name}} recorded a {{detail}} payment on “{{title}}”",
+      "fallback": "{{name}}: {{type}}",
+      "deletedProposal": "a proposal"
+    }
   },
   "export": {
     "heading": "Take the board with you",
