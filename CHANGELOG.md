@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.2](https://github.com/Endika/agora/compare/v0.18.1...v0.18.2) (2026-08-18)
+
+
+### Bug Fixes
+
+* **pwa:** heal a stale cache instead of showing a blank screen ([5c528a8](https://github.com/Endika/agora/commit/5c528a853dba610af51821288dbbcf617b97b6ff))
+
 ## [0.18.1](https://github.com/Endika/agora/compare/v0.18.0...v0.18.1) (2026-08-18)
 
 
