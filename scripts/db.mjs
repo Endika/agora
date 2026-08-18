@@ -44,6 +44,13 @@ async function connect() {
 }
 
 const client = await connect()
+// A failing assertion should read like a test failure, not like a stack trace.
+process.on('uncaughtException', (error) => {
+  console.error(`\n${error.message}`)
+  if (error.where) console.error(error.where)
+  process.exit(1)
+})
+
 try {
   for (const file of files) {
     console.log(`${dir}/${file}`)
