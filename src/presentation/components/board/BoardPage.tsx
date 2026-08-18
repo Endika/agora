@@ -1,20 +1,22 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { VoteValue } from '@/domain/entities/Proposal'
+import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
-import { useBoard } from '@/presentation/context/boardContext'
-import { useAction } from '@/presentation/useAction'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
+import { useBoard } from '@/presentation/context/boardContext'
+import { openAgora } from '@/presentation/routing'
+import { useAction } from '@/presentation/useAction'
 import { BoardFilters, type Filter } from './BoardFilters'
 import { ProposalCard } from './ProposalCard'
+import { ProposalDetail } from './ProposalDetail'
 
 /** The list arrives already ordered by the repository; the spec's order is not the view's opinion. */
-export function BoardPage({ board }: { board: BoardSnapshot }) {
+export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: string | null }) {
   const { t } = useTranslation()
   const { repo, reload, images: pipeline } = useBoard()
-  const [filter, setFilter] = useState<Filter>({ kind: 'all' })
   const { run, error } = useAction()
+  const [filter, setFilter] = useState<Filter>({ kind: 'all' })
   const [composing, setComposing] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
 
@@ -59,37 +61,43 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
     })
   }
 
+  const actionsFor = (proposal: Proposal) => ({
+    onVote: (value: VoteValue) =>
+      act(() => repo.castVote({ proposalId: proposal.id, round: proposal.round, value })),
+    onEdit: () => setEditing(proposal.id),
+    onReopen: () => act(() => repo.reopenProposal(proposal.id)),
+    onClose: (reason: string) => act(() => repo.closeProposal({ proposalId: proposal.id, reason })),
+    onComplete: (actualCents: number | null) =>
+      act(() => repo.completeProposal({ proposalId: proposal.id, actualCents })),
+  })
+
   // Finished proposals are kept, not deleted — they just stop competing for attention.
   const isArchived = (status: string) => ['completed', 'rejected', 'closed'].includes(status)
   const live = visible.filter((proposal) => !isArchived(proposal.status))
   const archived = visible.filter((proposal) => isArchived(proposal.status))
   const beingEdited = board.proposals.find((proposal) => proposal.id === editing)
+  const open = board.proposals.find((proposal) => proposal.id === openId)
 
-  const card = (proposal: (typeof board.proposals)[number]) => (
+  const card = (proposal: Proposal) => (
     <li key={proposal.id} className="min-w-0">
       <ProposalCard
         proposal={proposal}
         participants={board.participants}
-        meId={board.me.id}
-        titleOf={(id) => board.proposals.find((other) => other.id === id)?.title}
         threads={board.threads.filter((thread) => thread.proposalId === proposal.id)}
         slug={board.group.slug}
-        onChanged={reload}
-        onEdit={() => setEditing(proposal.id)}
-        onVote={(value: VoteValue) =>
-          act(() => repo.castVote({ proposalId: proposal.id, round: proposal.round, value }))
-        }
-        onReopen={() => act(() => repo.reopenProposal(proposal.id))}
-        onClose={(reason) => act(() => repo.closeProposal({ proposalId: proposal.id, reason }))}
-        onComplete={(actualCents) =>
-          act(() => repo.completeProposal({ proposalId: proposal.id, actualCents }))
-        }
+        onVote={actionsFor(proposal).onVote}
       />
     </li>
   )
 
   return (
     <section className="grid min-w-0 gap-4" aria-label={board.group.name}>
+      {error && (
+        <p role="alert" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
+
       {composing && (
         <Sheet label={t('proposal.new')} onClose={() => setComposing(false)}>
           <ProposalForm
@@ -111,22 +119,21 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
         </Sheet>
       )}
 
-      {
-        <button
-          type="button"
-          onClick={() => setComposing(true)}
-          className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
-        >
-          {t('proposal.new')}
-        </button>
-      }
-
-      {error && (
-        <p role="alert" style={{ color: 'var(--danger)' }}>
-          {error}
-        </p>
+      {/* Opening a proposal is a route, so the phone's back button closes it. */}
+      {open && !beingEdited && (
+        <Sheet label={open.title} onClose={() => openAgora(board.group.slug)}>
+          <ProposalDetail proposal={open} board={board} onChanged={reload} {...actionsFor(open)} />
+        </Sheet>
       )}
+
+      <button
+        type="button"
+        onClick={() => setComposing(true)}
+        className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+        style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+      >
+        {t('proposal.new')}
+      </button>
 
       <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
 
