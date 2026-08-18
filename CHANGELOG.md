@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/Endika/agora/compare/v0.4.0...v0.5.0) (2026-08-18)
+
+
+### Features
+
+* **db:** add rpc layer with server-side pin, quorum and lockdown ([6678062](https://github.com/Endika/agora/commit/6678062b492b34ce8a37af333c75821d138b0535))
+
 ## [0.4.0](https://github.com/Endika/agora/compare/v0.3.0...v0.4.0) (2026-08-18)
 
 
