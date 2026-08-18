@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/Endika/agora/compare/v0.18.2...v0.19.0) (2026-08-18)
+
+
+### Features
+
+* **legal:** add the privacy notice and translate server errors ([e646df6](https://github.com/Endika/agora/commit/e646df6876da41e37fb3a285e8a5ac0c8c72987e))
+
 ## [0.18.2](https://github.com/Endika/agora/compare/v0.18.1...v0.18.2) (2026-08-18)
 
 
