@@ -186,18 +186,21 @@
   "history": {
     "heading": "Historia",
     "empty": "Oraindik ez da ezer gertatu.",
-    "agora_created": "agora sortu zuen",
-    "joined": "batu zen",
-    "claimed": "beste mugikorretik sartu zen",
-    "proposal_created": "proposatu zuen",
-    "proposal_edited": "proposamena editatu zuen",
-    "resolved": "geratu zen",
-    "reopened": "bozketa berrireki zuen",
-    "closed": "proposamena itxi zuen",
-    "completed": "eginda markatu zuen",
-    "thread_opened": "hari bat ireki zuen",
-    "liquidation_added": "ordainketa erregistratu zuen",
-    "someone": "Norbaitek"
+    "line": {
+      "agora_created": "{{name}}(e)k agora sortu du",
+      "joined": "{{name}} batu da",
+      "claimed": "{{name}} beste mugikorretik sartu da",
+      "proposal_created": "{{name}}(e)k «{{title}}» proposatu du",
+      "proposal_edited": "{{name}}(e)k «{{title}}» editatu du",
+      "resolved": "«{{title}}» {{detail}} geratu da",
+      "reopened": "{{name}}(e)k «{{title}}»(r)en bozketa berrireki du",
+      "closed": "{{name}}(e)k «{{title}}» itxi du: {{detail}}",
+      "completed": "{{name}}(e)k «{{title}}» eginda markatu du",
+      "thread_opened": "{{name}}(e)k hari bat ireki du «{{title}}»(e)n",
+      "liquidation_added": "{{name}}(e)k {{detail}}(e)ko ordainketa erregistratu du «{{title}}»(e)n",
+      "fallback": "{{name}}: {{type}}",
+      "deletedProposal": "proposamen bat"
+    }
   },
   "export": {
     "heading": "Eraman taula zurekin",
