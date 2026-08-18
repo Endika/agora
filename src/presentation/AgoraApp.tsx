@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { JoinForm } from '@/presentation/components/identity/JoinForm'
 import { RecoverPinDialog } from '@/presentation/components/identity/RecoverPinDialog'
+import { BoardPage } from '@/presentation/components/board/BoardPage'
 import { ShareAgoraDialog } from '@/presentation/components/identity/ShareAgoraDialog'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora } from '@/presentation/routing'
@@ -54,6 +55,7 @@ export function AgoraApp() {
               ))}
             </ul>
           </section>
+          <BoardPage board={board} />
           <ShareAgoraDialog slug={board.group.slug} />
         </>
       )}
