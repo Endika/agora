@@ -247,5 +247,10 @@
     "days": "Quedan {{count}} días",
     "oneDay": "Queda 1 día",
     "none": "Sin fecha límite"
+  },
+  "crash": {
+    "heading": "Algo se ha roto",
+    "explain": "La app ha dejado de responder. Casi siempre se arregla vaciando lo que este móvil tiene guardado y volviendo a cargar; no se pierde nada del ágora, que vive en el servidor.",
+    "reload": "Vaciar y recargar"
   }
 }
