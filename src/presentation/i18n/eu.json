@@ -247,5 +247,10 @@
     "days": "{{count}} egun falta dira",
     "oneDay": "Egun 1 falta da",
     "none": "Epemugarik gabe"
+  },
+  "crash": {
+    "heading": "Zerbait hondatu da",
+    "explain": "Appak erantzuteari utzi dio. Mugikorrak gordeta duena hustu eta berriro kargatzeak konpontzen du ia beti; agorako ezer ez da galtzen, zerbitzarian dago.",
+    "reload": "Hustu eta birkargatu"
   }
 }

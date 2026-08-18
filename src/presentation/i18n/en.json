@@ -247,5 +247,10 @@
     "days": "{{count}} days left",
     "oneDay": "1 day left",
     "none": "No deadline"
+  },
+  "crash": {
+    "heading": "Something broke",
+    "explain": "The app stopped responding. Clearing what this phone has stored and reloading almost always fixes it; nothing of the agora is lost, it lives on the server.",
+    "reload": "Clear and reload"
   }
 }
