@@ -468,3 +468,36 @@ begin
 
   raise notice 'PASS threads are capped in the board, complete on demand, and resolvable by two people';
 end $$;
+
+-- An amount has to mean something the moment it is typed.
+do $$
+declare v_prop uuid; v_free uuid;
+begin
+  perform agora.create_group('Cost agora', 'rpctestc', 'alice', 'tok-ac');
+  perform agora.add_participant('rpctestc', 'bob', 'tok-bc');
+
+  v_prop := agora.create_proposal('tok-ac', 'rpctestc',
+    json_build_object('title', 'Dinner out', 'estimatedCents', 12000));
+  if not exists (select 1 from agora.expense_shares es
+                  join agora.participants p on p.id = es.participant_id
+                 where es.proposal_id = v_prop and p.name = 'alice' and es.opted_in) then
+    raise exception 'FAIL: the proposer is not in for their own expense';
+  end if;
+  if (select count(*) from agora.expense_shares where proposal_id = v_prop) <> 1 then
+    raise exception 'FAIL: nobody else should have been opted in';
+  end if;
+
+  -- No amount, no share rows: a proposal that costs nothing has no split.
+  v_free := agora.create_proposal('tok-ac', 'rpctestc', json_build_object('title', 'Paint the hallway'));
+  if (select count(*) from agora.expense_shares where proposal_id = v_free) <> 0 then
+    raise exception 'FAIL: a free proposal invented a split';
+  end if;
+
+  -- Adding the amount later does the same thing.
+  perform agora.update_proposal('tok-ac', v_free, json_build_object('estimatedCents', 5000));
+  if (select count(*) from agora.expense_shares where proposal_id = v_free) <> 1 then
+    raise exception 'FAIL: adding an amount later did not opt the creator in';
+  end if;
+
+  raise notice 'PASS an amount opts its proposer in, and only them';
+end $$;

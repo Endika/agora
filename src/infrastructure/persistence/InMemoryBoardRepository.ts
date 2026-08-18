@@ -206,6 +206,12 @@ export class InMemoryBoardRepository implements BoardRepository {
       updatedAt: stamp,
       completedAt: null,
     })
+    // Same rule as create_proposal: an amount without anyone in it would show no split at all.
+    if (input.estimatedCents != null) {
+      const shares = (this.shares[id] ??= new Map())
+      shares.set(this.me, true)
+    }
+
     this.log(agora, id, 'proposal_created', input.title)
     return id
   }

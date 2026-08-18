@@ -43,6 +43,11 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
     >
       <h4 className="font-semibold">{t('expense.heading')}</h4>
 
+      {/* What an amount implies, said once and where it applies: nobody should have to infer it. */}
+      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+        {t('expense.explain')}
+      </p>
+
       {error && (
         <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
           {error}
@@ -82,7 +87,9 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
             borderColor: iAmIn ? 'var(--pos)' : 'var(--border)',
           }}
         >
-          {iAmIn ? t('expense.iPay') : t('expense.iDontPay')}
+          {/* One label, two states: a button whose text flips reads as a question rather than a state. */}
+          {iAmIn ? '✓ ' : ''}
+          {t('expense.amIn')}
         </button>
       )}
 
@@ -93,7 +100,15 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
       )}
 
       <div className="grid gap-1">
-        <h5 className="text-sm font-medium">{t('expense.sharesHeading')}</h5>
+        <h5 className="text-sm font-medium">
+          {t('expense.sharesHeading')}
+          {optedIn.length > 0 && (
+            <span className="font-normal" style={{ color: 'var(--ink-muted)' }}>
+              {' · '}
+              {t('expense.whoIsIn', { count: optedIn.length })}
+            </span>
+          )}
+        </h5>
         {optedIn.length === 0 || total === null ? (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
             {t('expense.nobodyIn')}

@@ -181,7 +181,10 @@
     "pending": "Zain {{amount}}",
     "frozen": "Proposamena eginda dago, beraz gastua ez da aldatzen.",
     "amountInvalid": "Zenbatekoa eurotan doa, gehienez bi hamartarrekin.",
-    "actualPrompt": "Zenbat kostatu da azkenean? (aukerakoa)"
+    "actualPrompt": "Zenbat kostatu da azkenean? (aukerakoa)",
+    "explain": "Zenbatekoa estimazio bat da: ordaintzen sartzen direnen artean banatzen da zati berdinetan. Agorak ez du ezer kobratzen, kontua besterik ez du eramaten.",
+    "amIn": "Ordaintzen sartzen naiz",
+    "whoIsIn": "{{count}} ordaintzen sartzen dira"
   },
   "history": {
     "heading": "Historia",
