@@ -182,5 +182,33 @@
     "frozen": "The proposal is done, so the expense is settled.",
     "amountInvalid": "The amount is in euros, two decimals at most.",
     "actualPrompt": "What did it cost in the end? (optional)"
+  },
+  "history": {
+    "heading": "History",
+    "empty": "Nothing has happened yet.",
+    "agora_created": "created the agora",
+    "joined": "joined",
+    "claimed": "came in from another phone",
+    "proposal_created": "proposed",
+    "proposal_edited": "edited the proposal",
+    "resolved": "resolved to",
+    "reopened": "reopened the vote",
+    "closed": "closed the proposal",
+    "completed": "marked as done",
+    "thread_opened": "opened a thread",
+    "liquidation_added": "recorded a payment",
+    "someone": "Somebody"
+  },
+  "export": {
+    "heading": "Take the board with you",
+    "explain": "The board is yours: Markdown to read it, JSON to reuse it.",
+    "markdown": "Download Markdown",
+    "json": "Download JSON"
+  },
+  "install": {
+    "title": "Install Agora on your phone and open it like an app.",
+    "button": "Install",
+    "iosHint": "To install: Share → Add to Home Screen.",
+    "dismiss": "No thanks"
   }
 }
