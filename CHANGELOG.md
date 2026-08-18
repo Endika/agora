@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/Endika/agora/compare/v0.11.0...v0.12.0) (2026-08-18)
+
+
+### Features
+
+* **images:** compress, strip exif and show thumbnails ([29ccf64](https://github.com/Endika/agora/commit/29ccf6410f2b1cd9bf41bef7f9ea63f0726ad6b8))
+
 ## [0.11.0](https://github.com/Endika/agora/compare/v0.10.0...v0.11.0) (2026-08-18)
 
 
