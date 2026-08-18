@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/Endika/agora/compare/v0.7.0...v0.8.0) (2026-08-18)
+
+
+### Features
+
+* **board:** add proposal list, voting and tie actions ([3548d3f](https://github.com/Endika/agora/commit/3548d3fc3f1da45afe14b1d35ab5d6f34fa4687f))
+
 ## [0.7.0](https://github.com/Endika/agora/compare/v0.6.0...v0.7.0) (2026-08-18)
 
 
