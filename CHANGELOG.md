@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/Endika/agora/compare/v0.9.0...v0.10.0) (2026-08-18)
+
+
+### Features
+
+* **identity:** pick your name, no pin, and list your agoras ([05f8d48](https://github.com/Endika/agora/commit/05f8d48ffbe169c2b313d66a996a8e242e5ac4c0))
+
 ## [0.9.0](https://github.com/Endika/agora/compare/v0.8.1...v0.9.0) (2026-08-18)
 
 
