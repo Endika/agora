@@ -30,7 +30,9 @@
     "filterAll": "Dena",
     "filterPendingMine": "Nire txanda",
     "filterTag": "{{tag}} etiketa",
-    "clearFilters": "Kendu iragazkiak"
+    "clearFilters": "Kendu iragazkiak",
+    "archived": "Artxibatuta ({{count}})",
+    "archivedExplain": "Eginda, ezetsita eta itxita. Hemen daude, bidean gabe."
   },
   "status": {
     "open": "Bozketan",
@@ -83,7 +85,10 @@
     "linkSupersedes": "Honen ordez",
     "submit": "Argitaratu proposamena",
     "titleTooShort": "Izenburuak gutxienez 3 karaktere behar ditu.",
-    "costInvalid": "Kostua eurotan doa, gehienez bi hamartarrekin."
+    "costInvalid": "Kostua eurotan doa, gehienez bi hamartarrekin.",
+    "edit": "Editatu",
+    "save": "Gorde aldaketak",
+    "editHeading": "Editatu proposamena"
   },
   "identity": {
     "who": "Nor zara?",
@@ -117,5 +122,17 @@
   "home": {
     "yourAgoras": "Zure agorak",
     "youAre": "{{name}} zara"
+  },
+  "editor": {
+    "heading": "Goiburua",
+    "bold": "Lodia",
+    "italic": "Etzana",
+    "list": "Zerrenda",
+    "link": "Lotura",
+    "quote": "Aipua",
+    "linkText": "loturaren testua",
+    "listItem": "lehen puntua",
+    "headingText": "Goiburu bat",
+    "toolbar": "Testuaren formatua"
   }
 }

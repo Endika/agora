@@ -84,3 +84,56 @@ describe('ProposalForm', () => {
     expect(screen.getByRole('option', { name: 'Rent a big van' })).toBeInTheDocument()
   })
 })
+
+describe('ProposalForm, editing', () => {
+  it('opens filled in and saves the changes', async () => {
+    const onSubmit = vi.fn()
+    const existing = makeProposal({
+      id: 'p1',
+      title: 'Rent a van',
+      description: 'The big one',
+      tags: ['viaje'],
+      estimatedCents: 12050,
+    })
+
+    render(<ProposalForm others={[]} initial={existing} onSubmit={onSubmit} onCancel={() => {}} />)
+
+    expect(screen.getByLabelText('Título')).toHaveValue('Rent a van')
+    expect(screen.getByLabelText('Descripción')).toHaveValue('The big one')
+    expect(screen.getByLabelText('Coste estimado (€)')).toHaveValue('120.5')
+    expect(screen.getByRole('button', { name: 'Quitar la etiqueta viaje' })).toBeInTheDocument()
+
+    await userEvent.clear(screen.getByLabelText('Título'))
+    await userEvent.type(screen.getByLabelText('Título'), 'Rent two vans')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar los cambios' }))
+
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ title: 'Rent two vans' }))
+  })
+})
+
+describe('MarkdownToolbar', () => {
+  it('writes the syntax so nobody has to know it', async () => {
+    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    const description = screen.getByLabelText('Descripción')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Encabezado' }))
+    expect(description).toHaveValue('## Un encabezado')
+  })
+
+  it('wraps whatever is selected instead of inserting a placeholder', async () => {
+    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    const description = screen.getByLabelText('Descripción') as HTMLTextAreaElement
+
+    await userEvent.type(description, 'una furgoneta grande')
+    description.setSelectionRange(4, 13)
+    await userEvent.click(screen.getByRole('button', { name: 'Negrita' }))
+
+    expect(description).toHaveValue('una **furgoneta** grande')
+  })
+
+  it('offers a link button, so [](url) is never something to memorise', async () => {
+    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Enlace' }))
+    expect(screen.getByLabelText('Descripción')).toHaveValue('[texto del enlace](https://)')
+  })
+})

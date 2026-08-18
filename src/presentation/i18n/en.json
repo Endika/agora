@@ -30,7 +30,9 @@
     "filterAll": "Everything",
     "filterPendingMine": "Waiting on me",
     "filterTag": "Tag {{tag}}",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "archived": "Archived ({{count}})",
+    "archivedExplain": "Done, rejected and closed. Still here, just out of the way."
   },
   "status": {
     "open": "Voting",
@@ -83,7 +85,10 @@
     "linkSupersedes": "Supersedes",
     "submit": "Publish the proposal",
     "titleTooShort": "A title needs at least 3 characters.",
-    "costInvalid": "The cost is in euros, two decimals at most."
+    "costInvalid": "The cost is in euros, two decimals at most.",
+    "edit": "Edit",
+    "save": "Save changes",
+    "editHeading": "Edit the proposal"
   },
   "identity": {
     "who": "Who are you?",
@@ -117,5 +122,17 @@
   "home": {
     "yourAgoras": "Your agoras",
     "youAre": "You are {{name}}"
+  },
+  "editor": {
+    "heading": "Heading",
+    "bold": "Bold",
+    "italic": "Italic",
+    "list": "List",
+    "link": "Link",
+    "quote": "Quote",
+    "linkText": "link text",
+    "listItem": "first item",
+    "headingText": "A heading",
+    "toolbar": "Text formatting"
   }
 }

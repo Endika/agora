@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Money } from '@/domain/value-objects/Money'
 import type { Proposal } from '@/domain/entities/Proposal'
+import { MarkdownToolbar } from './MarkdownToolbar'
 import { MarkdownView } from './MarkdownView'
 import { TagInput } from './TagInput'
 
@@ -16,17 +17,24 @@ export interface ProposalDraft {
 
 interface Props {
   others: Proposal[]
+  /** Present when editing: the same form, filled in. */
+  initial?: Proposal
   onSubmit: (draft: ProposalDraft) => void
   onCancel: () => void
 }
 
-export function ProposalForm({ others, onSubmit, onCancel }: Props) {
+export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
   const { t } = useTranslation()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [deadline, setDeadline] = useState('')
-  const [cost, setCost] = useState('')
+  const editing = initial !== undefined
+  const description0 = initial?.description ?? ''
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [description, setDescription] = useState(description0)
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? [])
+  const [deadline, setDeadline] = useState(initial?.deadline?.slice(0, 10) ?? '')
+  const [cost, setCost] = useState(
+    initial?.estimatedCents != null ? String(initial.estimatedCents / 100) : '',
+  )
+  const descriptionField = useRef<HTMLTextAreaElement | null>(null)
   const [linkTo, setLinkTo] = useState('')
   const [linkKind, setLinkKind] = useState<'related' | 'supersedes'>('related')
   const [tab, setTab] = useState<'write' | 'preview'>('write')
@@ -58,7 +66,7 @@ export function ProposalForm({ others, onSubmit, onCancel }: Props) {
       // A date input gives a day; the deadline is the end of it, not midnight at its start.
       deadline: deadline ? new Date(`${deadline}T23:59:59`).toISOString() : null,
       estimatedCents,
-      links: linkTo ? [{ toId: linkTo, kind: linkKind }] : [],
+      links: linkTo ? [{ toId: linkTo, kind: linkKind }] : (initial?.links ?? []),
     })
   }
 
@@ -66,7 +74,9 @@ export function ProposalForm({ others, onSubmit, onCancel }: Props) {
 
   return (
     <form onSubmit={submit} className="grid gap-4" noValidate>
-      <h2 className="text-2xl font-semibold">{t('proposal.new')}</h2>
+      <h2 className="text-2xl font-semibold">
+        {editing ? t('proposal.editHeading') : t('proposal.new')}
+      </h2>
 
       <div className="grid gap-1">
         <label htmlFor="proposal-title" className="font-medium">
@@ -112,16 +122,24 @@ export function ProposalForm({ others, onSubmit, onCancel }: Props) {
         </div>
 
         {tab === 'write' ? (
-          <textarea
-            id="proposal-description"
-            aria-describedby="proposal-description-hint"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={6}
-            maxLength={20000}
-            className="min-w-0 rounded-[--radius] border p-3"
-            style={field}
-          />
+          <div className="grid gap-2">
+            <MarkdownToolbar
+              textarea={descriptionField}
+              value={description}
+              onChange={setDescription}
+            />
+            <textarea
+              id="proposal-description"
+              ref={descriptionField}
+              aria-describedby="proposal-description-hint"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={6}
+              maxLength={20000}
+              className="min-w-0 rounded-[--radius] border p-3"
+              style={field}
+            />
+          </div>
         ) : (
           <div
             className="min-w-0 rounded-[--radius] border p-3"
@@ -211,7 +229,7 @@ export function ProposalForm({ others, onSubmit, onCancel }: Props) {
           className="min-h-11 rounded-[--radius] px-4 font-medium"
           style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
         >
-          {t('proposal.submit')}
+          {editing ? t('proposal.save') : t('proposal.submit')}
         </button>
         <button
           type="button"

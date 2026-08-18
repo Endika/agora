@@ -362,3 +362,40 @@ begin
 
   raise notice 'PASS proposals link to each other and the set is replaced, not appended';
 end $$;
+
+-- Editing belongs to the creator, and stops once the proposal is finished.
+do $$
+declare v_prop uuid; v_rejected boolean;
+begin
+  perform agora.create_group('Edit agora', 'rpctesta', 'alice', 'tok-aa');
+  perform agora.add_participant('rpctesta', 'bob', 'tok-ba');
+  v_prop := agora.create_proposal('tok-aa', 'rpctesta', json_build_object('title', 'Buy a projector'));
+
+  v_rejected := false;
+  begin
+    perform agora.update_proposal('tok-ba', v_prop, json_build_object('title', 'Buy nothing'));
+  exception when sqlstate 'PT403' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: a non-creator edited the proposal'; end if;
+
+  perform agora.update_proposal('tok-aa', v_prop, json_build_object('title', 'Buy a better projector'));
+  if (select title from agora.proposals where id = v_prop) <> 'Buy a better projector' then
+    raise exception 'FAIL: the creator could not edit';
+  end if;
+  if not exists (select 1 from agora.history where proposal_id = v_prop and type = 'proposal_edited') then
+    raise exception 'FAIL: the edit left no trace in the history';
+  end if;
+
+  -- Once it is done, the text is done too.
+  perform agora.cast_vote('tok-aa', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-ba', v_prop, 1, 'up');
+  perform agora.complete_proposal('tok-aa', v_prop, 12000);
+  v_rejected := false;
+  begin
+    perform agora.update_proposal('tok-aa', v_prop, json_build_object('title', 'Sneaky rename'));
+  exception when sqlstate 'PT409' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: a completed proposal was edited'; end if;
+
+  raise notice 'PASS only the creator edits, and only until the proposal is finished';
+end $$;
