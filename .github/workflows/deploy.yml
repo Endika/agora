@@ -11,8 +11,11 @@ permissions:
   id-token: write
 
 concurrency:
+  # Never cancel: a cancelled run does not stop the deployment it already queued, it poisons
+  # that commit SHA (the Pages deployment id *is* the SHA), and every retry of it is rejected
+  # with "Deployment cancelled." Queue instead — GitHub's own Pages starter does the same.
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
