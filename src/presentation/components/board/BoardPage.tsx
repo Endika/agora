@@ -72,6 +72,9 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
         participants={board.participants}
         meId={board.me.id}
         titleOf={(id) => board.proposals.find((other) => other.id === id)?.title}
+        threads={board.threads.filter((thread) => thread.proposalId === proposal.id)}
+        slug={board.group.slug}
+        onChanged={reload}
         onEdit={() => setEditing(proposal.id)}
         onVote={(value: VoteValue) =>
           act(() => repo.castVote({ proposalId: proposal.id, round: proposal.round, value }))

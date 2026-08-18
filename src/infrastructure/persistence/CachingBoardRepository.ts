@@ -3,6 +3,7 @@ import type {
   AgoraPreview,
   BoardRepository,
   BoardSnapshot,
+  Comment,
   DeleteResult,
   Identity,
   NewProposal,
@@ -152,6 +153,11 @@ export class CachingBoardRepository implements BoardRepository {
 
   async addComment(input: { commentId: string; threadId: string; body: string }): Promise<void> {
     await this.remote.addComment(input)
+  }
+
+  async threadComments(input: { slug: string; threadId: string }): Promise<Comment[]> {
+    // Not cached: it is asked for exactly when someone opens a thread, and it is small.
+    return this.remote.threadComments(input)
   }
 
   async setThreadResolved(input: { threadId: string; resolved: boolean }): Promise<void> {

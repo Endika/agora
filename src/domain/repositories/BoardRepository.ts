@@ -95,6 +95,8 @@ export interface BoardRepository {
     body: string
   }): Promise<void>
   addComment(input: { commentId: string; threadId: string; body: string }): Promise<void>
+  /** Every comment in a thread. The board only ever carries the first three. */
+  threadComments(input: { slug: string; threadId: string }): Promise<Comment[]>
   setThreadResolved(input: { threadId: string; resolved: boolean }): Promise<void>
 
   setExpenseShare(input: { proposalId: string; optedIn: boolean }): Promise<void>

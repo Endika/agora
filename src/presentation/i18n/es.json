@@ -144,5 +144,19 @@
     "limit": "Diez imágenes por propuesta, que ya son muchas.",
     "alt": "Imagen {{n}} de la propuesta",
     "open": "Ver la imagen completa"
+  },
+  "threads": {
+    "heading": "Comentarios",
+    "open": "Comentar",
+    "reply": "Responder",
+    "send": "Enviar",
+    "placeholder": "Escribe tu comentario",
+    "resolve": "Marcar como resuelto",
+    "reopen": "Reabrir el hilo",
+    "resolved": "Resuelto",
+    "showAll": "Ver los {{count}} comentarios",
+    "none": "Todavía no hay comentarios.",
+    "empty": "Escribe algo antes de enviarlo.",
+    "count": "{{count}} comentarios"
   }
 }
