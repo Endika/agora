@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "Agora",
+    "tagline": "The board your group decides in."
+  },
+  "join": {
+    "heading": "Join the agora",
+    "createHeading": "Create an agora",
+    "agoraName": "Agora name",
+    "yourName": "Your name",
+    "pin": "PIN",
+    "pinHint": "Four to six digits. It is what gets your name back on another phone.",
+    "submit": "Join",
+    "create": "Create the agora",
+    "pinInvalid": "A PIN is four to six digits.",
+    "nameRequired": "Type your name.",
+    "nameTaken": "That name is already in this agora. Recover it with your PIN.",
+    "recoverLink": "That is me, I changed phone"
+  },
+  "recover": {
+    "heading": "Get your name back",
+    "explain": "Type your name and the PIN you set. This phone becomes yours.",
+    "submit": "Recover",
+    "wrongPin": "That PIN is not right. Try again.",
+    "throttled": "Too many attempts. Wait fifteen minutes."
+  },
+  "share": {
+    "heading": "Share the agora",
+    "explain": "Whoever opens this link joins the agora and can vote.",
+    "agoraLink": "Agora link",
+    "qrAlt": "QR code for the agora link",
+    "copy": "Copy the link",
+    "copied": "Link copied"
+  },
+  "psephoi": {
+    "progress": "{{cast}} of {{total}} have voted",
+    "secret": "Votes are revealed at quorum",
+    "up": "In favour",
+    "down": "Against",
+    "abstain": "Abstain"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "loading": "Loading…",
+    "offline": "Offline. What you do now is sent when you are back."
+  }
+}

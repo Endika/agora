@@ -20,13 +20,18 @@
     "db:down": "docker rm -f agora-db",
     "db:reset": "npm run db:down && npm run db:up && npm run db:migrate",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db.mjs migrate",
-    "test:sql": "node --env-file-if-exists=.env.local scripts/db.mjs test"
+    "test:sql": "node --env-file-if-exists=.env.local scripts/db.mjs test",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
+    "i18next": "^26.3.6",
+    "i18next-browser-languagedetector": "^8.2.1",
     "idb": "^8.0.3",
+    "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.11",
     "uuidv7": "^1.2.1",
     "zod": "^4.4.3"
   },
@@ -37,7 +42,9 @@
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^26.2.0",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
@@ -53,6 +60,7 @@
     "jsdom": "^30.0.1",
     "pg": "^8.16.3",
     "prettier": "^3.9.6",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.67.0",

@@ -36,6 +36,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // woff2 is not in Workbox's default glob, and without it the self-hosted faces would not be
+        // precached — the app would open offline with system fonts.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
         navigateFallback: '/agora/index.html',
         // The board is cached by CachingBoardRepository (IndexedDB, version-gated), not here:
         // a service-worker cache of the REST calls would fetch payloads the version gate avoids.

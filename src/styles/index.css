@@ -1,26 +1,2 @@
 @import 'tailwindcss';
-
-/* The full token layer lands with the design system; these are the two values the shell needs. */
-:root {
-  color-scheme: light dark;
-  --ground: #ebede7;
-  --ink: #1b211e;
-}
-
-:root:not([data-theme='light']) {
-  @media (prefers-color-scheme: dark) {
-    --ground: #151a18;
-    --ink: #e7eae5;
-  }
-}
-
-:root[data-theme='dark'] {
-  --ground: #151a18;
-  --ink: #e7eae5;
-}
-
-body {
-  background: var(--ground);
-  color: var(--ink);
-  -webkit-font-smoothing: antialiased;
-}
+@import '../presentation/styles/tokens.css';

@@ -3,11 +3,20 @@ import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBo
 
 async function seedAgora(names: string[]) {
   const repo = new InMemoryBoardRepository()
-  const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: names[0]!, pin: '1234' })
+  const { slug } = await repo.createAgora({
+    name: 'Cuadrilla',
+    creatorName: names[0]!,
+    pin: '1234',
+  })
   for (const name of names.slice(1)) await repo.joinAgora({ slug, name, pin: '1234' })
   repo.actAs(repo.participantId(slug, names[0]!))
   const proposalId = await repo.createProposal({ slug, title: 'Trip to the coast' })
-  return { repo, slug, proposalId, as: (name: string) => repo.actAs(repo.participantId(slug, name)) }
+  return {
+    repo,
+    slug,
+    proposalId,
+    as: (name: string) => repo.actAs(repo.participantId(slug, name)),
+  }
 }
 
 describe('InMemoryBoardRepository', () => {
@@ -82,7 +91,11 @@ describe('InMemoryBoardRepository', () => {
 
   it('resolves a passed deadline on the next read, with nobody else voting', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice', pin: '1234' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      pin: '1234',
+    })
     await repo.joinAgora({ slug, name: 'bob', pin: '1234' })
     repo.actAs(repo.participantId(slug, 'alice'))
     const proposalId = await repo.createProposal({
@@ -96,7 +109,11 @@ describe('InMemoryBoardRepository', () => {
 
   it('answers a wrong pin with a result rather than an exception', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice', pin: '1234' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      pin: '1234',
+    })
     await expect(repo.recover({ slug, name: 'alice', pin: '0000' })).resolves.toEqual({
       ok: false,
       error: 'wrong_pin',
