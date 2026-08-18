@@ -45,6 +45,8 @@ describe('egress budget', () => {
     const board = await repo.getBoard(slug)
     expect(board.proposals).toHaveLength(20)
     expect(bytes(board)).toBeLessThan(60_000)
+    // History is fetched on demand, so it must not be riding along with every board read.
+    expect(board.history).toEqual([])
   })
 
   it('keeps the delta after one vote under 2 KB', async () => {

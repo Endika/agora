@@ -1,4 +1,4 @@
-import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
 import { sortProposals } from '@/domain/services/ProposalSorter'
 
 export type ExportFormat = 'md' | 'json'
@@ -13,8 +13,13 @@ interface Labels {
  * read, JSON to reuse — and both are produced from the cached snapshot, so exporting works offline and
  * costs nothing in egress.
  */
-export function exportBoard(board: BoardSnapshot, format: ExportFormat, labels: Labels): string {
-  if (format === 'json') return JSON.stringify(board, null, 2)
+export function exportBoard(
+  board: BoardSnapshot,
+  format: ExportFormat,
+  labels: Labels,
+  history: HistoryEntry[] = [],
+): string {
+  if (format === 'json') return JSON.stringify({ ...board, history }, null, 2)
 
   const nameOf = (id: string | null) =>
     board.participants.find((participant) => participant.id === id)?.name ?? '—'

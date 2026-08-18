@@ -19,6 +19,7 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
   const { t } = useTranslation()
   const { slug, board, status, error, reload, visited, queue, sync } = useBoard()
   const [switching, setSwitching] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const knownAgoras = visited.list()
 
   const identified = () => {
@@ -91,16 +92,16 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
             <BoardPage board={board} openId={openId} />
 
             {/* Folded away: the board matters every time, everything below it does not. */}
+            {/* The panel is only mounted once the disclosure is open, which is what makes the fetch lazy. */}
             <details
               className="rounded-[--radius] border p-4"
               style={{ borderColor: 'var(--border)' }}
+              onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
             >
               <summary className="min-h-11 cursor-pointer font-medium">
                 {t('history.heading')}
               </summary>
-              <div className="pt-4">
-                <HistoryPanel board={board} />
-              </div>
+              <div className="pt-4">{historyOpen && <HistoryPanel board={board} />}</div>
             </details>
 
             <details

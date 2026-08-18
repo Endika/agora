@@ -31,7 +31,7 @@ export function makeProposal(overrides: Partial<Proposal> & { id: string }): Pro
     pending: [],
     images: [],
     shares: [],
-    liquidations: [],
+    payments: [],
     links: [],
     ...overrides,
   }

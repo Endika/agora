@@ -5,6 +5,7 @@ import type {
   BoardSnapshot,
   Comment,
   DeleteResult,
+  HistoryEntry,
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
@@ -175,22 +176,18 @@ export class CachingBoardRepository implements BoardRepository {
     await this.afterProposalWrite(input.proposalId)
   }
 
-  async addLiquidation(input: {
-    id: string
-    proposalId: string
-    cents: number
-    affects: string[]
-  }): Promise<void> {
-    await this.remote.addLiquidation(input)
+  async addPayment(input: { id: string; proposalId: string; cents: number }): Promise<void> {
+    await this.remote.addPayment(input)
     await this.afterProposalWrite(input.proposalId)
   }
 
-  async setLiquidationSharePaid(input: {
-    liquidationId: string
-    participantId: string
-    paid: boolean
-  }): Promise<void> {
-    await this.remote.setLiquidationSharePaid(input)
+  async removePayment(paymentId: string): Promise<void> {
+    await this.remote.removePayment(paymentId)
+  }
+
+  async history(input: { slug: string; limit?: number }): Promise<HistoryEntry[]> {
+    // Not cached: asked for exactly when somebody opens it.
+    return this.remote.history(input)
   }
 
   async attachImage(input: {

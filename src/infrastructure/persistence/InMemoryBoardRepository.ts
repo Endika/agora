@@ -97,6 +97,12 @@ export class InMemoryBoardRepository implements BoardRepository {
     throw refuse('PT404', 'unknown proposal')
   }
 
+  /** Test seam: history entries a real run would have produced over weeks. */
+  seedHistory(slug: string, entries: HistoryEntry[]): this {
+    this.agora(slug).history.push(...entries)
+    return this
+  }
+
   /** Test seam: keep acting as this participant, the way a device token would. */
   actAs(participantId: string): this {
     this.me = participantId
@@ -361,43 +367,38 @@ export class InMemoryBoardRepository implements BoardRepository {
     row.updatedAt = this.now()
   }
 
-  async addLiquidation(input: {
-    id: string
-    proposalId: string
-    cents: number
-    affects: string[]
-  }): Promise<void> {
-    this.calls.push('addLiquidation')
+  async addPayment(input: { id: string; proposalId: string; cents: number }): Promise<void> {
+    this.calls.push('addPayment')
     const row = this.row(input.proposalId)
-    const list = (this.liquidations[row.id] ??= [])
-    if (list.some((l) => l.id === input.id)) return
+    if (input.cents <= 0) throw refuse('PT400', 'a payment needs an amount')
+    const list = (this.payments[row.id] ??= [])
+    if (list.some((payment) => payment.id === input.id)) return
     list.push({
       id: input.id,
+      participantId: this.me,
       cents: input.cents,
-      paidBy: this.me,
-      affects: [...input.affects],
-      paidShares: [],
       createdAt: this.now(),
     })
     row.updatedAt = this.now()
   }
 
-  async setLiquidationSharePaid(input: {
-    liquidationId: string
-    participantId: string
-    paid: boolean
-  }): Promise<void> {
-    this.calls.push('setLiquidationSharePaid')
-    for (const list of Object.values(this.liquidations)) {
-      const found = list.find((l) => l.id === input.liquidationId)
+  async removePayment(paymentId: string): Promise<void> {
+    this.calls.push('removePayment')
+    for (const [proposalId, list] of Object.entries(this.payments)) {
+      const found = list.find((payment) => payment.id === paymentId)
       if (!found) continue
-      const set = new Set(found.paidShares)
-      if (input.paid) set.add(input.participantId)
-      else set.delete(input.participantId)
-      found.paidShares = [...set]
+      if (found.participantId !== this.me) throw refuse('PT403', 'only your own payments')
+      this.payments[proposalId] = list.filter((payment) => payment.id !== paymentId)
       return
     }
-    throw refuse('PT404', 'unknown liquidation')
+    throw refuse('PT404', 'unknown payment')
+  }
+
+  async history(input: { slug: string; limit?: number }): Promise<HistoryEntry[]> {
+    this.calls.push('history')
+    return this.agora(input.slug)
+      .history.slice(-(input.limit ?? 50))
+      .reverse()
   }
 
   async attachImage(input: {
@@ -426,7 +427,7 @@ export class InMemoryBoardRepository implements BoardRepository {
   }
 
   private readonly shares: Record<string, Map<string, boolean>> = {}
-  private readonly liquidations: Record<string, Proposal['liquidations']> = {}
+  private readonly payments: Record<string, Proposal['payments']> = {}
   private readonly images: Record<string, Proposal['images']> = {}
 
   private row(proposalId: string): Row {
@@ -506,7 +507,7 @@ export class InMemoryBoardRepository implements BoardRepository {
             participantId,
             optedIn,
           })),
-          liquidations: this.liquidations[row.id] ?? [],
+          payments: this.payments[row.id] ?? [],
         }
       })
 
@@ -523,7 +524,8 @@ export class InMemoryBoardRepository implements BoardRepository {
           const comments = agora.comments.filter((c) => c.threadId === t.id)
           return { ...t, commentCount: comments.length, comments: comments.slice(0, 3) }
         }),
-      history: agora.history.filter((h) => since === null || h.createdAt > since).slice(-50),
+      // Empty on purpose, exactly like the RPC: history is fetched, not shipped.
+      history: [],
     }
   }
 }

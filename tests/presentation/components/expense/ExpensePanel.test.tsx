@@ -10,44 +10,167 @@ const people = [
   { id: 'alice', name: 'Alice' },
   { id: 'bob', name: 'Bob' },
   { id: 'carol', name: 'Carol' },
-  { id: 'dave', name: 'Dave' },
 ]
 
-const withShares = (optedIn: string[], overrides = {}) =>
+const proposal = (over: Partial<Parameters<typeof makeProposal>[0]> = {}) =>
   makeProposal({
     id: 'p1',
     status: 'approved',
-    estimatedCents: 10000,
-    shares: people.map((person) => ({
-      participantId: person.id,
-      optedIn: optedIn.includes(person.id),
-    })),
-    ...overrides,
+    estimatedCents: 100_000,
+    shares: people.map((person) => ({ participantId: person.id, optedIn: person.id !== 'carol' })),
+    ...over,
   })
 
+const money = (node: HTMLElement) => node.textContent!.replace(/\s/g, ' ')
+
 describe('ExpensePanel', () => {
-  it('splits 100 € among the three who opted in, cent-exact (criterion 11)', () => {
+  it('splits the total between whoever is in, cent-exact', () => {
     renderWithBoard(
       <ExpensePanel
-        proposal={withShares(['alice', 'bob', 'carol'])}
+        proposal={proposal()}
         participants={people}
         meId="alice"
         onChanged={() => {}}
       />,
     )
-
-    // Intl puts a non-breaking space before the €, so the comparison normalises whitespace.
-    const amounts = screen
-      .getAllByTestId('share-amount')
-      .map((node) => node.textContent!.replace(/\s/g, ' '))
-    expect(amounts).toEqual(['33,34 €', '33,33 €', '33,33 €'])
-    expect(screen.getByTestId('share-total')).toHaveTextContent('100,00 €')
+    expect(screen.getAllByTestId('share-amount').map(money)).toEqual(['500,00 €', '500,00 €'])
+    expect(screen.queryByText('Carol')).not.toBeInTheDocument()
   })
 
-  it('explains what an amount implies, without anyone having to guess', () => {
+  it('answers the question people actually ask: how much of mine is left', () => {
+    // 1000 € between two, 100 € in: 400 € to go.
     renderWithBoard(
       <ExpensePanel
-        proposal={withShares(['alice'])}
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 10_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    expect(screen.getByText(/Te toca 500,00/)).toBeInTheDocument()
+    expect(screen.getByText(/Has puesto 100,00/)).toBeInTheDocument()
+    expect(screen.getByText(/Te falta 400,00/)).toBeInTheDocument()
+  })
+
+  it('says who has put in more than their share, not just who is short', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 60_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+            {
+              id: 'y2',
+              participantId: 'bob',
+              cents: 49_600,
+              createdAt: '2026-09-01T11:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="carol"
+        onChanged={() => {}}
+      />,
+    )
+    const amounts = screen.getAllByTestId('left-amount').map(money)
+    // Alice put in 100 € over her share; Bob is 4 € short. Both are visible, both with their sign.
+    expect(amounts[0]).toBe('100,00 € de más')
+    expect(amounts[1]).toBe('falta 4,00 €')
+  })
+
+  it('says when the group has put in more than the proposal asked for', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 60_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+            {
+              id: 'y2',
+              participantId: 'bob',
+              cents: 60_000,
+              createdAt: '2026-09-01T11:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    expect(money(screen.getByTestId('total-left'))).toContain('200,00 € de más')
+  })
+
+  it('records what I put in, and lets me take a typo back out', async () => {
+    const repo = new InMemoryBoardRepository()
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 10_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+      { repo },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar lo que he puesto' }))
+    await userEvent.type(screen.getByLabelText('¿Cuánto has puesto? (€)'), '50,25')
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar' }))
+    await waitFor(() => expect(repo.calls).toContain('addPayment'))
+
+    await userEvent.click(screen.getByRole('button', { name: /Quitar el pago de 100,00/ }))
+    await waitFor(() => expect(repo.calls).toContain('removePayment'))
+  })
+
+  it('refuses an amount with three decimals', async () => {
+    const repo = new InMemoryBoardRepository()
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal()}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+      { repo },
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar lo que he puesto' }))
+    await userEvent.type(screen.getByLabelText('¿Cuánto has puesto? (€)'), '10,005')
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('dos decimales')
+    expect(repo.calls).not.toContain('addPayment')
+  })
+
+  it('explains what an amount implies and how many are in', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal()}
         participants={people}
         meId="alice"
         onChanged={() => {}}
@@ -56,96 +179,7 @@ describe('ExpensePanel', () => {
     expect(
       screen.getByText(/se reparte a partes iguales entre quienes entren a pagar/),
     ).toBeInTheDocument()
-    expect(screen.getByText(/1 entran a pagar/)).toBeInTheDocument()
-    // One share, the whole amount: a proposal with an amount always shows a split.
-    expect(screen.getAllByTestId('share-amount')).toHaveLength(1)
-    expect(screen.getByTestId('share-total')).toHaveTextContent('100,00 €')
-  })
-
-  it('keeps one label for the opt-in and marks it when I am in', () => {
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['alice'])}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-    )
-    const button = screen.getByRole('button', { name: /Entro a pagar/ })
-    expect(button).toHaveAttribute('aria-pressed', 'true')
-  })
-
-  it('splits among the opt-ins only, never the whole agora', () => {
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['alice', 'bob'])}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-    )
-    expect(screen.getAllByTestId('share-amount')).toHaveLength(2)
-    expect(screen.queryByText('Dave')).not.toBeInTheDocument()
-  })
-
-  it('lets me opt in and out', async () => {
-    const repo = new InMemoryBoardRepository()
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['bob'])}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-      { repo },
-    )
-
-    const button = screen.getByRole('button', { name: /Entro a pagar/ })
-    expect(button).toHaveAttribute('aria-pressed', 'false')
-    await userEvent.click(button)
-    await waitFor(() => expect(repo.calls).toContain('setExpenseShare'))
-  })
-
-  it('says so when a write fails instead of quietly doing nothing', async () => {
-    const repo = new InMemoryBoardRepository()
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['bob'])}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-      { repo },
-    )
-
-    // The fake knows no proposal p1, so the write rejects — which must reach the screen.
-    await userEvent.click(screen.getByRole('button', { name: /Entro a pagar/ }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('unknown proposal')
-  })
-
-  it('shows the deviation when the real cost lands', () => {
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['alice'], { status: 'completed', actualCents: 12000 })}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-    )
-    expect(screen.getByText('20,00 € más de lo previsto')).toBeInTheDocument()
-  })
-
-  it('freezes the expense once the proposal is done', () => {
-    renderWithBoard(
-      <ExpensePanel
-        proposal={withShares(['alice'], { status: 'completed', actualCents: 10000 })}
-        participants={people}
-        meId="alice"
-        onChanged={() => {}}
-      />,
-    )
-    expect(screen.queryByRole('button', { name: /Entro a pagar/ })).not.toBeInTheDocument()
-    expect(screen.getByText(/el gasto ya no se toca/)).toBeInTheDocument()
+    expect(screen.getByText(/2 entran a pagar/)).toBeInTheDocument()
   })
 
   it('says nothing at all when a proposal has no money in it', () => {
@@ -160,54 +194,18 @@ describe('ExpensePanel', () => {
     expect(container).toBeEmptyDOMElement()
   })
 
-  it('records a payment and marks the payer as settled', async () => {
-    const repo = new InMemoryBoardRepository()
-    const proposal = withShares(['alice', 'bob'], {
-      liquidations: [
-        {
-          id: 'l1',
-          cents: 5000,
-          paidBy: 'alice',
-          affects: ['alice', 'bob'],
-          paidShares: [],
-          createdAt: '2026-09-01T10:00:00.000Z',
-        },
-      ],
-    })
-
-    renderWithBoard(
-      <ExpensePanel proposal={proposal} participants={people} meId="alice" onChanged={() => {}} />,
-      { repo },
-    )
-
-    expect(screen.getByText('Lo puso Alice')).toBeInTheDocument()
-    // The payer's own share counts as paid; Bob's does not.
-    expect(screen.getByLabelText('Marcar la parte de Alice como pagada')).toBeChecked()
-    expect(screen.getByLabelText('Marcar la parte de Bob como pagada')).not.toBeChecked()
-    expect(screen.getByText(/Pagado 25,00 €/)).toBeInTheDocument()
-    expect(screen.getByText(/Pendiente 25,00 €/)).toBeInTheDocument()
-
-    await userEvent.click(screen.getByLabelText('Marcar la parte de Bob como pagada'))
-    await waitFor(() => expect(repo.calls).toContain('setLiquidationSharePaid'))
-  })
-
-  it('refuses an amount with three decimals', async () => {
-    const repo = new InMemoryBoardRepository()
+  it('freezes the opt-in once the proposal is done, but still lets a payment be recorded', () => {
     renderWithBoard(
       <ExpensePanel
-        proposal={withShares(['alice'])}
+        proposal={proposal({ status: 'completed', actualCents: 120_000 })}
         participants={people}
         meId="alice"
         onChanged={() => {}}
       />,
-      { repo },
     )
-
-    await userEvent.click(screen.getByRole('button', { name: 'Registrar un pago' }))
-    await userEvent.type(screen.getByLabelText('Importe (€)'), '10,005')
-    await userEvent.click(screen.getByRole('button', { name: 'Registrar un pago' }))
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('dos decimales')
-    expect(repo.calls).not.toContain('addLiquidation')
+    expect(screen.queryByRole('button', { name: /Entro a pagar/ })).not.toBeInTheDocument()
+    // Paying up happens *after* the thing is done more often than before it.
+    expect(screen.getByRole('button', { name: 'Apuntar lo que he puesto' })).toBeInTheDocument()
+    expect(screen.getByText(/200,00\s€ más de lo previsto/)).toBeInTheDocument()
   })
 })

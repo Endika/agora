@@ -527,3 +527,79 @@ begin
 
   raise notice 'PASS resolving a thread reaches a client that already had the board';
 end $$;
+
+-- Payments answer "how much of mine is left", and only your own are yours to record.
+do $$
+declare v_prop uuid; v_pay uuid := gen_random_uuid(); v_board json; v_rejected boolean;
+begin
+  perform agora.create_group('Pay agora', 'rpcteste', 'alice', 'tok-ae');
+  perform agora.add_participant('rpcteste', 'bob', 'tok-be');
+  v_prop := agora.create_proposal('tok-ae', 'rpcteste',
+    json_build_object('title', 'Rent a van', 'estimatedCents', 100000));
+
+  -- Alice is in by creating it; Bob opts in too, so 1000 € splits 500/500.
+  perform agora.set_expense_share('tok-be', v_prop, true);
+
+  perform agora.add_payment('tok-ae', v_pay, v_prop, 10000);
+  v_board := agora.get_board('rpcteste', 'tok-ae');
+  if json_array_length(v_board->'proposals'->0->'payments') <> 1 then
+    raise exception 'FAIL: the payment is not on the board';
+  end if;
+  if (v_board->'proposals'->0->'payments'->0->>'cents') <> '10000' then
+    raise exception 'FAIL: the payment lost its amount';
+  end if;
+
+  -- Replaying the same payment must not double it.
+  perform agora.add_payment('tok-ae', v_pay, v_prop, 10000);
+  if (select count(*) from agora.payments where proposal_id = v_prop) <> 1 then
+    raise exception 'FAIL: a replayed payment was counted twice';
+  end if;
+
+  -- Zero is not a payment.
+  v_rejected := false;
+  begin
+    perform agora.add_payment('tok-ae', gen_random_uuid(), v_prop, 0);
+  exception when sqlstate 'PT400' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: a payment of nothing was accepted'; end if;
+
+  -- Bob cannot delete Alice's payment.
+  v_rejected := false;
+  begin
+    perform agora.remove_payment('tok-be', v_pay);
+  exception when sqlstate 'PT403' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: somebody else deleted a payment'; end if;
+
+  perform agora.remove_payment('tok-ae', v_pay);
+  if (select count(*) from agora.payments where proposal_id = v_prop) <> 0 then
+    raise exception 'FAIL: the payment survived its own deletion';
+  end if;
+
+  raise notice 'PASS payments are yours, replay-safe, and on the board';
+end $$;
+
+-- History is fetched, not shipped with every board.
+do $$
+declare v_board json; v_history json;
+begin
+  perform agora.create_group('History agora', 'rpctestf', 'alice', 'tok-af');
+  perform agora.create_proposal('tok-af', 'rpctestf', json_build_object('title', 'Buy chairs'));
+
+  v_board := agora.get_board('rpctestf', 'tok-af');
+  if json_array_length(v_board->'history') <> 0 then
+    raise exception 'FAIL: the board is still carrying history, which is egress nobody asked for';
+  end if;
+
+  v_history := agora.get_history('rpctestf', 'tok-af', 50);
+  if json_array_length(v_history) < 2 then
+    raise exception 'FAIL: the history call returned nothing';
+  end if;
+
+  -- And it is capped, whatever a client asks for.
+  if json_array_length(agora.get_history('rpctestf', 'tok-af', 100000)) > 200 then
+    raise exception 'FAIL: the history cap can be talked out of';
+  end if;
+
+  raise notice 'PASS history is served on demand and capped';
+end $$;

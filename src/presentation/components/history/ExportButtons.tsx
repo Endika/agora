@@ -1,16 +1,25 @@
 import { useTranslation } from 'react-i18next'
 import { exportBoard, exportFilename, type ExportFormat } from '@/application/handlers/exportBoard'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import { useBoard } from '@/presentation/context/boardContext'
 
 /** Straight from the cached snapshot, so this works offline and costs no egress. */
 export function ExportButtons({ board }: { board: BoardSnapshot }) {
   const { t } = useTranslation()
+  const { repo } = useBoard()
 
-  const download = (format: ExportFormat) => {
-    const content = exportBoard(board, format, {
-      status: (status) => t(`status.${status}`),
-      tally: (tally) => `${tally.up} / ${tally.down} / ${tally.abstain}`,
-    })
+  const download = async (format: ExportFormat) => {
+    // History is not in the snapshot, so an export that promises "the whole board" fetches it.
+    const history = await repo.history({ slug: board.group.slug, limit: 200 }).catch(() => [])
+    const content = exportBoard(
+      board,
+      format,
+      {
+        status: (status) => t(`status.${status}`),
+        tally: (tally) => `${tally.up} / ${tally.down} / ${tally.abstain}`,
+      },
+      history,
+    )
     const blob = new Blob([content], {
       type: format === 'json' ? 'application/json' : 'text/markdown;charset=utf-8',
     })
@@ -30,7 +39,7 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => download('md')}
+          onClick={() => void download('md')}
           className="min-h-11 rounded-[--radius] border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
@@ -38,7 +47,7 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
         </button>
         <button
           type="button"
-          onClick={() => download('json')}
+          onClick={() => void download('json')}
           className="min-h-11 rounded-[--radius] border px-4"
           style={{ borderColor: 'var(--border)' }}
         >

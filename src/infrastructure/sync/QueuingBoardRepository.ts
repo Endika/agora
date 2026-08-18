@@ -6,6 +6,7 @@ import type {
   BoardSnapshot,
   Comment,
   DeleteResult,
+  HistoryEntry,
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
@@ -117,20 +118,14 @@ export class QueuingBoardRepository implements BoardRepository {
   threadComments(input: { slug: string; threadId: string }): Promise<Comment[]> {
     return this.inner.threadComments(input)
   }
-  addLiquidation(input: {
-    id: string
-    proposalId: string
-    cents: number
-    affects: string[]
-  }): Promise<void> {
-    return this.inner.addLiquidation(input)
+  addPayment(input: { id: string; proposalId: string; cents: number }): Promise<void> {
+    return this.inner.addPayment(input)
   }
-  setLiquidationSharePaid(input: {
-    liquidationId: string
-    participantId: string
-    paid: boolean
-  }): Promise<void> {
-    return this.inner.setLiquidationSharePaid(input)
+  removePayment(paymentId: string): Promise<void> {
+    return this.inner.removePayment(paymentId)
+  }
+  history(input: { slug: string; limit?: number }): Promise<HistoryEntry[]> {
+    return this.inner.history(input)
   }
   attachImage(input: {
     id: string

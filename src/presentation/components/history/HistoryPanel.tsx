@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
 import { formatCents } from '@/presentation/components/expense/money'
+import { useBoard } from '@/presentation/context/boardContext'
 
 /**
  * Who did what, newest first, as sentences.
@@ -11,6 +13,26 @@ import { formatCents } from '@/presentation/components/expense/money'
  */
 export function HistoryPanel({ board }: { board: BoardSnapshot }) {
   const { t, i18n } = useTranslation()
+  const { repo } = useBoard()
+  const [entries, setEntries] = useState<HistoryEntry[] | null>(null)
+  const [failure, setFailure] = useState<string | null>(null)
+
+  // Fetched here, not shipped with the board: this is the field that grows per action, and almost nobody
+  // opens it. The component only mounts when the disclosure is open.
+  useEffect(() => {
+    let live = true
+    void repo
+      .history({ slug: board.group.slug })
+      .then((result) => {
+        if (live) setEntries(result)
+      })
+      .catch((cause: unknown) => {
+        if (live) setFailure(cause instanceof Error ? cause.message : String(cause))
+      })
+    return () => {
+      live = false
+    }
+  }, [repo, board.group.slug])
 
   const when = new Intl.DateTimeFormat(i18n.language, {
     day: 'numeric',
@@ -28,7 +50,7 @@ export function HistoryPanel({ board }: { board: BoardSnapshot }) {
     const detail =
       entry.type === 'resolved'
         ? t(`status.${entry.description}`, { defaultValue: entry.description })
-        : entry.type === 'liquidation_added'
+        : entry.type === 'payment_added'
           ? formatCents(Number(entry.description) || 0, i18n.language)
           : entry.description
 
@@ -37,7 +59,21 @@ export function HistoryPanel({ board }: { board: BoardSnapshot }) {
     return t(key, { name, title, detail })
   }
 
-  const entries = [...board.history].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+  if (failure !== null) {
+    return (
+      <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+        {failure}
+      </p>
+    )
+  }
+
+  if (entries === null) {
+    return (
+      <p role="status" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+        {t('common.loading')}
+      </p>
+    )
+  }
 
   return (
     <section className="grid gap-2" aria-label={t('history.heading')}>
