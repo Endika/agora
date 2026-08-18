@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.3](https://github.com/Endika/agora/compare/v0.16.2...v0.16.3) (2026-08-18)
+
+
+### Bug Fixes
+
+* **ui:** resolve threads visibly and stop sideways scroll at 320px ([8cf4af0](https://github.com/Endika/agora/commit/8cf4af00a6f65a6c040b59ffed39e6f513f38760))
+
 ## [0.16.2](https://github.com/Endika/agora/compare/v0.16.1...v0.16.2) (2026-08-18)
 
 
