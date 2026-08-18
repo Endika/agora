@@ -2,11 +2,15 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Money } from '@/domain/value-objects/Money'
 import type { Proposal } from '@/domain/entities/Proposal'
+import type { PreparedUpload } from '@/domain/ports/ProposalImages'
+import { ImagePicker } from './ImagePicker'
 import { MarkdownToolbar } from './MarkdownToolbar'
 import { MarkdownView } from './MarkdownView'
 import { TagInput } from './TagInput'
 
 export interface ProposalDraft {
+  /** Compressed in the browser and uploaded once the proposal has an id. */
+  images: PreparedUpload[]
   title: string
   description: string
   tags: string[]
@@ -35,6 +39,7 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
     initial?.estimatedCents != null ? String(initial.estimatedCents / 100) : '',
   )
   const descriptionField = useRef<HTMLTextAreaElement | null>(null)
+  const [images, setImages] = useState<PreparedUpload[]>([])
   const [linkTo, setLinkTo] = useState('')
   const [linkKind, setLinkKind] = useState<'related' | 'supersedes'>('related')
   const [tab, setTab] = useState<'write' | 'preview'>('write')
@@ -60,6 +65,7 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
     }
 
     onSubmit({
+      images,
       title: title.trim(),
       description,
       tags,
@@ -128,6 +134,7 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
               value={description}
               onChange={setDescription}
             />
+            <ImagePicker images={images} onChange={setImages} />
             <textarea
               id="proposal-description"
               ref={descriptionField}

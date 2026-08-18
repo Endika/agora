@@ -4,13 +4,14 @@ import type { VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
+import { Sheet } from '@/presentation/components/Sheet'
 import { BoardFilters, type Filter } from './BoardFilters'
 import { ProposalCard } from './ProposalCard'
 
 /** The list arrives already ordered by the repository; the spec's order is not the view's opinion. */
 export function BoardPage({ board }: { board: BoardSnapshot }) {
   const { t } = useTranslation()
-  const { repo, reload } = useBoard()
+  const { repo, reload, images: pipeline } = useBoard()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
   const [composing, setComposing] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
@@ -35,14 +36,27 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
     void run().then(reload)
   }
 
-  const publish = (draft: ProposalDraft) => {
-    setComposing(false)
-    act(() => repo.createProposal({ slug: board.group.slug, ...draft }))
+  // Images are picked before the proposal exists, so they are uploaded once it has an id.
+  const attachAll = async (proposalId: string, draft: ProposalDraft) => {
+    for (const prepared of draft.images) {
+      await pipeline.attach({ slug: board.group.slug, proposalId, prepared })
+    }
   }
 
-  const save = (proposalId: string, draft: ProposalDraft) => {
+  const publish = ({ images: picked, ...draft }: ProposalDraft) => {
+    setComposing(false)
+    act(async () => {
+      const proposalId = await repo.createProposal({ slug: board.group.slug, ...draft })
+      await attachAll(proposalId, { ...draft, images: picked })
+    })
+  }
+
+  const save = (proposalId: string, { images: picked, ...draft }: ProposalDraft) => {
     setEditing(null)
-    act(() => repo.updateProposal({ proposalId, ...draft }))
+    act(async () => {
+      await repo.updateProposal({ proposalId, ...draft })
+      await attachAll(proposalId, { ...draft, images: picked })
+    })
   }
 
   // Finished proposals are kept, not deleted — they just stop competing for attention.
@@ -73,13 +87,28 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
 
   return (
     <section className="grid gap-4" aria-label={board.group.name}>
-      {composing ? (
-        <ProposalForm
-          others={board.proposals}
-          onSubmit={publish}
-          onCancel={() => setComposing(false)}
-        />
-      ) : (
+      {composing && (
+        <Sheet label={t('proposal.new')} onClose={() => setComposing(false)}>
+          <ProposalForm
+            others={board.proposals}
+            onSubmit={publish}
+            onCancel={() => setComposing(false)}
+          />
+        </Sheet>
+      )}
+
+      {beingEdited && (
+        <Sheet label={t('proposal.editHeading')} onClose={() => setEditing(null)}>
+          <ProposalForm
+            others={board.proposals.filter((other) => other.id !== beingEdited.id)}
+            initial={beingEdited}
+            onSubmit={(draft) => save(beingEdited.id, draft)}
+            onCancel={() => setEditing(null)}
+          />
+        </Sheet>
+      )}
+
+      {
         <button
           type="button"
           onClick={() => setComposing(true)}
@@ -88,18 +117,9 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
         >
           {t('proposal.new')}
         </button>
-      )}
+      }
 
       <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
-
-      {beingEdited && (
-        <ProposalForm
-          others={board.proposals.filter((other) => other.id !== beingEdited.id)}
-          initial={beingEdited}
-          onSubmit={(draft) => save(beingEdited.id, draft)}
-          onCancel={() => setEditing(null)}
-        />
-      )}
 
       {live.length === 0 && archived.length === 0 ? (
         <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>

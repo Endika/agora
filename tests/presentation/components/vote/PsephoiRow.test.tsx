@@ -25,6 +25,17 @@ describe('PsephoiRow', () => {
     expect(screen.queryAllByTestId('pebble-empty')).toHaveLength(0)
   })
 
+  it('tells the three votes apart by shape as well as colour', () => {
+    render(<PsephoiRow participants={3} cast={3} revealed={['up', 'down', 'abstain']} />)
+    const pebbles = screen.getAllByTestId('pebble-cast')
+    expect(pebbles[0]).toHaveAttribute('title', 'A favor')
+    expect(pebbles[1]).toHaveAttribute('title', 'En contra')
+    expect(pebbles[2]).toHaveAttribute('title', 'En blanco')
+    // The abstain pebble is a ring, so it can never be mistaken for an unrevealed stone.
+    expect(pebbles[2]!.className).toContain('border')
+    expect(pebbles[0]!.className).not.toContain('border')
+  })
+
   it('announces the count for anyone not seeing the pebbles', () => {
     render(<PsephoiRow participants={5} cast={3} revealed={null} />)
     expect(screen.getByRole('img')).toHaveAccessibleName(/3.*5/)

@@ -1,8 +1,10 @@
 import { uuidv7 } from 'uuidv7'
+import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import type { BoardRepository } from '@/domain/repositories/BoardRepository'
 import { DeviceIdentity } from '@/infrastructure/identity/DeviceIdentity'
 import { VisitedAgoras } from '@/infrastructure/identity/VisitedAgoras'
+import { SupabaseProposalImages } from '@/infrastructure/images/SupabaseProposalImages'
 import { CachingBoardRepository } from '@/infrastructure/persistence/CachingBoardRepository'
 import { IdbBoardStore } from '@/infrastructure/persistence/IdbBoardStore'
 import { SupabaseBoardRepository } from '@/infrastructure/persistence/SupabaseBoardRepository'
@@ -21,12 +23,16 @@ export function agoraSlug(): string {
  * it rather than dying with a blank page.
  */
 export function buildApp():
-  { repo: BoardRepository; visited: VisitedAgorasStore } | { error: string } {
+  | { repo: BoardRepository; visited: VisitedAgorasStore; images: ProposalImages }
+  | { error: string } {
   try {
-    const remote = new SupabaseBoardRepository(createAgoraClient(), DeviceIdentity.token, agoraSlug)
+    const client = createAgoraClient()
+    const remote = new SupabaseBoardRepository(client, DeviceIdentity.token, agoraSlug)
+    const repo = new CachingBoardRepository(remote, new IdbBoardStore())
     return {
-      repo: new CachingBoardRepository(remote, new IdbBoardStore()),
+      repo,
       visited: VisitedAgoras,
+      images: new SupabaseProposalImages(client, repo),
     }
   } catch (cause) {
     return { error: cause instanceof Error ? cause.message : String(cause) }

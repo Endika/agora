@@ -1,20 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Agora">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Agora">
   <!--
-    Three columns of different heights on one stylobate: a colonnade that also reads as a vote
-    tally. The capitals are what stop it from looking like a bar chart.
+    The same freehand colonnade as the header wordmark, so the tab, the launcher and the app all show
+    one drawing. Verified legible at 32 px: the wobble disappears but the three columns hold.
+    A thicker brush than the on-screen logo, which is what keeps it readable as a favicon.
+    tests/presentation/components/Logo.test.tsx fails if the two drawings drift apart.
   -->
-  <rect width="512" height="512" fill="#151A18"/>
-  <g fill="#FF5A47">
-    <!-- shafts -->
-    <rect x="112" y="270" width="64" height="152"/>
-    <rect x="224" y="176" width="64" height="246"/>
-    <rect x="336" y="224" width="64" height="198"/>
-    <!-- capitals -->
-    <rect x="98" y="248" width="92" height="24" rx="6"/>
-    <rect x="210" y="154" width="92" height="24" rx="6"/>
-    <rect x="322" y="202" width="92" height="24" rx="6"/>
-    <!-- stylobate -->
-    <rect x="72" y="422" width="368" height="26" rx="8"/>
-    <rect x="88" y="448" width="336" height="18" rx="6" opacity="0.55"/>
+  <rect width="48" height="48" fill="#151A18"/>
+  <g fill="none" stroke="#FF5A47" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13.6 16.4c-.6 7.4-.8 14.8-.5 22.4"/>
+    <path d="M24.3 8.6c-.5 10.1-.6 20.3-.3 30.2"/>
+    <path d="M34.9 13.2c.6 8.6.7 17.2.4 25.6"/>
+    <path d="M10.8 15.4c1.9-.5 3.8-.6 5.7-.3"/>
+    <path d="M21.5 7.6c1.9-.4 3.8-.5 5.7-.2"/>
+    <path d="M32.1 12.2c1.9-.4 3.8-.4 5.6-.1"/>
+    <path d="M7.4 39.2c11.2-1.1 22.5-1.2 33.7-.3"/>
+    <path d="M9.1 43c10.2-.9 20.5-1 30.7-.2"/>
   </g>
 </svg>

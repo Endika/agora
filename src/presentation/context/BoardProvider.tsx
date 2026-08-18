@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import { BoardContext, type BoardState } from './boardContext'
 
@@ -21,11 +22,13 @@ interface Result {
 export function BoardProvider({
   repo,
   visited,
+  images,
   slug,
   children,
 }: {
   repo: BoardRepository
   visited: VisitedAgorasStore
+  images: ProposalImages
   slug: string | null
   children: ReactNode
 }) {
@@ -79,13 +82,14 @@ export function BoardProvider({
     return {
       repo,
       visited,
+      images,
       slug,
       board: fresh?.board ?? null,
       status: !slug ? 'idle' : (fresh?.phase ?? 'loading'),
       error: fresh?.error ?? null,
       reload,
     }
-  }, [repo, visited, slug, result, reload])
+  }, [repo, visited, images, slug, result, reload])
 
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>
 }
