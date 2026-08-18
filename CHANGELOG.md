@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Endika/agora/compare/v0.1.1...v0.1.2) (2026-08-18)
+
+
+### Chores
+
+* **arch:** enforce hexagonal layer boundaries in eslint ([4a68dbd](https://github.com/Endika/agora/commit/4a68dbdab431ef21eff3b148175e46985e7a6e1e))
+
 ## [0.1.1](https://github.com/Endika/agora/compare/v0.1.0...v0.1.1) (2026-08-18)
 
 
