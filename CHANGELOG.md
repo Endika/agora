@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/Endika/agora/compare/v0.12.1...v0.13.0) (2026-08-18)
+
+
+### Features
+
+* **threads:** add resolvable comment threads ([f39edb4](https://github.com/Endika/agora/commit/f39edb4b48047578ebe634e6621bae54d39fb9da))
+
 ## [0.12.1](https://github.com/Endika/agora/compare/v0.12.0...v0.12.1) (2026-08-18)
 
 
