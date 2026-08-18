@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/Endika/agora/compare/v0.6.0...v0.7.0) (2026-08-18)
+
+
+### Features
+
+* **ui:** add design tokens, icon, psephoi row and join flow ([71afa5c](https://github.com/Endika/agora/commit/71afa5c1b1dcb2f8113488100bc83590c100ef0f))
+
 ## [0.6.0](https://github.com/Endika/agora/compare/v0.5.0...v0.6.0) (2026-08-18)
 
 
