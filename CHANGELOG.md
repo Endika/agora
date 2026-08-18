@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/Endika/agora/compare/v0.1.2...v0.2.0) (2026-08-18)
+
+
+### Features
+
+* **domain:** port money, edit pin and manual liquidation ([8bc7bc7](https://github.com/Endika/agora/commit/8bc7bc716b79f12503f78e4d37c15ee7dc2e6742))
+
 ## [0.1.2](https://github.com/Endika/agora/compare/v0.1.1...v0.1.2) (2026-08-18)
 
 
