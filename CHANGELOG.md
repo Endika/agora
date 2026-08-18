@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/Endika/agora/compare/v0.15.0...v0.16.0) (2026-08-18)
+
+
+### Features
+
+* **sync:** add offline queue and cached board ([e1d05f9](https://github.com/Endika/agora/commit/e1d05f9b36b4ca380384e077a239a2848cd9dc48))
+
 ## [0.15.0](https://github.com/Endika/agora/compare/v0.14.0...v0.15.0) (2026-08-18)
 
 
