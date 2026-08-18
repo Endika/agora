@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { uuidv7 } from 'uuidv7'
 import type { Participant, Thread as ThreadModel } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
+import { useAction } from '@/presentation/useAction'
 import { CommentForm } from './CommentForm'
 import { Thread } from './Thread'
 
@@ -27,13 +28,15 @@ export function ThreadList({
 }: Props) {
   const { t } = useTranslation()
   const { repo } = useBoard()
+  const { run, error } = useAction()
   const [opening, setOpening] = useState(false)
 
   const open = (body: string) => {
     setOpening(false)
-    void repo
-      .addThread({ threadId: uuidv7(), proposalId, commentId: uuidv7(), body })
-      .then(onChanged)
+    run(
+      () => repo.addThread({ threadId: uuidv7(), proposalId, commentId: uuidv7(), body }),
+      onChanged,
+    )
   }
 
   return (
@@ -41,6 +44,12 @@ export function ThreadList({
       {threads.length === 0 && !opening && (
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
           {t('threads.none')}
+        </p>
+      )}
+
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
         </p>
       )}
 

@@ -5,6 +5,7 @@ import type { Proposal } from '@/domain/entities/Proposal'
 import { ManualLiquidationSplitter } from '@/domain/services/ManualLiquidationSplitter'
 import type { Participant } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
+import { useAction } from '@/presentation/useAction'
 import { formatCents, parseEuros } from './money'
 
 interface Props {
@@ -23,6 +24,7 @@ interface Props {
 export function LiquidationList({ proposal, participants, optedIn, frozen, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const { repo } = useBoard()
+  const { run, error: failure } = useAction()
   const [amount, setAmount] = useState('')
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -40,19 +42,27 @@ export function LiquidationList({ proposal, participants, optedIn, frozen, onCha
     setError(null)
     setAmount('')
     setAdding(false)
-    void repo
-      .addLiquidation({
-        id: uuidv7(),
-        proposalId: proposal.id,
-        cents,
-        affects: optedIn.length > 0 ? optedIn : everyone,
-      })
-      .then(onChanged)
+    run(
+      () =>
+        repo.addLiquidation({
+          id: uuidv7(),
+          proposalId: proposal.id,
+          cents,
+          affects: optedIn.length > 0 ? optedIn : everyone,
+        }),
+      onChanged,
+    )
   }
 
   return (
     <div className="grid gap-2">
       <h5 className="text-sm font-medium">{t('expense.liquidations')}</h5>
+
+      {failure && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {failure}
+        </p>
+      )}
 
       {proposal.liquidations.map((liquidation) => {
         const view = ManualLiquidationSplitter.compute(liquidation, everyone)
@@ -82,13 +92,15 @@ export function LiquidationList({ proposal, participants, optedIn, frozen, onCha
                       disabled={frozen || share.participantId === liquidation.paidBy}
                       aria-label={t('expense.markPaid', { name: nameOf(share.participantId) })}
                       onChange={(event) =>
-                        void repo
-                          .setLiquidationSharePaid({
-                            liquidationId: liquidation.id,
-                            participantId: share.participantId,
-                            paid: event.target.checked,
-                          })
-                          .then(onChanged)
+                        run(
+                          () =>
+                            repo.setLiquidationSharePaid({
+                              liquidationId: liquidation.id,
+                              participantId: share.participantId,
+                              paid: event.target.checked,
+                            }),
+                          onChanged,
+                        )
                       }
                       className="size-5"
                     />
