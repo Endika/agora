@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.0](https://github.com/Endika/agora/compare/v0.17.0...v0.18.0) (2026-08-18)
+
+
+### Features
+
+* **expense:** pay against your share, and fetch history on demand ([acb9813](https://github.com/Endika/agora/commit/acb9813bc0e79f22fd3ab94945dad3534564d5cd))
+
+
+### Bug Fixes
+
+* **ui:** put the proposal actions with the proposal ([3ab335b](https://github.com/Endika/agora/commit/3ab335b574461aa39f64d75145c4280975207ee0))
+
 ## [0.17.0](https://github.com/Endika/agora/compare/v0.16.3...v0.17.0) (2026-08-18)
 
 
