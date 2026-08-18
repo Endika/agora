@@ -246,7 +246,7 @@ end $$;
 
 -- Erasure is guarded by typing the agora name, not by a secret.
 do $$
-declare v_result json;
+declare v_result json; v_prop uuid;
 begin
   perform agora.create_group('Casa de la playa', 'rpctest9', 'alice', 'tok-a9');
 
@@ -256,11 +256,30 @@ begin
     raise exception 'FAIL: the agora is gone after a refused delete';
   end if;
 
+  -- An agora with things in it, which is the only kind anyone deletes.
+  perform agora.add_participant('rpctest9', 'bob', 'tok-b9');
+  v_prop := agora.create_proposal('tok-a9', 'rpctest9',
+    json_build_object('title', 'Rent the house', 'estimatedCents', 50000));
+  perform agora.cast_vote('tok-b9', v_prop, 1, 'up');
+  perform agora.add_thread('tok-b9', gen_random_uuid(), v_prop, gen_random_uuid(), 'Which weekend?');
+  perform agora.add_payment('tok-a9', gen_random_uuid(), v_prop, 10000);
+  perform agora.attach_image('tok-a9', gen_random_uuid(), v_prop, 'p.webp', 't.webp', 1600, 1200, 150000);
+
   -- Case and surrounding spaces do not matter; the name does.
   v_result := agora.delete_group('tok-a9', 'rpctest9', '  Casa de la Playa ');
   if (v_result->>'ok') <> 'true' then raise exception 'FAIL: the right name did not delete it'; end if;
   if exists (select 1 from agora.groups where slug = 'rpctest9') then
     raise exception 'FAIL: the agora survived its own deletion';
+  end if;
+  -- And nothing of it is left behind, which is what erasure means.
+  if exists (select 1 from agora.proposals where id = v_prop)
+     or exists (select 1 from agora.votes where proposal_id = v_prop)
+     or exists (select 1 from agora.payments where proposal_id = v_prop)
+     or exists (select 1 from agora.comment_threads where proposal_id = v_prop) then
+    raise exception 'FAIL: rows survived the deletion of their agora';
+  end if;
+  if (v_result->>'storage_paths') is null or json_array_length(v_result->'storage_paths') <> 2 then
+    raise exception 'FAIL: the caller was not told which storage objects to delete';
   end if;
 
   raise notice 'PASS deleting an agora needs its name typed out';
