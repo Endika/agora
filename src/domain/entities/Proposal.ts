@@ -12,6 +12,39 @@ export interface VoteTally {
   net: number
 }
 
+export interface ProposalImage {
+  id: string
+  path: string
+  thumbPath: string
+  width: number
+  height: number
+  position: number
+}
+
+export interface ExpenseShare {
+  participantId: string
+  optedIn: boolean
+}
+
+export interface LiquidationSnapshot {
+  id: string
+  cents: number
+  paidBy: string | null
+  affects: string[]
+  paidShares: string[]
+  createdAt: string
+}
+
+export interface ProposalLink {
+  toId: string
+  kind: 'related' | 'supersedes'
+}
+
+export interface CastVote {
+  participantId: string
+  value: VoteValue
+}
+
 export interface Proposal {
   id: string
   groupId: string
@@ -32,4 +65,12 @@ export interface Proposal {
   myVote: VoteValue | null
   /** False while voting: the server sends counts but no sentiment until quorum. */
   votesRevealed: boolean
+  /** Null until quorum — the server omits it, the UI does not filter it. */
+  votes: CastVote[] | null
+  /** Participants who have not voted this round. A name, never a leaning. */
+  pending: string[]
+  images: ProposalImage[]
+  shares: ExpenseShare[]
+  liquidations: LiquidationSnapshot[]
+  links: ProposalLink[]
 }

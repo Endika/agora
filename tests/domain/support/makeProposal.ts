@@ -27,6 +27,12 @@ export function makeProposal(overrides: Partial<Proposal> & { id: string }): Pro
     tally: votes(0, 0),
     myVote: null,
     votesRevealed: false,
+    votes: null,
+    pending: [],
+    images: [],
+    shares: [],
+    liquidations: [],
+    links: [],
     ...overrides,
   }
 }
