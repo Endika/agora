@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.1](https://github.com/Endika/agora/compare/v0.16.0...v0.16.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **history:** write real sentences instead of raw types ([9178ba8](https://github.com/Endika/agora/commit/9178ba86b0bcb3d3f98bf700d91cdccb08756d3e))
+
 ## [0.16.0](https://github.com/Endika/agora/compare/v0.15.0...v0.16.0) (2026-08-18)
 
 
