@@ -81,8 +81,8 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
         }
         onReopen={() => act(() => repo.reopenProposal(proposal.id))}
         onClose={(reason) => act(() => repo.closeProposal({ proposalId: proposal.id, reason }))}
-        onComplete={() =>
-          act(() => repo.completeProposal({ proposalId: proposal.id, actualCents: null }))
+        onComplete={(actualCents) =>
+          act(() => repo.completeProposal({ proposalId: proposal.id, actualCents }))
         }
       />
     </li>

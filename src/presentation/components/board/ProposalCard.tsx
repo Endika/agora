@@ -3,6 +3,7 @@ import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
 import type { Thread } from '@/domain/repositories/BoardRepository'
 import { ImageGallery } from '@/presentation/components/proposal/ImageGallery'
+import { ExpensePanel } from '@/presentation/components/expense/ExpensePanel'
 import { ThreadList } from '@/presentation/components/threads/ThreadList'
 import { MarkdownView } from '@/presentation/components/proposal/MarkdownView'
 import { MissingVoters } from './MissingVoters'
@@ -23,7 +24,7 @@ interface Props {
   onVote: (value: VoteValue) => void
   onReopen: () => void
   onClose: (reason: string) => void
-  onComplete: () => void
+  onComplete: (actualCents: number | null) => void
 }
 
 const STATUS_COLOR: Record<Proposal['status'], string> = {
@@ -108,6 +109,13 @@ export function ProposalCard({
           <MissingVoters pending={proposal.pending} participants={participants} />
         </>
       )}
+
+      <ExpensePanel
+        proposal={proposal}
+        participants={participants}
+        meId={meId}
+        onChanged={onChanged}
+      />
 
       <ThreadList
         proposalId={proposal.id}

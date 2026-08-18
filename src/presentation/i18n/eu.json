@@ -158,5 +158,29 @@
     "none": "Oraindik ez dago iruzkinik.",
     "empty": "Idatzi zerbait bidali aurretik.",
     "count": "{{count}} iruzkin"
+  },
+  "expense": {
+    "heading": "Gastua",
+    "estimated": "Kostu estimatua",
+    "actual": "Benetako kostua",
+    "deviationOver": "Aurreikusitakoa baino {{amount}} gehiago",
+    "deviationUnder": "Aurreikusitakoa baino {{amount}} gutxiago",
+    "deviationNone": "Aurreikusitakoaren arabera atera da",
+    "iPay": "Ordaintzen sartzen naiz",
+    "iDontPay": "Ez naiz sartzen",
+    "sharesHeading": "Banaketa",
+    "nobodyIn": "Oraindik inor ez da ordaintzen sartu.",
+    "perHead": "{{amount}} bakoitzak {{count}}(r)en artean",
+    "total": "Guztira {{amount}}",
+    "liquidations": "Erregistratutako ordainketak",
+    "addPayment": "Erregistratu ordainketa",
+    "amount": "Zenbatekoa (€)",
+    "paidBy": "{{name}}(e)k jarri du",
+    "markPaid": "Markatu {{name}}(r)en zatia ordainduta",
+    "paid": "Ordainduta {{amount}}",
+    "pending": "Zain {{amount}}",
+    "frozen": "Proposamena eginda dago, beraz gastua ez da aldatzen.",
+    "amountInvalid": "Zenbatekoa eurotan doa, gehienez bi hamartarrekin.",
+    "actualPrompt": "Zenbat kostatu da azkenean? (aukerakoa)"
   }
 }

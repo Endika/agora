@@ -158,5 +158,29 @@
     "none": "Todavía no hay comentarios.",
     "empty": "Escribe algo antes de enviarlo.",
     "count": "{{count}} comentarios"
+  },
+  "expense": {
+    "heading": "Gasto",
+    "estimated": "Coste estimado",
+    "actual": "Coste real",
+    "deviationOver": "{{amount}} más de lo previsto",
+    "deviationUnder": "{{amount}} menos de lo previsto",
+    "deviationNone": "Salió por lo previsto",
+    "iPay": "Entro a pagar",
+    "iDontPay": "No entro",
+    "sharesHeading": "Reparto",
+    "nobodyIn": "Todavía nadie entra a pagar.",
+    "perHead": "{{amount}} cada uno entre {{count}}",
+    "total": "Total {{amount}}",
+    "liquidations": "Pagos registrados",
+    "addPayment": "Registrar un pago",
+    "amount": "Importe (€)",
+    "paidBy": "Lo puso {{name}}",
+    "markPaid": "Marcar la parte de {{name}} como pagada",
+    "paid": "Pagado {{amount}}",
+    "pending": "Pendiente {{amount}}",
+    "frozen": "La propuesta está hecha, así que el gasto ya no se toca.",
+    "amountInvalid": "El importe va en euros, con dos decimales como mucho.",
+    "actualPrompt": "¿Cuánto costó al final? (opcional)"
   }
 }
