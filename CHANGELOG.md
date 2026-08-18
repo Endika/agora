@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/Endika/agora/compare/v0.5.0...v0.6.0) (2026-08-18)
+
+
+### Features
+
+* **data:** add board repository, cache-first reads and fake ([162d1cd](https://github.com/Endika/agora/commit/162d1cd9b18e798a4f765ec11ba50a28a3d1531f))
+
 ## [0.5.0](https://github.com/Endika/agora/compare/v0.4.0...v0.5.0) (2026-08-18)
 
 
