@@ -34,8 +34,17 @@ npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` and fill it with a Supabase URL and anon key. For a local
-database, `npx supabase start` prints both.
+Copy `.env.example` to `.env.local` and fill it in.
+
+The local backend is **one Postgres container** — no Supabase stack, because everything verified
+locally is SQL:
+
+```bash
+npm run db:up        # start it (postgres:17-alpine)
+npm run db:migrate   # apply supabase/migrations
+npm run test:sql     # run the assertions in tests/sql
+npm run db:down      # throw it away
+```
 
 ## Verification
 

@@ -15,7 +15,12 @@
     "test": "vitest",
     "test:run": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:up": "docker start agora-db 2>/dev/null || docker run -d --name agora-db -e POSTGRES_PASSWORD=postgres -p 54322:5432 -v \"$PWD/supabase/bootstrap.sql:/docker-entrypoint-initdb.d/00-bootstrap.sql:ro\" postgres:17-alpine",
+    "db:down": "docker rm -f agora-db",
+    "db:reset": "npm run db:down && npm run db:up && npm run db:migrate",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/db.mjs migrate",
+    "test:sql": "node --env-file-if-exists=.env.local scripts/db.mjs test"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -43,6 +48,7 @@
     "globals": "^17.11.0",
     "husky": "^9.1.7",
     "jsdom": "^30.0.1",
+    "pg": "^8.16.3",
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
