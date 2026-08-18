@@ -13,6 +13,7 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
   const { repo, reload } = useBoard()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
   const [composing, setComposing] = useState(false)
+  const [editing, setEditing] = useState<string | null>(null)
 
   const tags = useMemo(
     () => [...new Set(board.proposals.flatMap((proposal) => proposal.tags))].sort(),
@@ -39,6 +40,37 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
     act(() => repo.createProposal({ slug: board.group.slug, ...draft }))
   }
 
+  const save = (proposalId: string, draft: ProposalDraft) => {
+    setEditing(null)
+    act(() => repo.updateProposal({ proposalId, ...draft }))
+  }
+
+  // Finished proposals are kept, not deleted — they just stop competing for attention.
+  const isArchived = (status: string) => ['completed', 'rejected', 'closed'].includes(status)
+  const live = visible.filter((proposal) => !isArchived(proposal.status))
+  const archived = visible.filter((proposal) => isArchived(proposal.status))
+  const beingEdited = board.proposals.find((proposal) => proposal.id === editing)
+
+  const card = (proposal: (typeof board.proposals)[number]) => (
+    <li key={proposal.id} className="min-w-0">
+      <ProposalCard
+        proposal={proposal}
+        participants={board.participants}
+        meId={board.me.id}
+        titleOf={(id) => board.proposals.find((other) => other.id === id)?.title}
+        onEdit={() => setEditing(proposal.id)}
+        onVote={(value: VoteValue) =>
+          act(() => repo.castVote({ proposalId: proposal.id, round: proposal.round, value }))
+        }
+        onReopen={() => act(() => repo.reopenProposal(proposal.id))}
+        onClose={(reason) => act(() => repo.closeProposal({ proposalId: proposal.id, reason }))}
+        onComplete={() =>
+          act(() => repo.completeProposal({ proposalId: proposal.id, actualCents: null }))
+        }
+      />
+    </li>
+  )
+
   return (
     <section className="grid gap-4" aria-label={board.group.name}>
       {composing ? (
@@ -60,33 +92,33 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
 
       <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
 
-      {visible.length === 0 ? (
+      {beingEdited && (
+        <ProposalForm
+          others={board.proposals.filter((other) => other.id !== beingEdited.id)}
+          initial={beingEdited}
+          onSubmit={(draft) => save(beingEdited.id, draft)}
+          onCancel={() => setEditing(null)}
+        />
+      )}
+
+      {live.length === 0 && archived.length === 0 ? (
         <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>
       ) : (
-        <ul className="grid gap-4">
-          {visible.map((proposal) => (
-            <li key={proposal.id} className="min-w-0">
-              <ProposalCard
-                proposal={proposal}
-                participants={board.participants}
-                meId={board.me.id}
-                titleOf={(id) => board.proposals.find((other) => other.id === id)?.title}
-                onVote={(value: VoteValue) =>
-                  act(() =>
-                    repo.castVote({ proposalId: proposal.id, round: proposal.round, value }),
-                  )
-                }
-                onReopen={() => act(() => repo.reopenProposal(proposal.id))}
-                onClose={(reason) =>
-                  act(() => repo.closeProposal({ proposalId: proposal.id, reason }))
-                }
-                onComplete={() =>
-                  act(() => repo.completeProposal({ proposalId: proposal.id, actualCents: null }))
-                }
-              />
-            </li>
-          ))}
-        </ul>
+        <ul className="grid gap-4">{live.map(card)}</ul>
+      )}
+
+      {archived.length > 0 && (
+        <details className="rounded-[--radius] border p-4" style={{ borderColor: 'var(--border)' }}>
+          <summary className="min-h-11 cursor-pointer font-medium">
+            {t('board.archived', { count: archived.length })}
+          </summary>
+          <div className="grid gap-3 pt-4">
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              {t('board.archivedExplain')}
+            </p>
+            <ul className="grid gap-4">{archived.map(card)}</ul>
+          </div>
+        </details>
       )}
     </section>
   )

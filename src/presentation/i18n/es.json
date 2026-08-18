@@ -30,7 +30,9 @@
     "filterAll": "Todo",
     "filterPendingMine": "Me toca votar",
     "filterTag": "Etiqueta {{tag}}",
-    "clearFilters": "Quitar filtros"
+    "clearFilters": "Quitar filtros",
+    "archived": "Archivadas ({{count}})",
+    "archivedExplain": "Hechas, rechazadas y cerradas. Siguen aquí, solo no estorban."
   },
   "status": {
     "open": "En votación",
@@ -83,7 +85,10 @@
     "linkSupersedes": "Sustituye a",
     "submit": "Publicar la propuesta",
     "titleTooShort": "El título necesita al menos 3 caracteres.",
-    "costInvalid": "El coste va en euros, con dos decimales como mucho."
+    "costInvalid": "El coste va en euros, con dos decimales como mucho.",
+    "edit": "Editar",
+    "save": "Guardar los cambios",
+    "editHeading": "Editar la propuesta"
   },
   "identity": {
     "who": "¿Quién eres?",
@@ -117,5 +122,17 @@
   "home": {
     "yourAgoras": "Tus ágoras",
     "youAre": "Eres {{name}}"
+  },
+  "editor": {
+    "heading": "Encabezado",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "list": "Lista",
+    "link": "Enlace",
+    "quote": "Cita",
+    "linkText": "texto del enlace",
+    "listItem": "primer punto",
+    "headingText": "Un encabezado",
+    "toolbar": "Formato del texto"
   }
 }

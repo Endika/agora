@@ -13,6 +13,7 @@ interface Props {
   meId: string
   /** Links point at ids; the card shows titles, which is what a reader recognises. */
   titleOf: (proposalId: string) => string | undefined
+  onEdit: () => void
   onVote: (value: VoteValue) => void
   onReopen: () => void
   onClose: (reason: string) => void
@@ -32,6 +33,8 @@ export function ProposalCard({
   proposal,
   participants,
   meId,
+  titleOf,
+  onEdit,
   onVote,
   onReopen,
   onClose,
@@ -76,7 +79,7 @@ export function ProposalCard({
           style={{ color: 'var(--ink-muted)' }}
         >
           {t(link.kind === 'related' ? 'proposal.linkRelated' : 'proposal.linkSupersedes')}:{' '}
-          {participants.length >= 0 && (proposal.links.length > 0 ? link.toId.slice(0, 8) : '')}
+          {titleOf(link.toId) ?? '—'}
         </p>
       ))}
 
@@ -98,6 +101,7 @@ export function ProposalCard({
       <ProposalActions
         proposal={proposal}
         meId={meId}
+        onEdit={onEdit}
         onReopen={onReopen}
         onClose={onClose}
         onComplete={onComplete}

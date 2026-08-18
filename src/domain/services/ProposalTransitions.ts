@@ -10,6 +10,13 @@ export const canComplete = (p: Proposal): boolean => p.status === 'approved'
 
 export const canVote = (p: Proposal): boolean => p.status === 'open'
 
+/**
+ * Editing is the creator's, and stops once the proposal is finished: with votes already cast, letting
+ * anyone rewrite the text changes what people voted on.
+ */
+export const canEdit = (p: Proposal, actorId: string): boolean =>
+  p.createdBy === actorId && !['completed', 'closed', 'rejected'].includes(p.status)
+
 export function validateCloseReason(reason: string): void {
   if (reason.trim().length < 10) throw new Error('closeReason: at least 10 characters')
 }
