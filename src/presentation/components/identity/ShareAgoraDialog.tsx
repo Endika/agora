@@ -15,12 +15,9 @@ export function ShareAgoraDialog({ slug }: { slug: string }) {
 
   return (
     <section className="grid gap-4" aria-labelledby="share-heading">
-      <div className="grid gap-1">
-        <h2 id="share-heading" className="text-xl font-semibold">
-          {t('share.heading')}
-        </h2>
-        <p style={{ color: 'var(--ink-muted)' }}>{t('share.explain')}</p>
-      </div>
+      <p id="share-heading" style={{ color: 'var(--ink-muted)' }}>
+        {t('share.explain')}
+      </p>
 
       <a
         href={link}

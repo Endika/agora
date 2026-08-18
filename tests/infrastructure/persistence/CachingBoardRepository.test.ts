@@ -8,9 +8,8 @@ async function seed() {
   const { slug } = await remote.createAgora({
     name: 'Cuadrilla',
     creatorName: 'alice',
-    pin: '1234',
   })
-  await remote.joinAgora({ slug, name: 'bob', pin: '1234' })
+  await remote.addParticipant({ slug, name: 'bob' })
   remote.actAs(remote.participantId(slug, 'alice'))
   const proposalId = await remote.createProposal({ slug, title: 'Trip to the coast' })
   const store = new InMemoryBoardStore()
@@ -68,7 +67,7 @@ describe('CachingBoardRepository', () => {
   it('keeps three agoras on the device and forgets the oldest', async () => {
     const { remote, store, repo } = await seed()
     for (const name of ['second', 'third', 'fourth']) {
-      const { slug } = await remote.createAgora({ name, creatorName: 'alice', pin: '1234' })
+      const { slug } = await remote.createAgora({ name, creatorName: 'alice' })
       await repo.getBoard(slug)
     }
     const kept = await store.slugs()

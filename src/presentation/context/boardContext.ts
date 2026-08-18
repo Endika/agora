@@ -1,8 +1,10 @@
 import { createContext, useContext } from 'react'
+import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
 
 export interface BoardState {
   repo: BoardRepository
+  visited: VisitedAgorasStore
   slug: string | null
   board: BoardSnapshot | null
   /** 'joining' means the agora exists but this device is not a participant yet. */

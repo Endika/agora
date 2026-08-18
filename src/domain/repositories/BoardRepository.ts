@@ -58,13 +58,24 @@ export interface Identity {
   participantId: string
 }
 
-/** Wrong PIN is an outcome, not a crash: the server returns it so the attempt can be counted. */
-export type PinResult = { ok: true; identity: Identity } | { ok: false; error: 'wrong_pin' }
+/** What someone opening the link sees before we know who they are: names, and nothing else. */
+export interface AgoraPreview {
+  slug: string
+  name: string
+  participants: Participant[]
+}
+
+/** Deleting is confirmed by typing the agora's name, so a mismatch is an outcome, not a crash. */
+export type DeleteResult = { ok: true } | { ok: false; error: 'name_mismatch' }
 
 export interface BoardRepository {
-  createAgora(input: { name: string; creatorName: string; pin: string }): Promise<Identity>
-  joinAgora(input: { slug: string; name: string; pin: string }): Promise<Identity>
-  recover(input: { slug: string; name: string; pin: string }): Promise<PinResult>
+  createAgora(input: { name: string; creatorName: string }): Promise<Identity>
+  preview(slug: string): Promise<AgoraPreview>
+  /** "That one is me": points an existing name at this device. */
+  claim(input: { slug: string; participantId: string }): Promise<Identity>
+  /** "I am not on the list": adds a name to the agora. */
+  addParticipant(input: { slug: string; name: string }): Promise<Identity>
+  deleteAgora(input: { slug: string; confirmName: string }): Promise<DeleteResult>
 
   getVersion(slug: string): Promise<string>
   getBoard(slug: string): Promise<BoardSnapshot>

@@ -4,10 +4,10 @@
 do $$
 declare v_prop uuid; v_status text; v_board json; v_rejected boolean;
 begin
-  perform agora.create_group('Test agora', 'rpctest1', 'alice', 'tok-alice', '1234');
-  perform agora.join_group('rpctest1', 'bob',   'tok-bob',   '1234');
-  perform agora.join_group('rpctest1', 'carol', 'tok-carol', '1234');
-  perform agora.join_group('rpctest1', 'dave',  'tok-dave',  '1234');
+  perform agora.create_group('Test agora', 'rpctest1', 'alice', 'tok-alice');
+  perform agora.add_participant('rpctest1', 'bob', 'tok-bob');
+  perform agora.add_participant('rpctest1', 'carol', 'tok-carol');
+  perform agora.add_participant('rpctest1', 'dave', 'tok-dave');
 
   v_prop := agora.create_proposal('tok-alice', 'rpctest1',
     json_build_object('title', 'Trip to the coast', 'description', 'A weekend away', 'tags', json_build_array('trip')));
@@ -55,8 +55,8 @@ end $$;
 do $$
 declare v_prop uuid; v_board json; v_text text;
 begin
-  perform agora.create_group('Secret agora', 'rpctest2', 'alice', 'tok-a2', '1234');
-  perform agora.join_group('rpctest2', 'bob', 'tok-b2', '1234');
+  perform agora.create_group('Secret agora', 'rpctest2', 'alice', 'tok-a2');
+  perform agora.add_participant('rpctest2', 'bob', 'tok-b2');
   v_prop := agora.create_proposal('tok-a2', 'rpctest2', json_build_object('title', 'Buy a projector'));
 
   perform agora.cast_vote('tok-b2', v_prop, 1, 'down');
@@ -97,8 +97,8 @@ end $$;
 do $$
 declare v_prop uuid; v_status text; v_rejected boolean;
 begin
-  perform agora.create_group('Tie agora', 'rpctest3', 'alice', 'tok-a3', '1234');
-  perform agora.join_group('rpctest3', 'bob', 'tok-b3', '1234');
+  perform agora.create_group('Tie agora', 'rpctest3', 'alice', 'tok-a3');
+  perform agora.add_participant('rpctest3', 'bob', 'tok-b3');
   v_prop := agora.create_proposal('tok-a3', 'rpctest3', json_build_object('title', 'Paint the hallway'));
 
   perform agora.cast_vote('tok-a3', v_prop, 1, 'up');
@@ -165,8 +165,8 @@ end $$;
 do $$
 declare v_prop uuid;
 begin
-  perform agora.create_group('Deadline agora', 'rpctest4', 'alice', 'tok-a4', '1234');
-  perform agora.join_group('rpctest4', 'bob', 'tok-b4', '1234');
+  perform agora.create_group('Deadline agora', 'rpctest4', 'alice', 'tok-a4');
+  perform agora.add_participant('rpctest4', 'bob', 'tok-b4');
   v_prop := agora.create_proposal('tok-a4', 'rpctest4',
     json_build_object('title', 'Order the cake', 'deadline', (now() - interval '1 minute')::text));
 
@@ -178,51 +178,84 @@ begin
   raise notice 'PASS a passed deadline resolves lazily on the next read';
 end $$;
 
--- Identity: the PIN moves you to another device, and brute force is throttled.
+-- Identity without a PIN: pick your name, or add it, and either way this device becomes yours.
 do $$
-declare v_rejected boolean; v_ok json; i int;
+declare v_preview json; v_alice uuid; v_claim json; v_rejected boolean; v_added json;
 begin
-  perform agora.create_group('Pin agora', 'rpctest5', 'alice', 'tok-a5', '4321');
+  perform agora.create_group('Pin-free agora', 'rpctest5', 'alice', 'tok-a5');
 
-  -- A wrong PIN comes back as a result, not an exception: an exception would roll back the very
-  -- counter the throttle depends on.
-  v_ok := agora.recover_participant('rpctest5', 'alice', '0000', 'tok-new');
-  if (v_ok->>'ok') <> 'false' then raise exception 'FAIL: recovery accepted a wrong pin'; end if;
-  if (select fails from agora.pin_attempts) <> 1 then
-    raise exception 'FAIL: the failed attempt was not recorded';
+  -- What someone opening the link sees before we know who they are: names, and nothing else.
+  v_preview := agora.get_agora_preview('rpctest5');
+  if json_array_length(v_preview->'participants') <> 1 then
+    raise exception 'FAIL: the preview should list the one participant';
+  end if;
+  if v_preview::text like '%proposals%' or v_preview::text like '%votes%' then
+    raise exception 'FAIL: the preview leaks more than names';
   end if;
 
-  -- Ten failures inside the window and the eleventh attempt is throttled, right pin or not.
-  for i in 2..10 loop
-    perform agora.recover_participant('rpctest5', 'alice', '0000', 'tok-new');
-  end loop;
-  v_rejected := false;
-  begin
-    perform agora.recover_participant('rpctest5', 'alice', '4321', 'tok-new');
-  exception when sqlstate 'PT429' then v_rejected := true;
-  end;
-  if not v_rejected then raise exception 'FAIL: the pin throttle did not kick in'; end if;
+  v_alice := ((v_preview->'participants')->0->>'id')::uuid;
 
-  -- Clear the throttle the way a successful attempt would and check the device moves.
-  delete from agora.pin_attempts;
-  v_ok := agora.recover_participant('rpctest5', 'alice', '4321', 'tok-new');
+  -- "That one is me", from a different device.
+  v_claim := agora.claim_participant('rpctest5', v_alice, 'tok-new');
+  if (v_claim->>'ok') <> 'true' then raise exception 'FAIL: the claim was refused'; end if;
   perform agora.get_board('rpctest5', 'tok-new');
+
   v_rejected := false;
   begin
     perform agora.get_board('rpctest5', 'tok-a5');
   exception when others then v_rejected := true;
   end;
-  if not v_rejected then raise exception 'FAIL: the old device token still works after recovery'; end if;
+  if not v_rejected then raise exception 'FAIL: the old device still resolves to that name'; end if;
 
-  raise notice 'PASS pin recovery moves the identity and the throttle stops brute force';
+  -- "I am not on the list."
+  v_added := agora.add_participant('rpctest5', 'bob', 'tok-b5');
+  if (v_added->>'participant_id') is null then raise exception 'FAIL: bob was not added'; end if;
+
+  -- The same device asking twice is not two people.
+  if (agora.add_participant('rpctest5', 'bob again', 'tok-b5')->>'participant_id')
+     <> (v_added->>'participant_id') then
+    raise exception 'FAIL: the same device produced a second participant';
+  end if;
+
+  -- A name already in the agora is a claim, not a join.
+  v_rejected := false;
+  begin
+    perform agora.add_participant('rpctest5', 'alice', 'tok-c5');
+  exception when sqlstate 'PT409' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: a duplicate name was added'; end if;
+
+  raise notice 'PASS identity is a name you pick, and it moves between devices with no pin';
+end $$;
+
+-- Erasure is guarded by typing the agora name, not by a secret.
+do $$
+declare v_result json;
+begin
+  perform agora.create_group('Casa de la playa', 'rpctest9', 'alice', 'tok-a9');
+
+  v_result := agora.delete_group('tok-a9', 'rpctest9', 'casa de la play');
+  if (v_result->>'ok') <> 'false' then raise exception 'FAIL: a near-miss name deleted the agora'; end if;
+  if not exists (select 1 from agora.groups where slug = 'rpctest9') then
+    raise exception 'FAIL: the agora is gone after a refused delete';
+  end if;
+
+  -- Case and surrounding spaces do not matter; the name does.
+  v_result := agora.delete_group('tok-a9', 'rpctest9', '  Casa de la Playa ');
+  if (v_result->>'ok') <> 'true' then raise exception 'FAIL: the right name did not delete it'; end if;
+  if exists (select 1 from agora.groups where slug = 'rpctest9') then
+    raise exception 'FAIL: the agora survived its own deletion';
+  end if;
+
+  raise notice 'PASS deleting an agora needs its name typed out';
 end $$;
 
 -- The delta read and the version probe, which are what keep egress down.
 do $$
 declare v_prop uuid; v_version json; v_since timestamptz; v_delta json;
 begin
-  perform agora.create_group('Delta agora', 'rpctest6', 'alice', 'tok-a6', '1234');
-  perform agora.join_group('rpctest6', 'bob', 'tok-b6', '1234');
+  perform agora.create_group('Delta agora', 'rpctest6', 'alice', 'tok-a6');
+  perform agora.add_participant('rpctest6', 'bob', 'tok-b6');
   v_prop := agora.create_proposal('tok-a6', 'rpctest6', json_build_object('title', 'Rent a van'));
 
   v_version := agora.get_board_version('rpctest6');
@@ -254,7 +287,7 @@ end $$;
 do $$
 declare v_prop uuid; v_rejected boolean; i int;
 begin
-  perform agora.create_group('Caps agora', 'rpctest7', 'alice', 'tok-a7', '1234');
+  perform agora.create_group('Caps agora', 'rpctest7', 'alice', 'tok-a7');
   v_prop := agora.create_proposal('tok-a7', 'rpctest7', json_build_object('title', 'Buy chairs'));
 
   -- Ten images is the cap, and it is the RPC that says so.
@@ -292,7 +325,7 @@ begin
   select string_agg(p.proname, ', ') into v_reachable
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'agora'
-     and p.proname in ('actor', 'pin_hash', 'board_json', 'resolve_proposal', 'throttle')
+     and p.proname in ('actor', 'token_hash', 'board_json', 'resolve_proposal', 'throttle')
      and has_function_privilege('anon', p.oid, 'execute');
   if v_reachable is not null then
     raise exception 'FAIL: anon can execute internal helpers: %', v_reachable;
@@ -309,7 +342,7 @@ end $$;
 do $$
 declare v_first uuid; v_second uuid; v_board json;
 begin
-  perform agora.create_group('Links agora', 'rpctest8', 'alice', 'tok-a8', '1234');
+  perform agora.create_group('Links agora', 'rpctest8', 'alice', 'tok-a8');
   v_first := agora.create_proposal('tok-a8', 'rpctest8', json_build_object('title', 'Rent a big van'));
   v_second := agora.create_proposal('tok-a8', 'rpctest8', json_build_object(
     'title', 'Rent two small vans',

@@ -6,9 +6,8 @@ async function seedAgora(names: string[]) {
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: names[0]!,
-    pin: '1234',
   })
-  for (const name of names.slice(1)) await repo.joinAgora({ slug, name, pin: '1234' })
+  for (const name of names.slice(1)) await repo.addParticipant({ slug, name })
   repo.actAs(repo.participantId(slug, names[0]!))
   const proposalId = await repo.createProposal({ slug, title: 'Trip to the coast' })
   return {
@@ -94,9 +93,8 @@ describe('InMemoryBoardRepository', () => {
     const { slug } = await repo.createAgora({
       name: 'Cuadrilla',
       creatorName: 'alice',
-      pin: '1234',
     })
-    await repo.joinAgora({ slug, name: 'bob', pin: '1234' })
+    await repo.addParticipant({ slug, name: 'bob' })
     repo.actAs(repo.participantId(slug, 'alice'))
     const proposalId = await repo.createProposal({
       slug,
@@ -107,18 +105,29 @@ describe('InMemoryBoardRepository', () => {
     expect((await repo.getBoard(slug)).proposals[0]!.status).toBe('approved')
   })
 
-  it('answers a wrong pin with a result rather than an exception', async () => {
+  it('lets a name be claimed from another device, and refuses one that is taken', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({
+    const { slug, participantId } = await repo.createAgora({
       name: 'Cuadrilla',
       creatorName: 'alice',
-      pin: '1234',
     })
-    await expect(repo.recover({ slug, name: 'alice', pin: '0000' })).resolves.toEqual({
+
+    const preview = await repo.preview(slug)
+    expect(preview.participants).toEqual([{ id: participantId, name: 'alice' }])
+
+    await expect(repo.claim({ slug, participantId })).resolves.toMatchObject({ participantId })
+    await expect(repo.addParticipant({ slug, name: 'Alice' })).rejects.toThrow(/name taken/)
+  })
+
+  it('deletes an agora only when its name is typed out', async () => {
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({ name: 'Casa de la playa', creatorName: 'alice' })
+
+    await expect(repo.deleteAgora({ slug, confirmName: 'casa de la play' })).resolves.toEqual({
       ok: false,
-      error: 'wrong_pin',
+      error: 'name_mismatch',
     })
-    await expect(repo.recover({ slug, name: 'alice', pin: '1234' })).resolves.toMatchObject({
+    await expect(repo.deleteAgora({ slug, confirmName: '  Casa de la Playa ' })).resolves.toEqual({
       ok: true,
     })
   })

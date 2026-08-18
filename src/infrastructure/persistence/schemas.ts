@@ -105,9 +105,15 @@ export const identitySchema = z.object({
   participant_id: z.string(),
 })
 
-export const pinResultSchema = z.discriminatedUnion('ok', [
-  identitySchema,
-  z.object({ ok: z.literal(false), error: z.literal('wrong_pin') }),
+export const previewSchema = z.object({
+  slug: z.string(),
+  name: z.string(),
+  participants: z.array(participant),
+})
+
+export const deleteResultSchema = z.discriminatedUnion('ok', [
+  z.object({ ok: z.literal(true), storage_paths: z.array(z.string()) }),
+  z.object({ ok: z.literal(false), error: z.literal('name_mismatch') }),
 ])
 
 export const versionSchema = z.object({ version: z.string(), proposals: z.number().int() })

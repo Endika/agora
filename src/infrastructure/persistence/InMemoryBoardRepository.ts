@@ -2,14 +2,15 @@ import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import { resolve, tally } from '@/domain/services/QuorumResolver'
 import { sortProposals } from '@/domain/services/ProposalSorter'
 import type {
+  AgoraPreview,
   BoardRepository,
   BoardSnapshot,
   Comment,
+  DeleteResult,
   HistoryEntry,
   Identity,
   NewProposal,
   Participant,
-  PinResult,
   Thread,
 } from '@/domain/repositories/BoardRepository'
 
@@ -43,7 +44,6 @@ interface Agora {
   id: string
   slug: string
   name: string
-  pins: Map<string, string>
   participants: Participant[]
   proposals: Row[]
   votes: Vote[]
@@ -101,7 +101,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     return found.id
   }
 
-  async createAgora(input: { name: string; creatorName: string; pin: string }): Promise<Identity> {
+  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
     this.calls.push('createAgora')
     const slug = this.id('slug')
     const meId = this.id('participant')
@@ -109,7 +109,6 @@ export class InMemoryBoardRepository implements BoardRepository {
       id: this.id('agora'),
       slug,
       name: input.name,
-      pins: new Map([[meId, input.pin]]),
       participants: [{ id: meId, name: input.creatorName }],
       proposals: [],
       votes: [],
@@ -121,27 +120,44 @@ export class InMemoryBoardRepository implements BoardRepository {
     return { slug, participantId: meId }
   }
 
-  async joinAgora(input: { slug: string; name: string; pin: string }): Promise<Identity> {
-    this.calls.push('joinAgora')
+  async preview(slug: string): Promise<AgoraPreview> {
+    this.calls.push('preview')
+    const agora = this.agora(slug)
+    return { slug, name: agora.name, participants: agora.participants }
+  }
+
+  async claim(input: { slug: string; participantId: string }): Promise<Identity> {
+    this.calls.push('claim')
     const agora = this.agora(input.slug)
-    const existing = agora.participants.find(
-      (p) => p.name.toLowerCase() === input.name.toLowerCase(),
-    )
-    if (existing) throw new Error('name taken')
+    if (!agora.participants.some((p) => p.id === input.participantId)) {
+      throw new Error('unknown participant')
+    }
+    this.me = input.participantId
+    return { slug: input.slug, participantId: input.participantId }
+  }
+
+  async addParticipant(input: { slug: string; name: string }): Promise<Identity> {
+    this.calls.push('addParticipant')
+    const agora = this.agora(input.slug)
+    const name = input.name.trim()
+    if (name.length === 0) throw new Error('a participant needs a name')
+    if (agora.participants.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+      throw new Error('name taken')
+    }
     const id = this.id('participant')
-    agora.participants.push({ id, name: input.name })
-    agora.pins.set(id, input.pin)
+    agora.participants.push({ id, name })
     this.me = id
     return { slug: input.slug, participantId: id }
   }
 
-  async recover(input: { slug: string; name: string; pin: string }): Promise<PinResult> {
-    this.calls.push('recover')
+  async deleteAgora(input: { slug: string; confirmName: string }): Promise<DeleteResult> {
+    this.calls.push('deleteAgora')
     const agora = this.agora(input.slug)
-    const found = agora.participants.find((p) => p.name.toLowerCase() === input.name.toLowerCase())
-    if (!found || agora.pins.get(found.id) !== input.pin) return { ok: false, error: 'wrong_pin' }
-    this.me = found.id
-    return { ok: true, identity: { slug: input.slug, participantId: found.id } }
+    if (input.confirmName.trim().toLowerCase() !== agora.name.toLowerCase()) {
+      return { ok: false, error: 'name_mismatch' }
+    }
+    this.agoras.delete(input.slug)
+    return { ok: true }
   }
 
   async getVersion(slug: string): Promise<string> {
