@@ -3,6 +3,7 @@ import type { Proposal } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
 import { Money } from '@/domain/value-objects/Money'
 import { useBoard } from '@/presentation/context/boardContext'
+import { useAction } from '@/presentation/useAction'
 import { LiquidationList } from './LiquidationList'
 import { formatCents } from './money'
 
@@ -21,6 +22,7 @@ interface Props {
 export function ExpensePanel({ proposal, participants, meId, onChanged }: Props) {
   const { t, i18n } = useTranslation()
   const { repo } = useBoard()
+  const { run, error } = useAction()
   const frozen = proposal.status === 'completed'
 
   const optedIn = proposal.shares
@@ -40,6 +42,12 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
       style={{ background: 'var(--surface-sunken)' }}
     >
       <h4 className="font-semibold">{t('expense.heading')}</h4>
+
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       <dl className="grid gap-1 text-sm" style={{ fontFamily: 'var(--font-data)' }}>
         {proposal.estimatedCents !== null && (
@@ -64,7 +72,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
         <button
           type="button"
           onClick={() =>
-            void repo.setExpenseShare({ proposalId: proposal.id, optedIn: !iAmIn }).then(onChanged)
+            run(() => repo.setExpenseShare({ proposalId: proposal.id, optedIn: !iAmIn }), onChanged)
           }
           aria-pressed={iAmIn}
           className="min-h-11 justify-self-start rounded-[--radius] border px-4 font-medium"

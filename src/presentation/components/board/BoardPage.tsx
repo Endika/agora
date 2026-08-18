@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
+import { useAction } from '@/presentation/useAction'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
 import { BoardFilters, type Filter } from './BoardFilters'
@@ -13,6 +14,7 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
   const { t } = useTranslation()
   const { repo, reload, images: pipeline } = useBoard()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
+  const { run, error } = useAction()
   const [composing, setComposing] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
 
@@ -32,9 +34,7 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
     return true
   })
 
-  const act = (run: () => Promise<unknown>) => {
-    void run().then(reload)
-  }
+  const act = (action: () => Promise<unknown>) => run(action, reload)
 
   // Images are picked before the proposal exists, so they are uploaded once it has an id.
   const attachAll = async (proposalId: string, draft: ProposalDraft) => {
@@ -121,6 +121,12 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
           {t('proposal.new')}
         </button>
       }
+
+      {error && (
+        <p role="alert" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
 

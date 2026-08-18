@@ -7,6 +7,7 @@ import type {
   Thread as ThreadModel,
 } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
+import { useAction } from '@/presentation/useAction'
 import { CommentForm } from './CommentForm'
 import { CommentText } from './CommentText'
 
@@ -28,6 +29,7 @@ interface Props {
 export function Thread({ thread, participants, meId, proposalAuthorId, slug, onChanged }: Props) {
   const { t } = useTranslation()
   const { repo } = useBoard()
+  const { run, error } = useAction()
   const [comments, setComments] = useState<Comment[] | null>(null)
   const resolved = thread.resolvedAt !== null
   const mayResolve = meId === thread.authorId || meId === proposalAuthorId
@@ -41,10 +43,13 @@ export function Thread({ thread, participants, meId, proposalAuthorId, slug, onC
   }
 
   const reply = (body: string) => {
-    void repo
-      .addComment({ commentId: uuidv7(), threadId: thread.id, body })
-      .then(onChanged)
-      .then(() => setComments(null))
+    run(
+      () => repo.addComment({ commentId: uuidv7(), threadId: thread.id, body }),
+      () => {
+        setComments(null)
+        onChanged()
+      },
+    )
   }
 
   const body = (
@@ -68,6 +73,12 @@ export function Thread({ thread, participants, meId, proposalAuthorId, slug, onC
         >
           {t('threads.showAll', { count: thread.commentCount })}
         </button>
+      )}
+
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
       )}
 
       <CommentForm label={t('threads.reply')} onSend={reply} />

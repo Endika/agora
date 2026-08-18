@@ -75,6 +75,23 @@ describe('ExpensePanel', () => {
     await waitFor(() => expect(repo.calls).toContain('setExpenseShare'))
   })
 
+  it('says so when a write fails instead of quietly doing nothing', async () => {
+    const repo = new InMemoryBoardRepository()
+    renderWithBoard(
+      <ExpensePanel
+        proposal={withShares(['bob'])}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+      { repo },
+    )
+
+    // The fake knows no proposal p1, so the write rejects — which must reach the screen.
+    await userEvent.click(screen.getByRole('button', { name: 'No entro' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('unknown proposal')
+  })
+
   it('shows the deviation when the real cost lands', () => {
     renderWithBoard(
       <ExpensePanel
