@@ -15,7 +15,7 @@ import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora } from '@/presentation/routing'
 
-export function AgoraApp({ network }: { network: OnlineDetector }) {
+export function AgoraApp({ network, openId }: { network: OnlineDetector; openId: string | null }) {
   const { t } = useTranslation()
   const { slug, board, status, error, reload, visited, queue, sync } = useBoard()
   const [switching, setSwitching] = useState(false)
@@ -88,7 +88,7 @@ export function AgoraApp({ network }: { network: OnlineDetector }) {
               </ul>
             </section>
 
-            <BoardPage board={board} />
+            <BoardPage board={board} openId={openId} />
 
             {/* Folded away: the board matters every time, everything below it does not. */}
             <details

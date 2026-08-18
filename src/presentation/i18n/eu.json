@@ -32,7 +32,13 @@
     "filterTag": "{{tag}} etiketa",
     "clearFilters": "Kendu iragazkiak",
     "archived": "Artxibatuta ({{count}})",
-    "archivedExplain": "Eginda, ezetsita eta itxita. Hemen daude, bidean gabe."
+    "archivedExplain": "Eginda, ezetsita eta itxita. Hemen daude, bidean gabe.",
+    "openProposal": "Ireki proposamena",
+    "back": "Itzuli taulara",
+    "comments_one": "iruzkin {{count}}",
+    "comments_other": "{{count}} iruzkin",
+    "images_one": "irudi {{count}}",
+    "images_other": "{{count}} irudi"
   },
   "status": {
     "open": "Bozketan",
@@ -57,7 +63,7 @@
     "close": "Itxi arrazoi batekin",
     "closeReason": "Arrazoia",
     "closeReasonHint": "Gutxienez 10 karaktere. Taldeak irakurriko du.",
-    "closeConfirm": "Itxi",
+    "closeConfirm": "Itxi proposamena",
     "complete": "Eginda markatu",
     "round": "{{round}}. txanda"
   },
@@ -154,10 +160,12 @@
     "resolve": "Markatu ebatzita",
     "reopen": "Berrireki haria",
     "resolved": "Ebatzita",
-    "showAll": "Ikusi {{count}} iruzkinak",
     "none": "Oraindik ez dago iruzkinik.",
     "empty": "Idatzi zerbait bidali aurretik.",
-    "count": "{{count}} iruzkin"
+    "count_one": "iruzkin {{count}}",
+    "count_other": "{{count}} iruzkin",
+    "showAll_one": "Ikusi iruzkina",
+    "showAll_other": "Ikusi {{count}} iruzkinak"
   },
   "expense": {
     "heading": "Gastua",
@@ -223,5 +231,12 @@
     "failed": "{{count}} ezin izan dira bidali",
     "failedExplain": "Berandu iritsi dira: bozketa itxita zegoen edo txanda aldatu zen.",
     "dismissFailed": "Ulertuta"
+  },
+  "deadline": {
+    "passed": "Epemuga iraganda",
+    "today": "Bozkatzeko azken eguna",
+    "days": "{{count}} egun falta dira",
+    "oneDay": "Egun 1 falta da",
+    "none": "Epemugarik gabe"
   }
 }

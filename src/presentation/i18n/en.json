@@ -32,7 +32,13 @@
     "filterTag": "Tag {{tag}}",
     "clearFilters": "Clear filters",
     "archived": "Archived ({{count}})",
-    "archivedExplain": "Done, rejected and closed. Still here, just out of the way."
+    "archivedExplain": "Done, rejected and closed. Still here, just out of the way.",
+    "openProposal": "Open the proposal",
+    "back": "Back to the board",
+    "comments_one": "{{count}} comment",
+    "comments_other": "{{count}} comments",
+    "images_one": "{{count}} image",
+    "images_other": "{{count}} images"
   },
   "status": {
     "open": "Voting",
@@ -57,7 +63,7 @@
     "close": "Close with a reason",
     "closeReason": "Reason",
     "closeReasonHint": "At least 10 characters. The group gets to read it.",
-    "closeConfirm": "Close",
+    "closeConfirm": "Close the proposal",
     "complete": "Mark as done",
     "round": "Round {{round}}"
   },
@@ -154,10 +160,12 @@
     "resolve": "Mark as resolved",
     "reopen": "Reopen the thread",
     "resolved": "Resolved",
-    "showAll": "See all {{count}} comments",
     "none": "No comments yet.",
     "empty": "Write something before sending it.",
-    "count": "{{count}} comments"
+    "count_one": "{{count}} comment",
+    "count_other": "{{count}} comments",
+    "showAll_one": "See the comment",
+    "showAll_other": "See all {{count}} comments"
   },
   "expense": {
     "heading": "Expense",
@@ -223,5 +231,12 @@
     "failed": "{{count}} could not be sent",
     "failedExplain": "They arrived late: the vote had closed or the round had moved on.",
     "dismissFailed": "Got it"
+  },
+  "deadline": {
+    "passed": "Deadline passed",
+    "today": "Last day to vote",
+    "days": "{{count}} days left",
+    "oneDay": "1 day left",
+    "none": "No deadline"
   }
 }

@@ -32,7 +32,13 @@
     "filterTag": "Etiqueta {{tag}}",
     "clearFilters": "Quitar filtros",
     "archived": "Archivadas ({{count}})",
-    "archivedExplain": "Hechas, rechazadas y cerradas. Siguen aquí, solo no estorban."
+    "archivedExplain": "Hechas, rechazadas y cerradas. Siguen aquí, solo no estorban.",
+    "openProposal": "Ver la propuesta",
+    "back": "Volver al tablón",
+    "comments_one": "{{count}} comentario",
+    "comments_other": "{{count}} comentarios",
+    "images_one": "{{count}} imagen",
+    "images_other": "{{count}} imágenes"
   },
   "status": {
     "open": "En votación",
@@ -57,7 +63,7 @@
     "close": "Cerrar con motivo",
     "closeReason": "Motivo",
     "closeReasonHint": "Mínimo 10 caracteres. Queda escrito para el grupo.",
-    "closeConfirm": "Cerrar",
+    "closeConfirm": "Cerrar la propuesta",
     "complete": "Marcar como hecha",
     "round": "Ronda {{round}}"
   },
@@ -154,10 +160,12 @@
     "resolve": "Marcar como resuelto",
     "reopen": "Reabrir el hilo",
     "resolved": "Resuelto",
-    "showAll": "Ver los {{count}} comentarios",
     "none": "Todavía no hay comentarios.",
     "empty": "Escribe algo antes de enviarlo.",
-    "count": "{{count}} comentarios"
+    "count_one": "{{count}} comentario",
+    "count_other": "{{count}} comentarios",
+    "showAll_one": "Ver el comentario",
+    "showAll_other": "Ver los {{count}} comentarios"
   },
   "expense": {
     "heading": "Gasto",
@@ -223,5 +231,12 @@
     "failed": "{{count}} no se pudieron enviar",
     "failedExplain": "Llegaron tarde: la votación ya se había cerrado o la ronda había cambiado.",
     "dismissFailed": "Entendido"
+  },
+  "deadline": {
+    "passed": "Fecha límite pasada",
+    "today": "Último día para votar",
+    "days": "Quedan {{count}} días",
+    "oneDay": "Queda 1 día",
+    "none": "Sin fecha límite"
   }
 }
