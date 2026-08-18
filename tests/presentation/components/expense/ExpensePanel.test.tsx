@@ -44,6 +44,37 @@ describe('ExpensePanel', () => {
     expect(screen.getByTestId('share-total')).toHaveTextContent('100,00 €')
   })
 
+  it('explains what an amount implies, without anyone having to guess', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={withShares(['alice'])}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    expect(
+      screen.getByText(/se reparte a partes iguales entre quienes entren a pagar/),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/1 entran a pagar/)).toBeInTheDocument()
+    // One share, the whole amount: a proposal with an amount always shows a split.
+    expect(screen.getAllByTestId('share-amount')).toHaveLength(1)
+    expect(screen.getByTestId('share-total')).toHaveTextContent('100,00 €')
+  })
+
+  it('keeps one label for the opt-in and marks it when I am in', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={withShares(['alice'])}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    const button = screen.getByRole('button', { name: /Entro a pagar/ })
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('splits among the opt-ins only, never the whole agora', () => {
     renderWithBoard(
       <ExpensePanel
@@ -69,7 +100,7 @@ describe('ExpensePanel', () => {
       { repo },
     )
 
-    const button = screen.getByRole('button', { name: 'No entro' })
+    const button = screen.getByRole('button', { name: /Entro a pagar/ })
     expect(button).toHaveAttribute('aria-pressed', 'false')
     await userEvent.click(button)
     await waitFor(() => expect(repo.calls).toContain('setExpenseShare'))
@@ -88,7 +119,7 @@ describe('ExpensePanel', () => {
     )
 
     // The fake knows no proposal p1, so the write rejects — which must reach the screen.
-    await userEvent.click(screen.getByRole('button', { name: 'No entro' }))
+    await userEvent.click(screen.getByRole('button', { name: /Entro a pagar/ }))
     expect(await screen.findByRole('alert')).toHaveTextContent('unknown proposal')
   })
 
@@ -113,7 +144,7 @@ describe('ExpensePanel', () => {
         onChanged={() => {}}
       />,
     )
-    expect(screen.queryByRole('button', { name: /entro/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Entro a pagar/ })).not.toBeInTheDocument()
     expect(screen.getByText(/el gasto ya no se toca/)).toBeInTheDocument()
   })
 

@@ -181,7 +181,10 @@
     "pending": "Pending {{amount}}",
     "frozen": "The proposal is done, so the expense is settled.",
     "amountInvalid": "The amount is in euros, two decimals at most.",
-    "actualPrompt": "What did it cost in the end? (optional)"
+    "actualPrompt": "What did it cost in the end? (optional)",
+    "explain": "The amount is an estimate: it splits equally between whoever opts in. Agora charges nothing, it just keeps the count.",
+    "amIn": "I am paying in",
+    "whoIsIn": "{{count}} are paying in"
   },
   "history": {
     "heading": "History",

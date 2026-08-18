@@ -181,7 +181,10 @@
     "pending": "Pendiente {{amount}}",
     "frozen": "La propuesta está hecha, así que el gasto ya no se toca.",
     "amountInvalid": "El importe va en euros, con dos decimales como mucho.",
-    "actualPrompt": "¿Cuánto costó al final? (opcional)"
+    "actualPrompt": "¿Cuánto costó al final? (opcional)",
+    "explain": "El importe es una estimación: se reparte a partes iguales entre quienes entren a pagar. Agora no cobra nada, solo lleva la cuenta.",
+    "amIn": "Entro a pagar",
+    "whoIsIn": "{{count}} entran a pagar"
   },
   "history": {
     "heading": "Historial",
