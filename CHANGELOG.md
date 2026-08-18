@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/Endika/agora/compare/v0.2.0...v0.3.0) (2026-08-18)
+
+
+### Features
+
+* **domain:** add quorum resolution, list order and transitions ([88abaa2](https://github.com/Endika/agora/commit/88abaa29a7ed1e62525feb732a5e7293ca59d759))
+
 ## [0.2.0](https://github.com/Endika/agora/compare/v0.1.2...v0.2.0) (2026-08-18)
 
 
