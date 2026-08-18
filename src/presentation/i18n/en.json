@@ -158,5 +158,29 @@
     "none": "No comments yet.",
     "empty": "Write something before sending it.",
     "count": "{{count}} comments"
+  },
+  "expense": {
+    "heading": "Expense",
+    "estimated": "Estimated cost",
+    "actual": "Real cost",
+    "deviationOver": "{{amount}} over the estimate",
+    "deviationUnder": "{{amount}} under the estimate",
+    "deviationNone": "It came out at the estimate",
+    "iPay": "I am paying in",
+    "iDontPay": "I am out",
+    "sharesHeading": "Split",
+    "nobodyIn": "Nobody is paying in yet.",
+    "perHead": "{{amount}} each between {{count}}",
+    "total": "Total {{amount}}",
+    "liquidations": "Recorded payments",
+    "addPayment": "Record a payment",
+    "amount": "Amount (€)",
+    "paidBy": "{{name}} fronted it",
+    "markPaid": "Mark {{name}}'s share as paid",
+    "paid": "Paid {{amount}}",
+    "pending": "Pending {{amount}}",
+    "frozen": "The proposal is done, so the expense is settled.",
+    "amountInvalid": "The amount is in euros, two decimals at most.",
+    "actualPrompt": "What did it cost in the end? (optional)"
   }
 }
