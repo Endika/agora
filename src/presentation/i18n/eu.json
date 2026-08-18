@@ -44,5 +44,40 @@
     "close": "Itxi",
     "loading": "Kargatzen…",
     "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da."
+  },
+  "board": {
+    "empty": "Oraindik ez dago ezer. Lehen proposamena zurea da.",
+    "countPendingMine": "{{count}} zure botoaren zain",
+    "filterAll": "Dena",
+    "filterPendingMine": "Nire txanda",
+    "filterTag": "{{tag}} etiketa",
+    "clearFilters": "Kendu iragazkiak"
+  },
+  "status": {
+    "open": "Bozketan",
+    "approved": "Onartuta",
+    "rejected": "Ezetsita",
+    "debating": "Eztabaidan",
+    "completed": "Eginda",
+    "closed": "Itxita"
+  },
+  "quorum": {
+    "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
+    "deadline": "{{date}}(e)an ixten da",
+    "noDeadline": "Epemugarik gabe: denek bozkatu arte irekita.",
+    "net": "Emaitza {{net}}"
+  },
+  "missing": {
+    "heading": "Bozkatzeko falta",
+    "none": "Denek bozkatu dute."
+  },
+  "actions": {
+    "reopen": "Bozketa berrireki",
+    "close": "Itxi arrazoi batekin",
+    "closeReason": "Arrazoia",
+    "closeReasonHint": "Gutxienez 10 karaktere. Taldeak irakurriko du.",
+    "closeConfirm": "Itxi",
+    "complete": "Eginda markatu",
+    "round": "{{round}}. txanda"
   }
 }

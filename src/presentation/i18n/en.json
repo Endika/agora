@@ -44,5 +44,40 @@
     "close": "Close",
     "loading": "Loading…",
     "offline": "Offline. What you do now is sent when you are back."
+  },
+  "board": {
+    "empty": "Nothing here yet. The first proposal is yours to make.",
+    "countPendingMine": "{{count}} waiting on your vote",
+    "filterAll": "Everything",
+    "filterPendingMine": "Waiting on me",
+    "filterTag": "Tag {{tag}}",
+    "clearFilters": "Clear filters"
+  },
+  "status": {
+    "open": "Voting",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "debating": "In debate",
+    "completed": "Done",
+    "closed": "Closed"
+  },
+  "quorum": {
+    "progress": "{{cast}} of {{total}} have voted",
+    "deadline": "Closes on {{date}}",
+    "noDeadline": "No deadline: it stays open until everyone votes.",
+    "net": "Net {{net}}"
+  },
+  "missing": {
+    "heading": "Still to vote",
+    "none": "Everyone has voted."
+  },
+  "actions": {
+    "reopen": "Reopen the vote",
+    "close": "Close with a reason",
+    "closeReason": "Reason",
+    "closeReasonHint": "At least 10 characters. The group gets to read it.",
+    "closeConfirm": "Close",
+    "complete": "Mark as done",
+    "round": "Round {{round}}"
   }
 }

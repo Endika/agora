@@ -44,5 +44,40 @@
     "close": "Cerrar",
     "loading": "Cargando…",
     "offline": "Sin conexión. Lo que hagas se enviará al volver."
+  },
+  "board": {
+    "empty": "Aquí no hay nada todavía. La primera propuesta la pones tú.",
+    "countPendingMine": "Te toca votar {{count}}",
+    "filterAll": "Todo",
+    "filterPendingMine": "Me toca votar",
+    "filterTag": "Etiqueta {{tag}}",
+    "clearFilters": "Quitar filtros"
+  },
+  "status": {
+    "open": "En votación",
+    "approved": "Aprobada",
+    "rejected": "Rechazada",
+    "debating": "En debate",
+    "completed": "Hecha",
+    "closed": "Cerrada"
+  },
+  "quorum": {
+    "progress": "{{cast}} de {{total}} han votado",
+    "deadline": "Se cierra el {{date}}",
+    "noDeadline": "Sin fecha límite: sigue abierta hasta que voten todos.",
+    "net": "Neto {{net}}"
+  },
+  "missing": {
+    "heading": "Faltan por votar",
+    "none": "Han votado todas las personas."
+  },
+  "actions": {
+    "reopen": "Reabrir la votación",
+    "close": "Cerrar con motivo",
+    "closeReason": "Motivo",
+    "closeReasonHint": "Mínimo 10 caracteres. Queda escrito para el grupo.",
+    "closeConfirm": "Cerrar",
+    "complete": "Marcar como hecha",
+    "round": "Ronda {{round}}"
   }
 }
