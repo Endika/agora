@@ -501,3 +501,29 @@ begin
 
   raise notice 'PASS an amount opts its proposer in, and only them';
 end $$;
+
+-- Resolving a thread has to reach a client that already had the board.
+do $$
+declare v_prop uuid; v_thread uuid := gen_random_uuid(); v_since timestamptz; v_delta json;
+begin
+  perform agora.create_group('Delta hilos', 'rpctestd', 'alice', 'tok-ad');
+  v_prop := agora.create_proposal('tok-ad', 'rpctestd', json_build_object('title', 'Paint the hallway'));
+  perform agora.add_thread('tok-ad', v_thread, v_prop, gen_random_uuid(), '¿De qué color?');
+
+  -- now() is frozen inside this transaction, so the thread is aged instead: created an hour ago, resolved
+  -- "now". With the old created_at filter it is invisible to a cursor from a minute ago; with updated_at it
+  -- is not, which is exactly the difference the bug was.
+  update agora.comment_threads set created_at = now() - interval '1 hour' where id = v_thread;
+  v_since := now() - interval '1 minute';
+  perform agora.set_thread_resolved('tok-ad', v_thread, true);
+
+  v_delta := agora.get_board_since('rpctestd', 'tok-ad', v_since);
+  if json_array_length(v_delta->'threads') <> 1 then
+    raise exception 'FAIL: a resolved thread is missing from the delta, so the button looks broken';
+  end if;
+  if (v_delta->'threads'->0->>'resolvedAt') is null then
+    raise exception 'FAIL: the delta carried the thread without its resolution';
+  end if;
+
+  raise notice 'PASS resolving a thread reaches a client that already had the board';
+end $$;

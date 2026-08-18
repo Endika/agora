@@ -59,7 +59,7 @@ export function ProposalCard({
       aria-labelledby={`title-${proposal.id}`}
     >
       <header className="grid min-w-0 gap-1">
-        <h3 id={`title-${proposal.id}`} className="text-lg font-semibold">
+        <h3 id={`title-${proposal.id}`} className="break-words text-lg font-semibold">
           {proposal.title}
         </h3>
         <p

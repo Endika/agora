@@ -28,7 +28,7 @@ export function AgoraApp({ network }: { network: OnlineDetector }) {
 
   return (
     <div className="grid min-h-dvh grid-rows-[1fr_auto]">
-      <main className="mx-auto grid w-full max-w-2xl content-start gap-8 px-4 py-8">
+      <main className="mx-auto grid w-full min-w-0 max-w-2xl content-start gap-8 px-4 py-8">
         <header className="grid gap-1">
           <div className="flex items-center gap-3">
             <Logo />
