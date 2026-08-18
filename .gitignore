@@ -1,0 +1,25 @@
+node_modules
+dist
+dist-ssr
+coverage
+
+# Secrets: every local env file, and .env.local explicitly — a bare `.env.*.local`
+# pattern does not match it.
+.env
+.env.local
+.env*.local
+
+# Supabase CLI local stack
+supabase/.temp
+supabase/.branches
+
+*.log
+npm-debug.log*
+
+.vite
+.cache
+
+.DS_Store
+Thumbs.db
+
+*.local
