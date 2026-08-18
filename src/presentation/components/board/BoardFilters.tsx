@@ -26,7 +26,9 @@ export function BoardFilters({
   })
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4">
+    /* min-w-0 is the fix: without it this grid item refuses to shrink below its content and the *page*
+       scrolls sideways instead of the strip. */
+    <div className="-mx-4 min-w-0 overflow-x-auto px-4">
       <div className="flex min-w-max gap-2" role="group" aria-label={t('board.filterAll')}>
         <button
           type="button"

@@ -36,7 +36,7 @@ export function VoteControls({
             disabled={!open}
             aria-pressed={chosen}
             onClick={() => onVote(value)}
-            className="min-h-11 flex-1 rounded-[--radius] border px-4 font-medium disabled:opacity-50"
+            className="min-h-11 min-w-0 rounded-[--radius] border px-2 font-medium disabled:opacity-50"
             style={{
               background: chosen ? `var(--vote-${value})` : 'var(--surface)',
               color: chosen ? '#ffffff' : 'var(--ink)',

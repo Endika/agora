@@ -89,7 +89,7 @@ export function BoardPage({ board }: { board: BoardSnapshot }) {
   )
 
   return (
-    <section className="grid gap-4" aria-label={board.group.name}>
+    <section className="grid min-w-0 gap-4" aria-label={board.group.name}>
       {composing && (
         <Sheet label={t('proposal.new')} onClose={() => setComposing(false)}>
           <ProposalForm
