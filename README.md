@@ -15,6 +15,18 @@ Early development. The board is not deployed yet.
 React 19 · TypeScript · Vite · Tailwind · vitest · Supabase (Postgres + Storage) · PWA,
 offline-first.
 
+## Architecture
+
+Ports and adapters, with the dependency rule enforced by ESLint rather than by good intentions:
+
+- `src/domain` — entities, value objects and services. Framework-free; imports nothing.
+- `src/application` — one use case per action, talking to ports only.
+- `src/infrastructure` — the adapters: Supabase RPCs, IndexedDB cache, image pipeline.
+- `src/presentation` — React. Receives its adapters by injection; never imports one directly.
+- `src/shared/di` — the composition root, the only place that wires the two sides together.
+
+Crossing a boundary fails `npm run lint`.
+
 ## Development
 
 ```bash
