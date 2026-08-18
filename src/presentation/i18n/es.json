@@ -182,5 +182,33 @@
     "frozen": "La propuesta está hecha, así que el gasto ya no se toca.",
     "amountInvalid": "El importe va en euros, con dos decimales como mucho.",
     "actualPrompt": "¿Cuánto costó al final? (opcional)"
+  },
+  "history": {
+    "heading": "Historial",
+    "empty": "Todavía no ha pasado nada.",
+    "agora_created": "creó el ágora",
+    "joined": "se unió",
+    "claimed": "entró desde otro móvil",
+    "proposal_created": "propuso",
+    "proposal_edited": "editó la propuesta",
+    "resolved": "quedó",
+    "reopened": "reabrió la votación",
+    "closed": "cerró la propuesta",
+    "completed": "marcó como hecha",
+    "thread_opened": "abrió un hilo",
+    "liquidation_added": "registró un pago",
+    "someone": "Alguien"
+  },
+  "export": {
+    "heading": "Llévate el tablón",
+    "explain": "El tablón es tuyo: descárgalo en Markdown para leerlo o en JSON para reutilizarlo.",
+    "markdown": "Descargar Markdown",
+    "json": "Descargar JSON"
+  },
+  "install": {
+    "title": "Instala Agora en el móvil y ábrela como una app.",
+    "button": "Instalar",
+    "iosHint": "Para instalarla: Compartir → Añadir a pantalla de inicio.",
+    "dismiss": "No, gracias"
   }
 }

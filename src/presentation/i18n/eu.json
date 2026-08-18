@@ -182,5 +182,33 @@
     "frozen": "Proposamena eginda dago, beraz gastua ez da aldatzen.",
     "amountInvalid": "Zenbatekoa eurotan doa, gehienez bi hamartarrekin.",
     "actualPrompt": "Zenbat kostatu da azkenean? (aukerakoa)"
+  },
+  "history": {
+    "heading": "Historia",
+    "empty": "Oraindik ez da ezer gertatu.",
+    "agora_created": "agora sortu zuen",
+    "joined": "batu zen",
+    "claimed": "beste mugikorretik sartu zen",
+    "proposal_created": "proposatu zuen",
+    "proposal_edited": "proposamena editatu zuen",
+    "resolved": "geratu zen",
+    "reopened": "bozketa berrireki zuen",
+    "closed": "proposamena itxi zuen",
+    "completed": "eginda markatu zuen",
+    "thread_opened": "hari bat ireki zuen",
+    "liquidation_added": "ordainketa erregistratu zuen",
+    "someone": "Norbaitek"
+  },
+  "export": {
+    "heading": "Eraman taula zurekin",
+    "explain": "Taula zurea da: Markdown irakurtzeko, JSON berrerabiltzeko.",
+    "markdown": "Deskargatu Markdown",
+    "json": "Deskargatu JSON"
+  },
+  "install": {
+    "title": "Instalatu Agora mugikorrean eta ireki app bat bezala.",
+    "button": "Instalatu",
+    "iosHint": "Instalatzeko: Partekatu → Gehitu hasierako pantailara.",
+    "dismiss": "Ez, eskerrik asko"
   }
 }

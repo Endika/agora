@@ -6,6 +6,9 @@ import { CreateAgoraForm } from '@/presentation/components/identity/CreateAgoraF
 import { DangerZone } from '@/presentation/components/identity/DangerZone'
 import { IdentityDialog } from '@/presentation/components/identity/IdentityDialog'
 import { ShareAgoraDialog } from '@/presentation/components/identity/ShareAgoraDialog'
+import { ExportButtons } from '@/presentation/components/history/ExportButtons'
+import { HistoryPanel } from '@/presentation/components/history/HistoryPanel'
+import { InstallPrompt } from '@/presentation/components/pwa/InstallPrompt'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora } from '@/presentation/routing'
@@ -33,6 +36,8 @@ export function AgoraApp() {
           </div>
           <p style={{ color: 'var(--ink-muted)' }}>{t('app.tagline')}</p>
         </header>
+
+        <InstallPrompt />
 
         {status === 'loading' && <p role="status">{t('common.loading')}</p>}
 
@@ -81,7 +86,19 @@ export function AgoraApp() {
 
             <BoardPage board={board} />
 
-            {/* Folded away: sharing matters once, the board matters every time. */}
+            {/* Folded away: the board matters every time, everything below it does not. */}
+            <details
+              className="rounded-[--radius] border p-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <summary className="min-h-11 cursor-pointer font-medium">
+                {t('history.heading')}
+              </summary>
+              <div className="pt-4">
+                <HistoryPanel board={board} />
+              </div>
+            </details>
+
             <details
               className="rounded-[--radius] border p-4"
               style={{ borderColor: 'var(--border)' }}
@@ -91,6 +108,7 @@ export function AgoraApp() {
               </summary>
               <div className="grid gap-6 pt-4">
                 <ShareAgoraDialog slug={board.group.slug} />
+                <ExportButtons board={board} />
                 <DangerZone
                   slug={board.group.slug}
                   agoraName={board.group.name}
