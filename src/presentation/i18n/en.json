@@ -3,27 +3,6 @@
     "name": "Agora",
     "tagline": "The board your group decides in."
   },
-  "join": {
-    "heading": "Join the agora",
-    "createHeading": "Create an agora",
-    "agoraName": "Agora name",
-    "yourName": "Your name",
-    "pin": "PIN",
-    "pinHint": "Four to six digits. It is what gets your name back on another phone.",
-    "submit": "Join",
-    "create": "Create the agora",
-    "pinInvalid": "A PIN is four to six digits.",
-    "nameRequired": "Type your name.",
-    "nameTaken": "That name is already in this agora. Recover it with your PIN.",
-    "recoverLink": "That is me, I changed phone"
-  },
-  "recover": {
-    "heading": "Get your name back",
-    "explain": "Type your name and the PIN you set. This phone becomes yours.",
-    "submit": "Recover",
-    "wrongPin": "That PIN is not right. Try again.",
-    "throttled": "Too many attempts. Wait fifteen minutes."
-  },
   "share": {
     "heading": "Share the agora",
     "explain": "Whoever opens this link joins the agora and can vote.",
@@ -105,5 +84,38 @@
     "submit": "Publish the proposal",
     "titleTooShort": "A title needs at least 3 characters.",
     "costInvalid": "The cost is in euros, two decimals at most."
+  },
+  "identity": {
+    "who": "Who are you?",
+    "whoExplain": "Pick your name to join {{agora}}. If you are not there, add yourself.",
+    "notOnTheList": "I am not on the list",
+    "yourName": "Your name",
+    "add": "Add me",
+    "back": "Back to the list",
+    "nameRequired": "Type your name.",
+    "nameTaken": "That name is already in the agora. Pick it from the list.",
+    "notMe": "Not you? Pick who you are again.",
+    "switch": "Switch person"
+  },
+  "create": {
+    "heading": "Create an agora",
+    "agoraName": "Agora name",
+    "agoraNameHint": "Whatever you call it between you: the flat, the crew, the family.",
+    "submit": "Create the agora",
+    "nameRequired": "The agora needs a name."
+  },
+  "danger": {
+    "heading": "Delete the agora",
+    "explain": "Everything goes: proposals, votes, threads and images. There is no undo.",
+    "confirmLabel": "Type the agora name to confirm",
+    "submit": "Delete for good",
+    "mismatch": "The name does not match, so nothing was deleted."
+  },
+  "footer": {
+    "version": "Version {{version}}"
+  },
+  "home": {
+    "yourAgoras": "Your agoras",
+    "youAre": "You are {{name}}"
   }
 }

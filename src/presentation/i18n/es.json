@@ -3,27 +3,6 @@
     "name": "Agora",
     "tagline": "El tablón donde tu grupo decide."
   },
-  "join": {
-    "heading": "Entra en el ágora",
-    "createHeading": "Crea un ágora",
-    "agoraName": "Nombre del ágora",
-    "yourName": "Tu nombre",
-    "pin": "PIN",
-    "pinHint": "De 4 a 6 dígitos. Te sirve para recuperar tu nombre en otro móvil.",
-    "submit": "Entrar",
-    "create": "Crear el ágora",
-    "pinInvalid": "El PIN son de 4 a 6 dígitos.",
-    "nameRequired": "Escribe tu nombre.",
-    "nameTaken": "Ese nombre ya está en este ágora. Recupéralo con tu PIN.",
-    "recoverLink": "Ya soy yo, cambio de móvil"
-  },
-  "recover": {
-    "heading": "Recupera tu nombre",
-    "explain": "Escribe tu nombre y el PIN que pusiste. Este móvil pasa a ser el tuyo.",
-    "submit": "Recuperar",
-    "wrongPin": "Ese PIN no es. Inténtalo otra vez.",
-    "throttled": "Demasiados intentos. Espera un cuarto de hora."
-  },
   "share": {
     "heading": "Comparte el ágora",
     "explain": "Quien abra este enlace entra en el ágora y puede votar.",
@@ -105,5 +84,38 @@
     "submit": "Publicar la propuesta",
     "titleTooShort": "El título necesita al menos 3 caracteres.",
     "costInvalid": "El coste va en euros, con dos decimales como mucho."
+  },
+  "identity": {
+    "who": "¿Quién eres?",
+    "whoExplain": "Elige tu nombre para entrar en {{agora}}. Si no estás, añádete.",
+    "notOnTheList": "No estoy en la lista",
+    "yourName": "Tu nombre",
+    "add": "Añadirme",
+    "back": "Volver a la lista",
+    "nameRequired": "Escribe tu nombre.",
+    "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
+    "notMe": "¿No eres tú? Vuelve a elegir quién eres.",
+    "switch": "Cambiar de persona"
+  },
+  "create": {
+    "heading": "Crea un ágora",
+    "agoraName": "Nombre del ágora",
+    "agoraNameHint": "Cómo lo llamáis entre vosotros: la cuadrilla, el piso, la familia.",
+    "submit": "Crear el ágora",
+    "nameRequired": "El ágora necesita un nombre."
+  },
+  "danger": {
+    "heading": "Borrar el ágora",
+    "explain": "Se borra todo: propuestas, votos, hilos e imágenes. No hay vuelta atrás.",
+    "confirmLabel": "Escribe el nombre del ágora para confirmar",
+    "submit": "Borrar para siempre",
+    "mismatch": "El nombre no coincide, así que no se ha borrado nada."
+  },
+  "footer": {
+    "version": "Versión {{version}}"
+  },
+  "home": {
+    "yourAgoras": "Tus ágoras",
+    "youAre": "Eres {{name}}"
   }
 }

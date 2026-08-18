@@ -10,9 +10,8 @@ async function agoraWith(names: string[]) {
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: names[0]!,
-    pin: '1234',
   })
-  for (const name of names.slice(1)) await repo.joinAgora({ slug, name, pin: '1234' })
+  for (const name of names.slice(1)) await repo.addParticipant({ slug, name })
   const as = (name: string) => repo.actAs(repo.participantId(slug, name))
   as(names[0]!)
   return { repo, slug, as }

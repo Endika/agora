@@ -1,10 +1,11 @@
 import type { VoteValue } from '@/domain/entities/Proposal'
 import type {
+  AgoraPreview,
   BoardRepository,
   BoardSnapshot,
+  DeleteResult,
   Identity,
   NewProposal,
-  PinResult,
 } from '@/domain/repositories/BoardRepository'
 import { sortProposals } from '@/domain/services/ProposalSorter'
 import { KEPT_AGORAS, type BoardStore } from '@/infrastructure/persistence/BoardStore'
@@ -81,17 +82,29 @@ export class CachingBoardRepository implements BoardRepository {
     if (slug) await this.refresh(slug)
   }
 
-  async createAgora(input: { name: string; creatorName: string; pin: string }): Promise<Identity> {
+  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
     return this.remote.createAgora(input)
   }
 
-  async joinAgora(input: { slug: string; name: string; pin: string }): Promise<Identity> {
-    return this.remote.joinAgora(input)
+  async preview(slug: string): Promise<AgoraPreview> {
+    return this.remote.preview(slug)
   }
 
-  async recover(input: { slug: string; name: string; pin: string }): Promise<PinResult> {
-    const result = await this.remote.recover(input)
-    // A recovered identity sees a different board (its own vote, its own permissions).
+  async claim(input: { slug: string; participantId: string }): Promise<Identity> {
+    const identity = await this.remote.claim(input)
+    // A different identity sees a different board: its own vote, its own permissions.
+    await this.store.forget(input.slug)
+    return identity
+  }
+
+  async addParticipant(input: { slug: string; name: string }): Promise<Identity> {
+    const identity = await this.remote.addParticipant(input)
+    await this.store.forget(input.slug)
+    return identity
+  }
+
+  async deleteAgora(input: { slug: string; confirmName: string }): Promise<DeleteResult> {
+    const result = await this.remote.deleteAgora(input)
     if (result.ok) await this.store.forget(input.slug)
     return result
   }

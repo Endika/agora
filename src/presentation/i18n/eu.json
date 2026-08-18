@@ -3,27 +3,6 @@
     "name": "Agora",
     "tagline": "Zure taldeak erabakitzen duen tokia."
   },
-  "join": {
-    "heading": "Sartu agoran",
-    "createHeading": "Sortu agora bat",
-    "agoraName": "Agoraren izena",
-    "yourName": "Zure izena",
-    "pin": "PINa",
-    "pinHint": "4 eta 6 digitu artean. Beste mugikor batean zure izena berreskuratzeko balio du.",
-    "submit": "Sartu",
-    "create": "Sortu agora",
-    "pinInvalid": "PINak 4 eta 6 digitu artean izan behar ditu.",
-    "nameRequired": "Idatzi zure izena.",
-    "nameTaken": "Izen hori agoran dago jada. Berreskuratu zure PINarekin.",
-    "recoverLink": "Ni naiz, mugikorra aldatu dut"
-  },
-  "recover": {
-    "heading": "Berreskuratu zure izena",
-    "explain": "Idatzi zure izena eta jarri zenuen PINa. Mugikor hau zurea izango da.",
-    "submit": "Berreskuratu",
-    "wrongPin": "PIN hori ez da zuzena. Saiatu berriro.",
-    "throttled": "Saiakera gehiegi. Itxaron ordu laurden bat."
-  },
   "share": {
     "heading": "Partekatu agora",
     "explain": "Lotura hau irekitzen duena agoran sartzen da eta bozka dezake.",
@@ -105,5 +84,38 @@
     "submit": "Argitaratu proposamena",
     "titleTooShort": "Izenburuak gutxienez 3 karaktere behar ditu.",
     "costInvalid": "Kostua eurotan doa, gehienez bi hamartarrekin."
+  },
+  "identity": {
+    "who": "Nor zara?",
+    "whoExplain": "Aukeratu zure izena {{agora}}n sartzeko. Ez bazaude, gehitu zeure izena.",
+    "notOnTheList": "Ez nago zerrendan",
+    "yourName": "Zure izena",
+    "add": "Gehitu ni",
+    "back": "Itzuli zerrendara",
+    "nameRequired": "Idatzi zure izena.",
+    "nameTaken": "Izen hori agoran dago. Aukeratu zerrendatik.",
+    "notMe": "Ez zara zu? Aukeratu berriro nor zaren.",
+    "switch": "Aldatu pertsona"
+  },
+  "create": {
+    "heading": "Sortu agora bat",
+    "agoraName": "Agoraren izena",
+    "agoraNameHint": "Zuen artean nola deitzen diozuen: pisua, koadrila, familia.",
+    "submit": "Sortu agora",
+    "nameRequired": "Agorak izen bat behar du."
+  },
+  "danger": {
+    "heading": "Ezabatu agora",
+    "explain": "Dena ezabatzen da: proposamenak, botoak, hariak eta irudiak. Ez dago atzera bueltarik.",
+    "confirmLabel": "Idatzi agoraren izena berresteko",
+    "submit": "Ezabatu betiko",
+    "mismatch": "Izena ez dator bat, beraz ez da ezer ezabatu."
+  },
+  "footer": {
+    "version": "{{version}} bertsioa"
+  },
+  "home": {
+    "yourAgoras": "Zure agorak",
+    "youAre": "{{name}} zara"
   }
 }

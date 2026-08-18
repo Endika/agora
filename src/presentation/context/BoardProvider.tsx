@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import { BoardContext, type BoardState } from './boardContext'
 
 interface Result {
@@ -19,10 +20,12 @@ interface Result {
  */
 export function BoardProvider({
   repo,
+  visited,
   slug,
   children,
 }: {
   repo: BoardRepository
+  visited: VisitedAgorasStore
   slug: string | null
   children: ReactNode
 }) {
@@ -37,7 +40,10 @@ export function BoardProvider({
     void (async () => {
       try {
         const board = await repo.getBoard(slug)
-        if (live) setResult({ slug, phase: 'ready', board, error: null })
+        if (!live) return
+        // The device's own list of agoras: no account, so this is the only place it can live.
+        visited.remember(slug, board.group.name)
+        setResult({ slug, phase: 'ready', board, error: null })
       } catch (cause) {
         if (!live) return
         // An unknown device token is not a failure: it means this phone has not joined yet.
@@ -56,7 +62,7 @@ export function BoardProvider({
     return () => {
       live = false
     }
-  }, [repo, slug, nonce])
+  }, [repo, visited, slug, nonce])
 
   // Revalidating when the tab comes back is the whole sync strategy: one tiny version call through
   // the caching repository, and no subscriptions to pay for.
@@ -72,13 +78,14 @@ export function BoardProvider({
     const fresh = result?.slug === slug ? result : null
     return {
       repo,
+      visited,
       slug,
       board: fresh?.board ?? null,
       status: !slug ? 'idle' : (fresh?.phase ?? 'loading'),
       error: fresh?.error ?? null,
       reload,
     }
-  }, [repo, slug, result, reload])
+  }, [repo, visited, slug, result, reload])
 
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>
 }

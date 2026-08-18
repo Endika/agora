@@ -1,12 +1,19 @@
 import type { VoteValue } from '@/domain/entities/Proposal'
 import type {
+  AgoraPreview,
   BoardRepository,
   BoardSnapshot,
+  DeleteResult,
   Identity,
   NewProposal,
-  PinResult,
 } from '@/domain/repositories/BoardRepository'
-import { identitySchema, parseBoard, pinResultSchema, versionSchema } from './schemas'
+import {
+  deleteResultSchema,
+  identitySchema,
+  parseBoard,
+  previewSchema,
+  versionSchema,
+} from './schemas'
 import type { AgoraClient } from './SupabaseClient'
 
 /** Thin by design: one RPC per port method, validation at the boundary, no logic of its own. */
@@ -23,7 +30,7 @@ export class SupabaseBoardRepository implements BoardRepository {
     return data
   }
 
-  async createAgora(input: { name: string; creatorName: string; pin: string }): Promise<Identity> {
+  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
     // The slug is generated here, so a collision is ours to retry rather than the server's to solve.
     for (let attempt = 1; ; attempt++) {
       try {
@@ -32,7 +39,6 @@ export class SupabaseBoardRepository implements BoardRepository {
           p_slug: this.slugGenerator(),
           p_creator_name: input.creatorName,
           p_device_token: this.deviceToken(),
-          p_pin: input.pin,
         })
         const parsed = identitySchema.parse(data)
         return { slug: parsed.slug, participantId: parsed.participant_id }
@@ -43,30 +49,41 @@ export class SupabaseBoardRepository implements BoardRepository {
     }
   }
 
-  async joinAgora(input: { slug: string; name: string; pin: string }): Promise<Identity> {
+  async preview(slug: string): Promise<AgoraPreview> {
+    return previewSchema.parse(await this.rpc('get_agora_preview', { p_slug: slug }))
+  }
+
+  async claim(input: { slug: string; participantId: string }): Promise<Identity> {
     const parsed = identitySchema.parse(
-      await this.rpc('join_group', {
+      await this.rpc('claim_participant', {
         p_slug: input.slug,
-        p_name: input.name,
+        p_participant: input.participantId,
         p_device_token: this.deviceToken(),
-        p_pin: input.pin,
       }),
     )
     return { slug: parsed.slug, participantId: parsed.participant_id }
   }
 
-  async recover(input: { slug: string; name: string; pin: string }): Promise<PinResult> {
-    const parsed = pinResultSchema.parse(
-      await this.rpc('recover_participant', {
+  async addParticipant(input: { slug: string; name: string }): Promise<Identity> {
+    const parsed = identitySchema.parse(
+      await this.rpc('add_participant', {
         p_slug: input.slug,
         p_name: input.name,
-        p_pin: input.pin,
         p_device_token: this.deviceToken(),
       }),
     )
-    return parsed.ok
-      ? { ok: true, identity: { slug: parsed.slug, participantId: parsed.participant_id } }
-      : { ok: false, error: 'wrong_pin' }
+    return { slug: parsed.slug, participantId: parsed.participant_id }
+  }
+
+  async deleteAgora(input: { slug: string; confirmName: string }): Promise<DeleteResult> {
+    const parsed = deleteResultSchema.parse(
+      await this.rpc('delete_group', {
+        p_device_token: this.deviceToken(),
+        p_slug: input.slug,
+        p_confirm_name: input.confirmName,
+      }),
+    )
+    return parsed.ok ? { ok: true } : { ok: false, error: 'name_mismatch' }
   }
 
   async getVersion(slug: string): Promise<string> {

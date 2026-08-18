@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'node:path'
 
 export default defineConfig({
+  // The footer reads the version Vite injects at build time; tests need it defined too.
+  define: { __APP_VERSION__: JSON.stringify('test') },
   plugins: [react()],
   resolve: { alias: { '@': resolve(import.meta.dirname, 'src') } },
   test: {
