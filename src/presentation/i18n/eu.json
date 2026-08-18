@@ -123,11 +123,14 @@
     "mismatch": "Izena ez dator bat, beraz ez da ezer ezabatu."
   },
   "footer": {
-    "version": "{{version}} bertsioa"
+    "version": "{{version}} bertsioa",
+    "privacy": "Pribatutasuna",
+    "back": "Itzuli Agorara"
   },
   "home": {
     "yourAgoras": "Zure agorak",
-    "youAre": "{{name}} zara"
+    "youAre": "{{name}} zara",
+    "forget": "Kendu {{name}} zure zerrendatik"
   },
   "editor": {
     "heading": "Goiburua",
@@ -183,7 +186,6 @@
     "actualPrompt": "Zenbat kostatu da azkenean? (aukerakoa)",
     "explain": "Zenbatekoa estimazio bat da: ordaintzen sartzen direnen artean banatzen da. Bakoitzak jartzen duena apuntatzen du eta appak falta dena kontatzen du.",
     "amIn": "Ordaintzen sartzen naiz",
-    "whoIsIn": "{{count}} ordaintzen sartzen dira",
     "yourShare": "Zuri {{amount}} dagokizu",
     "youPaid": "{{amount}} jarri duzu",
     "youOwe": "{{amount}} falta zaizu",
@@ -201,7 +203,9 @@
     "over": "{{amount}} gehiago",
     "totalOver": "Guztira baino {{amount}} gehiago sartu da: aurrekontua txikia zen edo norbaitek gehiegi jarri du.",
     "totalLeft": "{{amount}} jartzeko falta da",
-    "allIn": "Dena jarrita dago"
+    "allIn": "Dena jarrita dago",
+    "whoIsIn_one": "{{count}} sartzen da ordaintzen",
+    "whoIsIn_other": "{{count}} sartzen dira ordaintzen"
   },
   "history": {
     "heading": "Historia",
@@ -236,10 +240,12 @@
   },
   "sync": {
     "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da.",
-    "pending": "{{count}} bidali gabe",
-    "failed": "{{count}} ezin izan dira bidali",
     "failedExplain": "Berandu iritsi dira: bozketa itxita zegoen edo txanda aldatu zen.",
-    "dismissFailed": "Ulertuta"
+    "dismissFailed": "Ulertuta",
+    "pending_one": "{{count}} bidali gabe",
+    "pending_other": "{{count}} bidali gabe",
+    "failed_one": "{{count}} ezin izan da bidali",
+    "failed_other": "{{count}} ezin izan dira bidali"
   },
   "deadline": {
     "passed": "Epemuga iraganda",
@@ -252,5 +258,44 @@
     "heading": "Zerbait hondatu da",
     "explain": "Appak erantzuteari utzi dio. Mugikorrak gordeta duena hustu eta berriro kargatzeak konpontzen du ia beti; agorako ezer ez da galtzen, zerbitzarian dago.",
     "reload": "Hustu eta birkargatu"
+  },
+  "privacy": {
+    "title": "Pribatutasuna",
+    "updated": "Azken eguneratzea: 2026ko abuztuaren 18a",
+    "whoHeading": "Nor dago atzean",
+    "who": "Agora Endika Iglesiasek mantentzen du proiektu pertsonal gisa. Zure datuei buruzko zalantzak edo eskaerak: endika2@gmail.com.",
+    "whatHeading": "Zer gordetzen da eta zertarako",
+    "what": "Talde batek proposatu, bozkatu eta gastuak banatu ahal izateko, hau gordetzen da: agoraren izena, pertsonek aukeratzen dituzten izenak, proposamenen eta iruzkinen testua, botoak, igotako irudiak eta apuntatutako zenbatekoak.",
+    "noAccounts": "Ez dago konturik ez pasahitzik, eta ez da helbide elektronikorik ez telefono-zenbakirik eskatzen edo gordetzen. Gailu bakoitzak bere identifikatzaile opakoa gordetzen du, izenetik ez datorrena eta beste agora batean balio ez duena.",
+    "basisHeading": "Oinarri legala",
+    "basis": "Interes legitimoa: taldeak eskatu duen taula eramatea. Pertsonek beren izenak aukeratzen dituzte, eta beste norbait gehitzen duenak etiketa bat baino ez du gordetzen, agoraren barruan identifikatzeko.",
+    "visibleHeading": "Nork ikus dezake",
+    "visible": "Agoraren lotura duen edonor sartzen da bertan: zerrendako izenak, proposamenak, agerian dauden botoak, iruzkinak eta irudiak ikusten ditu. Lotura da giltza, beraz partekatu barruan egon behar duenarekin soilik. Bozketa irekita dagoen bitartean, besteen botoak ez dira zerbitzaritik ateratzen.",
+    "processorsHeading": "Norekin partekatzen da",
+    "supabase": "Supabase — datu-basea eta irudien biltegia. eu-west-2 eskualdea (Londres, Erresuma Batua), Europako Batzordearen egokitasun-erabakiak babestuta.",
+    "github": "GitHub Pages — aplikazioa zerbitzatzen du. Edozein web zerbitzari bezala, deskargatzen duenaren IP helbidea erregistratzen du. GitHub Estatu Batuetan dago, Data Privacy Framework-ek babestutako transferentziarekin.",
+    "noAnalytics": "Ez dago analitikarik, ez jarraipen-cookierik, ez publizitaterik, ez profilatzerik. Horregatik ez dizu app honek cookieei buruz galdetzen: ez dago onartzeko ezer.",
+    "retentionHeading": "Zenbat denbora",
+    "retention": "Agora batean dagoena agorak dirauen bitartean geratzen da: hilabeteak bizi diren taula da eta taldea bueltatzen da. Ez da ezer automatikoki ezabatzen denboragatik.",
+    "rightsHeading": "Zure eskubideak",
+    "rights": "Zure datuak ikusi, zuzendu eta ezabatu ditzakezu. Deskargatu: agorako edonork esporta dezake Markdown edo JSON gisa «Partekatu agora» atalean. Ezabatu: atal berean, «Ezabatu agora»k benetan kentzen ditu lerroak eta irudiak zerbitzaritik, agoraren izena idatziz berresteko. Idatziz eskatu nahi baduzu, bidali mezua endika2@gmail.com helbidera eta hilabete baino gutxiagoan erantzungo zaizu.",
+    "deviceHeading": "Zure mugikorrak gordetzen duena",
+    "device": "Konexiorik gabe funtzionatzeko, appak zure gailuan taularen kopia bat gordetzen du, bidali gabeko botoak eta iruzkinak, zure gailuaren identifikatzailea eta bisitatu dituzun agoren zerrenda. Hori ez da zure mugikorretik ateratzen, eta gunearen datuak hustean edo hustu-eta-birkargatu botoiarekin desagertzen da."
+  },
+  "errors": {
+    "generic": "Ezin izan da gorde. Saiatu berriro.",
+    "offline": "Konexiorik gabe: itzultzean bidaliko da.",
+    "PT403": "Ez duzu hori egiteko baimenik.",
+    "PT404": "Hori jada ez dago.",
+    "PT409": "Zerbait aldatu da bitartean. Birkargatu eta saiatu berriro.",
+    "PT429": "Gehiegitan jarraian. Itxaron pixka bat.",
+    "PT400": "Datu bat falta da edo ez da baliozkoa.",
+    "creatorOnly": "Proposamena sortu duenak bakarrik egin dezake hori.",
+    "voteClosed": "Bozketa itxita dago jada.",
+    "staleRound": "Txanda berri bat ireki da: bozkatu berriro.",
+    "nameTaken": "Izen hori agoran dago jada. Aukeratu zerrendatik.",
+    "imageLimit": "Hamar irudi proposamen bakoitzeko, nahikoa da.",
+    "closeReason": "Arrazoiak gutxienez 10 karaktere behar ditu.",
+    "notCompleted": "Onartutako proposamena bakarrik marka daiteke eginda."
   }
 }

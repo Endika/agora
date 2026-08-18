@@ -8,9 +8,12 @@ import type { VisitedAgora } from '@/domain/ports/VisitedAgorasStore'
 export function AgoraList({
   agoras,
   onOpen,
+  onForget,
 }: {
   agoras: VisitedAgora[]
   onOpen: (slug: string) => void
+  /** Local only: forgetting an agora removes it from this device's list, never from the server. */
+  onForget: (slug: string) => void
 }) {
   const { t } = useTranslation()
   if (agoras.length === 0) return null
@@ -22,11 +25,11 @@ export function AgoraList({
       </h2>
       <ul className="grid gap-2">
         {agoras.map((agora) => (
-          <li key={agora.slug}>
+          <li key={agora.slug} className="flex items-stretch gap-2">
             <button
               type="button"
               onClick={() => onOpen(agora.slug)}
-              className="group flex min-h-14 w-full items-center gap-3 overflow-hidden rounded-[--radius] border pr-3 text-left transition-colors"
+              className="group flex min-h-14 flex-1 items-center gap-3 overflow-hidden rounded-[--radius] border pr-3 text-left transition-colors"
               style={{ background: 'var(--surface-sunken)', borderColor: 'var(--border)' }}
             >
               <span
@@ -43,6 +46,15 @@ export function AgoraList({
               <span aria-hidden="true" className="text-xl" style={{ color: 'var(--brand)' }}>
                 ›
               </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onForget(agora.slug)}
+              aria-label={t('home.forget', { name: agora.name })}
+              className="min-h-14 rounded-[--radius] border px-3"
+              style={{ borderColor: 'var(--border)', color: 'var(--ink-muted)' }}
+            >
+              ×
             </button>
           </li>
         ))}

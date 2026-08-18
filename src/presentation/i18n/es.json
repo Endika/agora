@@ -51,7 +51,7 @@
   "quorum": {
     "progress": "{{cast}} de {{total}} han votado",
     "deadline": "Se cierra el {{date}}",
-    "noDeadline": "Sin fecha límite: sigue abierta hasta que voten todos.",
+    "noDeadline": "Sin fecha límite: sigue abierta hasta que vote todo el mundo.",
     "net": "Neto {{net}}"
   },
   "missing": {
@@ -123,11 +123,14 @@
     "mismatch": "El nombre no coincide, así que no se ha borrado nada."
   },
   "footer": {
-    "version": "Versión {{version}}"
+    "version": "Versión {{version}}",
+    "privacy": "Privacidad",
+    "back": "Volver a Agora"
   },
   "home": {
     "yourAgoras": "Tus ágoras",
-    "youAre": "Eres {{name}}"
+    "youAre": "Eres {{name}}",
+    "forget": "Quitar {{name}} de tu lista"
   },
   "editor": {
     "heading": "Encabezado",
@@ -183,7 +186,6 @@
     "actualPrompt": "¿Cuánto costó al final? (opcional)",
     "explain": "El importe es una estimación: se reparte a partes iguales entre quienes entren a pagar. Cada quien apunta lo que va poniendo y la app lleva la cuenta de lo que falta.",
     "amIn": "Entro a pagar",
-    "whoIsIn": "{{count}} entran a pagar",
     "yourShare": "Te toca {{amount}}",
     "youPaid": "Has puesto {{amount}}",
     "youOwe": "Te falta {{amount}}",
@@ -201,7 +203,9 @@
     "over": "{{amount}} de más",
     "totalOver": "Se ha puesto {{amount}} de más: el presupuesto se quedó corto o alguien puso de sobra.",
     "totalLeft": "Falta poner {{amount}}",
-    "allIn": "Está todo puesto"
+    "allIn": "Está todo puesto",
+    "whoIsIn_one": "{{count}} entra a pagar",
+    "whoIsIn_other": "{{count}} entran a pagar"
   },
   "history": {
     "heading": "Historial",
@@ -236,10 +240,12 @@
   },
   "sync": {
     "offline": "Sin conexión. Lo que hagas se envía al volver.",
-    "pending": "{{count}} sin enviar",
-    "failed": "{{count}} no se pudieron enviar",
     "failedExplain": "Llegaron tarde: la votación ya se había cerrado o la ronda había cambiado.",
-    "dismissFailed": "Entendido"
+    "dismissFailed": "Entendido",
+    "pending_one": "{{count}} sin enviar",
+    "pending_other": "{{count}} sin enviar",
+    "failed_one": "{{count}} no se pudo enviar",
+    "failed_other": "{{count}} no se pudieron enviar"
   },
   "deadline": {
     "passed": "Fecha límite pasada",
@@ -252,5 +258,44 @@
     "heading": "Algo se ha roto",
     "explain": "La app ha dejado de responder. Casi siempre se arregla vaciando lo que este móvil tiene guardado y volviendo a cargar; no se pierde nada del ágora, que vive en el servidor.",
     "reload": "Vaciar y recargar"
+  },
+  "privacy": {
+    "title": "Privacidad",
+    "updated": "Última actualización: 18 de agosto de 2026",
+    "whoHeading": "Quién está detrás",
+    "who": "Agora la mantiene Endika Iglesias como proyecto personal. Para cualquier duda o petición sobre tus datos: endika2@gmail.com.",
+    "whatHeading": "Qué se guarda y para qué",
+    "what": "Para que un grupo pueda proponer, votar y repartir gastos, se guarda: el nombre del ágora, los nombres que las personas eligen para identificarse, el texto de las propuestas y de los comentarios, los votos, las imágenes que se suban y los importes apuntados.",
+    "noAccounts": "No hay cuentas ni contraseñas, y no se pide ni se guarda ningún correo electrónico ni número de teléfono. Cada dispositivo guarda un identificador opaco propio, que no se deriva del nombre y no vale en otra ágora.",
+    "basisHeading": "Base legal",
+    "basis": "Interés legítimo: llevar el tablón que el grupo ha pedido. Los nombres los eligen las personas, y quien añade a alguien más solo guarda una etiqueta para identificarla dentro del ágora, nada más.",
+    "visibleHeading": "Quién puede verlo",
+    "visible": "Cualquiera que tenga el enlace del ágora entra en ella: ve los nombres de la lista, las propuestas, los votos ya revelados, los comentarios y las imágenes. El enlace es la llave, así que compártelo solo con quien deba estar dentro. Mientras una votación está abierta, el sentido de los votos ajenos no sale del servidor.",
+    "processorsHeading": "Con quién se comparte",
+    "supabase": "Supabase — base de datos y almacenamiento de imágenes. Región eu-west-2 (Londres, Reino Unido), cubierta por la decisión de adecuación de la Comisión Europea.",
+    "github": "GitHub Pages — sirve la aplicación. Como cualquier servidor web, registra la dirección IP de quien la descarga. GitHub está en Estados Unidos, con transferencia amparada en el Data Privacy Framework.",
+    "noAnalytics": "No hay analítica, ni cookies de seguimiento, ni publicidad, ni perfilado. Por eso esta app no te pide consentimiento de cookies: no hay ninguna que consentir.",
+    "retentionHeading": "Cuánto tiempo",
+    "retention": "Lo que hay en un ágora se queda mientras el ágora exista: es un tablón que vive meses y el grupo vuelve a consultarlo. No hay borrado automático por tiempo.",
+    "rightsHeading": "Tus derechos",
+    "rights": "Puedes acceder a tus datos, corregirlos y borrarlos. Descargar: cualquiera del ágora puede exportarla en Markdown o JSON desde «Comparte el ágora». Borrar: en la misma sección, «Borrar el ágora» elimina de verdad las filas y las imágenes del servidor, escribiendo el nombre del ágora para confirmar. Si prefieres pedirlo por escrito, escribe a endika2@gmail.com y se responde en menos de un mes.",
+    "deviceHeading": "Lo que guarda tu móvil",
+    "device": "Para funcionar sin conexión, la app guarda en tu dispositivo una copia del tablón, los votos y comentarios pendientes de enviar, tu identificador de dispositivo y la lista de ágoras que has visitado. Eso no sale de tu móvil y se borra al borrar los datos del sitio o con el botón de vaciar y recargar."
+  },
+  "errors": {
+    "generic": "No se ha podido guardar. Inténtalo otra vez.",
+    "offline": "Sin conexión: se enviará cuando vuelvas a tenerla.",
+    "PT403": "No tienes permiso para hacer eso.",
+    "PT404": "Eso ya no está.",
+    "PT409": "Algo ha cambiado mientras lo hacías. Recarga y vuelve a intentarlo.",
+    "PT429": "Demasiadas veces seguidas. Espera un momento.",
+    "PT400": "Falta algún dato o no es válido.",
+    "creatorOnly": "Solo quien creó la propuesta puede hacer eso.",
+    "voteClosed": "La votación ya está cerrada.",
+    "staleRound": "Se ha abierto una ronda nueva: vuelve a votar.",
+    "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
+    "imageLimit": "Diez imágenes por propuesta, que ya son muchas.",
+    "closeReason": "El motivo necesita al menos 10 caracteres.",
+    "notCompleted": "Solo se puede marcar como hecha una propuesta aprobada."
   }
 }

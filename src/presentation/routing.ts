@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 export interface Route {
   slug: string | null
   proposalId: string | null
+  privacy: boolean
 }
 
 const AGORA = /^#\/g\/([a-z0-9]{8})$/
@@ -13,11 +14,12 @@ const PROPOSAL = /^#\/g\/([a-z0-9]{8})\/p\/([0-9a-f-]{36})$/
  * share, and — on a phone — leave with the back button instead of hunting for a close button.
  */
 export function parseRoute(hash: string): Route {
+  if (hash === '#/privacy') return { slug: null, proposalId: null, privacy: true }
   const proposal = PROPOSAL.exec(hash)
-  if (proposal) return { slug: proposal[1]!, proposalId: proposal[2]! }
+  if (proposal) return { slug: proposal[1]!, proposalId: proposal[2]!, privacy: false }
   const agora = AGORA.exec(hash)
-  if (agora) return { slug: agora[1]!, proposalId: null }
-  return { slug: null, proposalId: null }
+  if (agora) return { slug: agora[1]!, proposalId: null, privacy: false }
+  return { slug: null, proposalId: null, privacy: false }
 }
 
 export function openAgora(slug: string): void {

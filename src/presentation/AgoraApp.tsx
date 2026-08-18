@@ -20,7 +20,7 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
   const { slug, board, status, error, reload, visited, queue, sync } = useBoard()
   const [switching, setSwitching] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
-  const knownAgoras = visited.list()
+  const [knownAgoras, setKnownAgoras] = useState(() => visited.list())
 
   const identified = () => {
     setSwitching(false)
@@ -54,7 +54,14 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
 
         {status === 'idle' && (
           <>
-            <AgoraList agoras={knownAgoras} onOpen={openAgora} />
+            <AgoraList
+              agoras={knownAgoras}
+              onOpen={openAgora}
+              onForget={(slug) => {
+                visited.forget(slug)
+                setKnownAgoras(visited.list())
+              }}
+            />
             <CreateAgoraForm onCreated={openAgora} />
           </>
         )}
@@ -129,10 +136,13 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
       </main>
 
       <footer
-        className="mx-auto w-full max-w-2xl px-4 py-6 text-sm"
+        className="mx-auto flex w-full max-w-2xl flex-wrap items-center gap-x-4 px-4 py-6 text-sm"
         style={{ color: 'var(--ink-muted)' }}
       >
-        {t('footer.version', { version: __APP_VERSION__ })}
+        <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
+        <a href="#/privacy" className="min-h-11 content-center underline">
+          {t('footer.privacy')}
+        </a>
       </footer>
     </div>
   )

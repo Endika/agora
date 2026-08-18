@@ -38,8 +38,23 @@ describe('App', () => {
     expect(list).toHaveTextContent('Cuadrilla')
   })
 
-  it('shows the app version in the footer', () => {
+  it('lets an agora be taken off this device without touching the server', async () => {
+    const visited = new InMemoryVisitedAgoras()
+    visited.remember('abcd1234', 'Cuadrilla')
+    visited.remember('efgh5678', 'Piso')
+    const { default: userEvent } = await import('@testing-library/user-event')
+
+    render(<App {...wiring(visited)} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Quitar Piso de tu lista' }))
+
+    expect(screen.getByRole('list')).not.toHaveTextContent('Piso')
+    expect(screen.getByRole('list')).toHaveTextContent('Cuadrilla')
+    expect(visited.list().map((entry) => entry.slug)).toEqual(['abcd1234'])
+  })
+
+  it('shows the app version and links to the privacy notice', () => {
     render(<App {...wiring()} />)
     expect(screen.getByText(/Versión/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '#/privacy')
   })
 })

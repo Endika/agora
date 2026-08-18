@@ -123,11 +123,14 @@
     "mismatch": "The name does not match, so nothing was deleted."
   },
   "footer": {
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "privacy": "Privacy",
+    "back": "Back to Agora"
   },
   "home": {
     "yourAgoras": "Your agoras",
-    "youAre": "You are {{name}}"
+    "youAre": "You are {{name}}",
+    "forget": "Remove {{name}} from your list"
   },
   "editor": {
     "heading": "Heading",
@@ -183,7 +186,6 @@
     "actualPrompt": "What did it cost in the end? (optional)",
     "explain": "The amount is an estimate: it splits equally between whoever opts in. Each person records what they put in and the app keeps track of what is left.",
     "amIn": "I am paying in",
-    "whoIsIn": "{{count}} are paying in",
     "yourShare": "Your share is {{amount}}",
     "youPaid": "You have put in {{amount}}",
     "youOwe": "{{amount}} left",
@@ -201,7 +203,9 @@
     "over": "{{amount}} over",
     "totalOver": "{{amount}} more than the total has gone in: the estimate fell short, or somebody put in extra.",
     "totalLeft": "{{amount}} still to go in",
-    "allIn": "Everything is in"
+    "allIn": "Everything is in",
+    "whoIsIn_one": "{{count}} is paying in",
+    "whoIsIn_other": "{{count}} are paying in"
   },
   "history": {
     "heading": "History",
@@ -236,10 +240,12 @@
   },
   "sync": {
     "offline": "Offline. What you do now is sent when you are back.",
-    "pending": "{{count}} not sent yet",
-    "failed": "{{count}} could not be sent",
     "failedExplain": "They arrived late: the vote had closed or the round had moved on.",
-    "dismissFailed": "Got it"
+    "dismissFailed": "Got it",
+    "pending_one": "{{count}} not sent yet",
+    "pending_other": "{{count}} not sent yet",
+    "failed_one": "{{count}} could not be sent",
+    "failed_other": "{{count}} could not be sent"
   },
   "deadline": {
     "passed": "Deadline passed",
@@ -252,5 +258,44 @@
     "heading": "Something broke",
     "explain": "The app stopped responding. Clearing what this phone has stored and reloading almost always fixes it; nothing of the agora is lost, it lives on the server.",
     "reload": "Clear and reload"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "updated": "Last updated: 18 August 2026",
+    "whoHeading": "Who runs this",
+    "who": "Agora is run by Endika Iglesias as a personal project. Questions or requests about your data: endika2@gmail.com.",
+    "whatHeading": "What is stored and why",
+    "what": "So a group can propose, vote and split costs, we store: the agora's name, the names people choose for themselves, the text of proposals and comments, votes, any images uploaded, and the amounts recorded.",
+    "noAccounts": "There are no accounts and no passwords, and no email address or phone number is asked for or stored. Each device keeps an opaque identifier of its own, not derived from the name and useless in another agora.",
+    "basisHeading": "Lawful basis",
+    "basis": "Legitimate interest: running the board the group asked for. People choose their own names, and whoever adds somebody else stores only a label to identify them inside the agora, nothing more.",
+    "visibleHeading": "Who can see it",
+    "visible": "Anyone holding the agora's link is in it: they see the names on the list, the proposals, the votes already revealed, the comments and the images. The link is the key, so share it only with the people who belong there. While a vote is open, other people's choices never leave the server.",
+    "processorsHeading": "Who it is shared with",
+    "supabase": "Supabase — database and image storage. Region eu-west-2 (London, United Kingdom), covered by the European Commission's adequacy decision.",
+    "github": "GitHub Pages — serves the app. Like any web server it logs the IP address of whoever downloads it. GitHub is in the United States, with the transfer covered by the Data Privacy Framework.",
+    "noAnalytics": "There is no analytics, no tracking cookies, no advertising and no profiling. That is why this app never asks you about cookies: there are none to consent to.",
+    "retentionHeading": "How long",
+    "retention": "What is in an agora stays while the agora exists: it is a board that lives for months and the group comes back to it. Nothing is deleted automatically by age.",
+    "rightsHeading": "Your rights",
+    "rights": "You can access, correct and delete your data. Download: anyone in the agora can export it as Markdown or JSON from “Share the agora”. Delete: in that same section, “Delete the agora” really removes the rows and the images from the server, confirmed by typing the agora's name. If you would rather ask in writing, email endika2@gmail.com and you will get an answer within a month.",
+    "deviceHeading": "What your phone keeps",
+    "device": "To work offline, the app keeps on your device a copy of the board, any votes and comments waiting to be sent, your device identifier, and the list of agoras you have visited. None of that leaves your phone, and it goes when you clear the site's data or use the clear-and-reload button."
+  },
+  "errors": {
+    "generic": "That could not be saved. Try again.",
+    "offline": "Offline: it will be sent when you are back.",
+    "PT403": "You are not allowed to do that.",
+    "PT404": "That is not there any more.",
+    "PT409": "Something changed while you were doing that. Reload and try again.",
+    "PT429": "Too many times in a row. Wait a moment.",
+    "PT400": "Something is missing or not valid.",
+    "creatorOnly": "Only whoever created the proposal can do that.",
+    "voteClosed": "The vote is already closed.",
+    "staleRound": "A new round has opened: vote again.",
+    "nameTaken": "That name is already in the agora. Pick it from the list.",
+    "imageLimit": "Ten images per proposal, which is plenty.",
+    "closeReason": "The reason needs at least 10 characters.",
+    "notCompleted": "Only an approved proposal can be marked as done."
   }
 }
