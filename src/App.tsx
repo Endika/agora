@@ -1,7 +1,14 @@
-export function App() {
+import type { BoardRepository } from '@/domain/repositories/BoardRepository'
+import { AgoraApp } from '@/presentation/AgoraApp'
+import { BoardProvider } from '@/presentation/context/BoardProvider'
+import { useHashSlug } from '@/presentation/routing'
+
+/** The repository is injected: this component knows nothing about Supabase or IndexedDB. */
+export function App({ repo }: { repo: BoardRepository }) {
+  const slug = useHashSlug()
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Agora</h1>
-    </main>
+    <BoardProvider repo={repo} slug={slug}>
+      <AgoraApp />
+    </BoardProvider>
   )
 }

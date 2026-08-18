@@ -5,7 +5,11 @@ import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBo
 
 async function seed() {
   const remote = new InMemoryBoardRepository()
-  const { slug } = await remote.createAgora({ name: 'Cuadrilla', creatorName: 'alice', pin: '1234' })
+  const { slug } = await remote.createAgora({
+    name: 'Cuadrilla',
+    creatorName: 'alice',
+    pin: '1234',
+  })
   await remote.joinAgora({ slug, name: 'bob', pin: '1234' })
   remote.actAs(remote.participantId(slug, 'alice'))
   const proposalId = await remote.createProposal({ slug, title: 'Trip to the coast' })

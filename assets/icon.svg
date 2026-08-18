@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Agora">
+  <!--
+    Three columns of different heights on one stylobate: a colonnade that also reads as a vote
+    tally. The capitals are what stop it from looking like a bar chart.
+  -->
+  <rect width="512" height="512" fill="#151A18"/>
+  <g fill="#FF5A47">
+    <!-- shafts -->
+    <rect x="112" y="270" width="64" height="152"/>
+    <rect x="224" y="176" width="64" height="246"/>
+    <rect x="336" y="224" width="64" height="198"/>
+    <!-- capitals -->
+    <rect x="98" y="248" width="92" height="24" rx="6"/>
+    <rect x="210" y="154" width="92" height="24" rx="6"/>
+    <rect x="322" y="202" width="92" height="24" rx="6"/>
+    <!-- stylobate -->
+    <rect x="72" y="422" width="368" height="26" rx="8"/>
+    <rect x="88" y="448" width="336" height="18" rx="6" opacity="0.55"/>
+  </g>
+</svg>

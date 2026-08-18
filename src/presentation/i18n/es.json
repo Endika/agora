@@ -1,0 +1,48 @@
+{
+  "app": {
+    "name": "Agora",
+    "tagline": "El tablón donde tu grupo decide."
+  },
+  "join": {
+    "heading": "Entra en el ágora",
+    "createHeading": "Crea un ágora",
+    "agoraName": "Nombre del ágora",
+    "yourName": "Tu nombre",
+    "pin": "PIN",
+    "pinHint": "De 4 a 6 dígitos. Te sirve para recuperar tu nombre en otro móvil.",
+    "submit": "Entrar",
+    "create": "Crear el ágora",
+    "pinInvalid": "El PIN son de 4 a 6 dígitos.",
+    "nameRequired": "Escribe tu nombre.",
+    "nameTaken": "Ese nombre ya está en este ágora. Recupéralo con tu PIN.",
+    "recoverLink": "Ya soy yo, cambio de móvil"
+  },
+  "recover": {
+    "heading": "Recupera tu nombre",
+    "explain": "Escribe tu nombre y el PIN que pusiste. Este móvil pasa a ser el tuyo.",
+    "submit": "Recuperar",
+    "wrongPin": "Ese PIN no es. Inténtalo otra vez.",
+    "throttled": "Demasiados intentos. Espera un cuarto de hora."
+  },
+  "share": {
+    "heading": "Comparte el ágora",
+    "explain": "Quien abra este enlace entra en el ágora y puede votar.",
+    "agoraLink": "Enlace del ágora",
+    "qrAlt": "Código QR del enlace del ágora",
+    "copy": "Copiar el enlace",
+    "copied": "Enlace copiado"
+  },
+  "psephoi": {
+    "progress": "Han votado {{cast}} de {{total}}",
+    "secret": "Los votos se ven al alcanzar el quórum",
+    "up": "A favor",
+    "down": "En contra",
+    "abstain": "En blanco"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "loading": "Cargando…",
+    "offline": "Sin conexión. Lo que hagas se enviará al volver."
+  }
+}
