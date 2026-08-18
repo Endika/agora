@@ -24,26 +24,31 @@ const files =
         .filter((f) => f.endsWith('.sql'))
         .sort()
 
-const client = new Client({ connectionString })
-// A `raise notice 'PASS ...'` is how a SQL test reports success; surface it instead of swallowing it.
-client.on('notice', (n) => console.log(`  ${n.message}`))
-
 // The container accepts connections a moment after `docker run` returns, so retry instead of
-// making every caller sleep.
-for (let attempt = 1; ; attempt++) {
-  try {
-    await client.connect()
-    break
-  } catch (error) {
-    if (attempt >= 20) throw error
-    await new Promise((r) => setTimeout(r, 500))
+// making every caller sleep. A Client that failed to connect cannot be reused, hence a new one
+// per attempt.
+async function connect() {
+  for (let attempt = 1; ; attempt++) {
+    const candidate = new Client({ connectionString })
+    // A `raise notice 'PASS ...'` is how a SQL test reports success; surface it, don't swallow it.
+    candidate.on('notice', (n) => console.log(`  ${n.message}`))
+    try {
+      await candidate.connect()
+      return candidate
+    } catch (error) {
+      await candidate.end().catch(() => {})
+      if (attempt >= 20) throw error
+      await new Promise((r) => setTimeout(r, 500))
+    }
   }
 }
+
+const client = await connect()
 try {
   for (const file of files) {
     console.log(`${dir}/${file}`)
     const sql = readFileSync(`${dir}/${file}`, 'utf8')
-    if (mode === 'migrate') {
+    if (mode !== 'test') {
       await client.query(sql)
       continue
     }
