@@ -26,3 +26,32 @@ jobs:
       - run: npm run lint
       - run: npm run type:check
       - run: npm run test:run
+
+  sql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 54322:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AGORA_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The service container cannot mount an init script, so the roles and the extensions schema
+      # that Supabase's own image ships are applied explicitly here.
+      - run: node scripts/db.mjs bootstrap
+      - run: npm run db:migrate
+      - run: npm run test:sql
