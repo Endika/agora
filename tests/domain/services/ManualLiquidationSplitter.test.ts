@@ -6,7 +6,12 @@ const participants = ['javi', 'endika', 'marta', 'iker']
 describe('ManualLiquidationSplitter', () => {
   it('splits per head and auto-marks the payer share as paid', () => {
     const view = ManualLiquidationSplitter.compute(
-      { cents: 40000, paidBy: 'javi', affects: ['javi', 'endika', 'marta', 'iker'], paidShares: [] },
+      {
+        cents: 40000,
+        paidBy: 'javi',
+        affects: ['javi', 'endika', 'marta', 'iker'],
+        paidShares: [],
+      },
       participants,
     )
     expect(view.totalCents).toBe(40000)
