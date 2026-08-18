@@ -133,6 +133,16 @@
     "linkText": "link text",
     "listItem": "first item",
     "headingText": "A heading",
-    "toolbar": "Text formatting"
+    "toolbar": "Text formatting",
+    "image": "Image"
+  },
+  "images": {
+    "add": "Add image",
+    "remove": "Remove image {{n}}",
+    "tooLarge": "That image will not go under 200 KB even compressed. Try another.",
+    "wrongType": "JPG, PNG or WebP only.",
+    "limit": "Ten images per proposal, which is plenty.",
+    "alt": "Image {{n}} of the proposal",
+    "open": "See the full image"
   }
 }

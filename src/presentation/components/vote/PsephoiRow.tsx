@@ -31,15 +31,21 @@ export function PsephoiRow({ participants, cast, revealed }: Props) {
     >
       {Array.from({ length: filled }, (_, i) => {
         const value = revealed?.[i]
+        // Abstain is a ring, not another shade of grey: revealed it would otherwise look exactly like
+        // an unrevealed pebble, and colour must never be the only thing carrying the meaning.
+        const hollow = value === 'abstain'
         return (
           <span
             key={`cast-${i}`}
             data-testid="pebble-cast"
             {...(value ? { 'data-vote': value } : {})}
-            className="size-3.5 rounded-full"
-            style={{
-              background: value ? `var(--vote-${value})` : 'var(--pebble)',
-            }}
+            title={value ? t(`psephoi.${value}`) : undefined}
+            className={hollow ? 'size-3.5 rounded-full border-[3px]' : 'size-3.5 rounded-full'}
+            style={
+              hollow
+                ? { borderColor: 'var(--vote-abstain)' }
+                : { background: value ? `var(--vote-${value})` : 'var(--pebble)' }
+            }
           />
         )
       })}

@@ -133,6 +133,16 @@
     "linkText": "texto del enlace",
     "listItem": "primer punto",
     "headingText": "Un encabezado",
-    "toolbar": "Formato del texto"
+    "toolbar": "Formato del texto",
+    "image": "Imagen"
+  },
+  "images": {
+    "add": "Añadir imagen",
+    "remove": "Quitar la imagen {{n}}",
+    "tooLarge": "Esa imagen no baja de 200 KB ni comprimiéndola. Prueba con otra.",
+    "wrongType": "Solo JPG, PNG o WebP.",
+    "limit": "Diez imágenes por propuesta, que ya son muchas.",
+    "alt": "Imagen {{n}} de la propuesta",
+    "open": "Ver la imagen completa"
   }
 }

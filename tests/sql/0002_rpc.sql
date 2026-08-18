@@ -211,10 +211,26 @@ begin
   v_added := agora.add_participant('rpctest5', 'bob', 'tok-b5');
   if (v_added->>'participant_id') is null then raise exception 'FAIL: bob was not added'; end if;
 
-  -- The same device asking twice is not two people.
-  if (agora.add_participant('rpctest5', 'bob again', 'tok-b5')->>'participant_id')
+  -- Asking again for the same name is the same person, however many times it is replayed.
+  if (agora.add_participant('rpctest5', 'bob', 'tok-b5')->>'participant_id')
      <> (v_added->>'participant_id') then
-    raise exception 'FAIL: the same device produced a second participant';
+    raise exception 'FAIL: replaying an add produced a second participant';
+  end if;
+
+  -- But a *different* name from the same device is a new person, and the device follows them: this is
+  -- "switch person → I am someone new", which the device short-circuit used to swallow.
+  if (agora.add_participant('rpctest5', 'iker', 'tok-b5')->>'participant_id')
+     = (v_added->>'participant_id') then
+    raise exception 'FAIL: adding a new person from a used device returned the old one';
+  end if;
+  if (select count(*) from agora.participants p
+       join agora.groups g on g.id = p.group_id where g.slug = 'rpctest5') <> 3 then
+    raise exception 'FAIL: expected alice, bob and iker';
+  end if;
+  if (select name from agora.participants
+       where device_token_hash = agora.token_hash('tok-b5',
+             (select id from agora.groups where slug = 'rpctest5')::text)) <> 'iker' then
+    raise exception 'FAIL: the device did not move to the person just added';
   end if;
 
   -- A name already in the agora is a claim, not a join.

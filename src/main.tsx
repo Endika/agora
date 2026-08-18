@@ -16,7 +16,7 @@ const wiring = buildApp()
 createRoot(root).render(
   <StrictMode>
     {'repo' in wiring ? (
-      <App repo={wiring.repo} visited={wiring.visited} />
+      <App repo={wiring.repo} visited={wiring.visited} images={wiring.images} />
     ) : (
       <SetupNotice detail={wiring.error} />
     )}

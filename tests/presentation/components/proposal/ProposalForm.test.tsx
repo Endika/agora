@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProposalForm } from '@/presentation/components/proposal/ProposalForm'
 import { makeProposal } from '../../../domain/support/makeProposal'
+import { renderWithBoard } from '../../support/renderWithBoard'
 
 describe('ProposalForm', () => {
   it('publishes a proposal with its tags and estimated cost in cents', async () => {
     const onSubmit = vi.fn()
-    render(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Título'), 'Trip to the coast')
     await userEvent.type(screen.getByLabelText('Descripción'), '## Plan\n\n- a van')
@@ -26,29 +27,31 @@ describe('ProposalForm', () => {
 
   it('refuses a title under three characters without calling back', async () => {
     const onSubmit = vi.fn()
-    render(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Título'), 'ab')
     await userEvent.click(screen.getByRole('button', { name: 'Publicar la propuesta' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('al menos 3 caracteres')
+    expect(await screen.findByText('El título necesita al menos 3 caracteres.')).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it('refuses a cost with three decimals', async () => {
     const onSubmit = vi.fn()
-    render(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Título'), 'Buy chairs')
     await userEvent.type(screen.getByLabelText('Coste estimado (€)'), '10,005')
     await userEvent.click(screen.getByRole('button', { name: 'Publicar la propuesta' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('dos decimales')
+    expect(
+      await screen.findByText('El coste va en euros, con dos decimales como mucho.'),
+    ).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it('previews the description as sanitised html, script and all', async () => {
-    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Descripción'), '## Plan <script>alert(1)</script>')
     await userEvent.click(screen.getByRole('tab', { name: 'Vista previa' }))
@@ -60,7 +63,7 @@ describe('ProposalForm', () => {
 
   it('adds a tag with Enter without submitting the form', async () => {
     const onSubmit = vi.fn()
-    render(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={onSubmit} onCancel={() => {}} />)
 
     await userEvent.type(screen.getByLabelText('Título'), 'Buy chairs')
     await userEvent.type(screen.getByLabelText('Etiquetas'), 'casa{Enter}')
@@ -70,11 +73,13 @@ describe('ProposalForm', () => {
   })
 
   it('offers a relation only when there is another proposal to point at', async () => {
-    const { unmount } = render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    const { unmount } = renderWithBoard(
+      <ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />,
+    )
     expect(screen.queryByLabelText('Relación con otra propuesta')).not.toBeInTheDocument()
     unmount()
 
-    render(
+    renderWithBoard(
       <ProposalForm
         others={[makeProposal({ id: 'p1', title: 'Rent a big van' })]}
         onSubmit={() => {}}
@@ -96,7 +101,9 @@ describe('ProposalForm, editing', () => {
       estimatedCents: 12050,
     })
 
-    render(<ProposalForm others={[]} initial={existing} onSubmit={onSubmit} onCancel={() => {}} />)
+    renderWithBoard(
+      <ProposalForm others={[]} initial={existing} onSubmit={onSubmit} onCancel={() => {}} />,
+    )
 
     expect(screen.getByLabelText('Título')).toHaveValue('Rent a van')
     expect(screen.getByLabelText('Descripción')).toHaveValue('The big one')
@@ -113,7 +120,7 @@ describe('ProposalForm, editing', () => {
 
 describe('MarkdownToolbar', () => {
   it('writes the syntax so nobody has to know it', async () => {
-    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
     const description = screen.getByLabelText('Descripción')
 
     await userEvent.click(screen.getByRole('button', { name: 'Encabezado' }))
@@ -121,7 +128,7 @@ describe('MarkdownToolbar', () => {
   })
 
   it('wraps whatever is selected instead of inserting a placeholder', async () => {
-    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
     const description = screen.getByLabelText('Descripción') as HTMLTextAreaElement
 
     await userEvent.type(description, 'una furgoneta grande')
@@ -132,7 +139,7 @@ describe('MarkdownToolbar', () => {
   })
 
   it('offers a link button, so [](url) is never something to memorise', async () => {
-    render(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
+    renderWithBoard(<ProposalForm others={[]} onSubmit={() => {}} onCancel={() => {}} />)
     await userEvent.click(screen.getByRole('button', { name: 'Enlace' }))
     expect(screen.getByLabelText('Descripción')).toHaveValue('[texto del enlace](https://)')
   })

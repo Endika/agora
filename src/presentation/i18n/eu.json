@@ -133,6 +133,16 @@
     "linkText": "loturaren testua",
     "listItem": "lehen puntua",
     "headingText": "Goiburu bat",
-    "toolbar": "Testuaren formatua"
+    "toolbar": "Testuaren formatua",
+    "image": "Irudia"
+  },
+  "images": {
+    "add": "Gehitu irudia",
+    "remove": "Kendu {{n}} irudia",
+    "tooLarge": "Irudi hori ez da 200 KB-tik jaisten konprimituta ere. Saiatu beste batekin.",
+    "wrongType": "JPG, PNG edo WebP soilik.",
+    "limit": "Hamar irudi proposamen bakoitzeko, nahikoa da.",
+    "alt": "Proposamenaren {{n}}. irudia",
+    "open": "Ikusi irudi osoa"
   }
 }

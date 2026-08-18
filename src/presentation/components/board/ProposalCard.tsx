@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
+import { ImageGallery } from '@/presentation/components/proposal/ImageGallery'
 import { MarkdownView } from '@/presentation/components/proposal/MarkdownView'
 import { MissingVoters } from './MissingVoters'
 import { ProposalActions } from './ProposalActions'
@@ -71,6 +72,8 @@ export function ProposalCard({
       </header>
 
       {proposal.description.trim().length > 0 && <MarkdownView markdown={proposal.description} />}
+
+      <ImageGallery images={proposal.images} />
 
       {proposal.links.map((link) => (
         <p
