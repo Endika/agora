@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/Endika/agora/compare/v0.14.0...v0.15.0) (2026-08-18)
+
+
+### Features
+
+* **board:** add history, export and an install prompt ([a4c260e](https://github.com/Endika/agora/commit/a4c260e1b52811906dd34535df9c3d0dee9380c4))
+
 ## [0.14.0](https://github.com/Endika/agora/compare/v0.13.0...v0.14.0) (2026-08-18)
 
 
