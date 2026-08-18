@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/Endika/agora/compare/v0.13.0...v0.14.0) (2026-08-18)
+
+
+### Features
+
+* **expense:** add opt-in split and manual liquidation ([c367dc6](https://github.com/Endika/agora/commit/c367dc67dfae134ed9906a8f9c0e28f38069aa19))
+
+
+### Bug Fixes
+
+* **ui:** surface failed writes instead of swallowing them ([2b5af6f](https://github.com/Endika/agora/commit/2b5af6f93a25c1077942890eace922b5d9798890))
+
 ## [0.13.0](https://github.com/Endika/agora/compare/v0.12.1...v0.13.0) (2026-08-18)
 
 
