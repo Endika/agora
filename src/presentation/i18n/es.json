@@ -83,5 +83,27 @@
   "setup": {
     "heading": "Agora no está configurada",
     "explain": "Falta la conexión con el servidor, así que no se puede abrir ningún ágora. Si estás en local, copia .env.example a .env.local y rellena las dos variables."
+  },
+  "proposal": {
+    "new": "Nueva propuesta",
+    "title": "Título",
+    "titleHint": "Entre 3 y 120 caracteres.",
+    "description": "Descripción",
+    "descriptionHint": "Admite Markdown: títulos, listas, enlaces e imágenes.",
+    "write": "Escribir",
+    "preview": "Vista previa",
+    "tags": "Etiquetas",
+    "tagsHint": "Intro para añadir. Hasta 12.",
+    "tagRemove": "Quitar la etiqueta {{tag}}",
+    "deadline": "Fecha límite de votación",
+    "deadlineHint": "Opcional, pero sin ella la propuesta se queda abierta hasta que vote todo el mundo.",
+    "cost": "Coste estimado (€)",
+    "links": "Relación con otra propuesta",
+    "linkNone": "Ninguna",
+    "linkRelated": "Relacionada con",
+    "linkSupersedes": "Sustituye a",
+    "submit": "Publicar la propuesta",
+    "titleTooShort": "El título necesita al menos 3 caracteres.",
+    "costInvalid": "El coste va en euros, con dos decimales como mucho."
   }
 }

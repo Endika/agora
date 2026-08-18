@@ -27,6 +27,7 @@ interface Row {
   title: string
   description: string
   tags: string[]
+  links: Proposal['links']
   status: Proposal['status']
   round: number
   deadline: string | null
@@ -170,6 +171,7 @@ export class InMemoryBoardRepository implements BoardRepository {
       title: input.title,
       description: input.description ?? '',
       tags: input.tags ?? [],
+      links: input.links ?? [],
       status: 'open',
       round: 1,
       deadline: input.deadline ?? null,
@@ -192,6 +194,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     if (input.deadline !== undefined) row.deadline = input.deadline
     if (input.estimatedCents !== undefined) row.estimatedCents = input.estimatedCents
     if (input.tags !== undefined) row.tags = input.tags
+    if (input.links !== undefined) row.links = input.links
     row.updatedAt = this.now()
   }
 
@@ -465,7 +468,6 @@ export class InMemoryBoardRepository implements BoardRepository {
             optedIn,
           })),
           liquidations: this.liquidations[row.id] ?? [],
-          links: [],
         }
       })
 

@@ -83,5 +83,27 @@
   "setup": {
     "heading": "Agora is not configured",
     "explain": "The server connection is missing, so no agora can be opened. Running locally, copy .env.example to .env.local and fill in the two variables."
+  },
+  "proposal": {
+    "new": "New proposal",
+    "title": "Title",
+    "titleHint": "Between 3 and 120 characters.",
+    "description": "Description",
+    "descriptionHint": "Markdown works: headings, lists, links and images.",
+    "write": "Write",
+    "preview": "Preview",
+    "tags": "Tags",
+    "tagsHint": "Enter to add. Up to 12.",
+    "tagRemove": "Remove the tag {{tag}}",
+    "deadline": "Voting deadline",
+    "deadlineHint": "Optional, but without it the proposal stays open until everyone votes.",
+    "cost": "Estimated cost (€)",
+    "links": "Relation to another proposal",
+    "linkNone": "None",
+    "linkRelated": "Related to",
+    "linkSupersedes": "Supersedes",
+    "submit": "Publish the proposal",
+    "titleTooShort": "A title needs at least 3 characters.",
+    "costInvalid": "The cost is in euros, two decimals at most."
   }
 }

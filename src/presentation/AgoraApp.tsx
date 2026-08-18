@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { JoinForm } from '@/presentation/components/identity/JoinForm'
 import { RecoverPinDialog } from '@/presentation/components/identity/RecoverPinDialog'
 import { BoardPage } from '@/presentation/components/board/BoardPage'
+import { Logo } from '@/presentation/components/Logo'
 import { ShareAgoraDialog } from '@/presentation/components/identity/ShareAgoraDialog'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora } from '@/presentation/routing'
@@ -15,9 +16,12 @@ export function AgoraApp() {
   return (
     <main className="mx-auto grid max-w-2xl gap-8 px-4 py-8">
       <header className="grid gap-1">
-        <h1 className="text-4xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
-          {t('app.name')}
-        </h1>
+        <div className="flex items-center gap-3">
+          <Logo />
+          <h1 className="text-4xl font-semibold" style={{ fontFamily: 'var(--font-display)' }}>
+            {t('app.name')}
+          </h1>
+        </div>
         <p style={{ color: 'var(--ink-muted)' }}>{t('app.tagline')}</p>
       </header>
 

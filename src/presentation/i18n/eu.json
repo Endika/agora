@@ -83,5 +83,27 @@
   "setup": {
     "heading": "Agora ez dago konfiguratuta",
     "explain": "Zerbitzariarekiko konexioa falta da, beraz ezin da agora bat ireki. Lokalean bazabiltza, kopiatu .env.example .env.local izenera eta bete bi aldagaiak."
+  },
+  "proposal": {
+    "new": "Proposamen berria",
+    "title": "Izenburua",
+    "titleHint": "3 eta 120 karaktere artean.",
+    "description": "Deskribapena",
+    "descriptionHint": "Markdown onartzen du: izenburuak, zerrendak, loturak eta irudiak.",
+    "write": "Idatzi",
+    "preview": "Aurrebista",
+    "tags": "Etiketak",
+    "tagsHint": "Sartu gehitzeko. 12 arte.",
+    "tagRemove": "Kendu {{tag}} etiketa",
+    "deadline": "Bozketaren epemuga",
+    "deadlineHint": "Aukerakoa, baina gabe proposamena irekita geratzen da denek bozkatu arte.",
+    "cost": "Kostu estimatua (€)",
+    "links": "Beste proposamen batekiko lotura",
+    "linkNone": "Bat ere ez",
+    "linkRelated": "Honekin lotuta",
+    "linkSupersedes": "Honen ordez",
+    "submit": "Argitaratu proposamena",
+    "titleTooShort": "Izenburuak gutxienez 3 karaktere behar ditu.",
+    "costInvalid": "Kostua eurotan doa, gehienez bi hamartarrekin."
   }
 }
