@@ -77,5 +77,18 @@ begin
 end;
 $$;
 
+-- Rows that already share a device token — the bug above, as it happened in production — have to be
+-- separated before the index can exist. The newest keeps the device; the others get a random hash and
+-- their owner can claim the name back from any device, which is what claim_participant is for.
+with ranked as (
+  select id,
+         row_number() over (partition by group_id, device_token_hash order by created_at desc) as rn
+    from agora.participants
+)
+update agora.participants p
+   set device_token_hash = agora.token_hash(gen_random_uuid()::text, p.group_id::text)
+  from ranked r
+ where r.id = p.id and r.rn > 1;
+
 create unique index if not exists participants_device_idx
   on agora.participants (group_id, device_token_hash);
