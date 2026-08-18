@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/Endika/agora/compare/v0.16.3...v0.17.0) (2026-08-18)
+
+
+### Features
+
+* **board:** compact list rows with the proposal on its own route ([81a443f](https://github.com/Endika/agora/commit/81a443f42ee9d2658968c4b8e97393aa8bf896f0))
+
 ## [0.16.3](https://github.com/Endika/agora/compare/v0.16.2...v0.16.3) (2026-08-18)
 
 
