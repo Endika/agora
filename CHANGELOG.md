@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/Endika/agora/compare/v0.3.0...v0.4.0) (2026-08-18)
+
+
+### Features
+
+* **db:** add agora schema with vote uniqueness constraint ([8be9f35](https://github.com/Endika/agora/commit/8be9f35b458070a487c1ea5f203572bcbdde0d98))
+
+
+### Bug Fixes
+
+* **db:** apply bootstrap outside the test transaction ([5d43a6e](https://github.com/Endika/agora/commit/5d43a6e1144b9999c61217a594cb23b8ca927c1f))
+
 ## [0.3.0](https://github.com/Endika/agora/compare/v0.2.0...v0.3.0) (2026-08-18)
 
 
