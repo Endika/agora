@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.2](https://github.com/Endika/agora/compare/v0.16.1...v0.16.2) (2026-08-18)
+
+
+### Bug Fixes
+
+* **expense:** make an amount mean something the moment it is typed ([3fa2d4a](https://github.com/Endika/agora/commit/3fa2d4a6119eeec7684e2d6aaad96cf307fa10e4))
+
 ## [0.16.1](https://github.com/Endika/agora/compare/v0.16.0...v0.16.1) (2026-08-18)
 
 
