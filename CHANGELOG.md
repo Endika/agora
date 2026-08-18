@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.1](https://github.com/Endika/agora/compare/v0.18.0...v0.18.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **db:** let an agora with content actually be deleted ([26c9616](https://github.com/Endika/agora/commit/26c9616d5b7a4fb5776ff994936e04c8f835209c))
+
 ## [0.18.0](https://github.com/Endika/agora/compare/v0.17.0...v0.18.0) (2026-08-18)
 
 
