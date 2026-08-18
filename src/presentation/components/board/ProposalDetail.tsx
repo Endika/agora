@@ -52,9 +52,17 @@ export function ProposalDetail({
         </p>
       </header>
 
-      {proposal.description.trim().length > 0 && <MarkdownView markdown={proposal.description} />}
+      {/* What you can do to the proposal sits with the proposal, not after the conversation. */}
+      <ProposalActions
+        proposal={proposal}
+        meId={board.me.id}
+        onEdit={onEdit}
+        onReopen={onReopen}
+        onClose={onClose}
+        onComplete={onComplete}
+      />
 
-      <ImageGallery images={proposal.images} />
+      {proposal.description.trim().length > 0 && <MarkdownView markdown={proposal.description} />}
 
       {proposal.links.map((link) => (
         <p
@@ -72,6 +80,8 @@ export function ProposalDetail({
           {proposal.closedReason}
         </p>
       )}
+
+      <ImageGallery images={proposal.images} />
 
       <div className="grid gap-2">
         <PsephoiRow
@@ -102,15 +112,6 @@ export function ProposalDetail({
         meId={board.me.id}
         slug={board.group.slug}
         onChanged={onChanged}
-      />
-
-      <ProposalActions
-        proposal={proposal}
-        meId={board.me.id}
-        onEdit={onEdit}
-        onReopen={onReopen}
-        onClose={onClose}
-        onComplete={onComplete}
       />
     </article>
   )
