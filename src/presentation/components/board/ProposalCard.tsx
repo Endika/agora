@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
+import type { Thread } from '@/domain/repositories/BoardRepository'
 import { ImageGallery } from '@/presentation/components/proposal/ImageGallery'
+import { ThreadList } from '@/presentation/components/threads/ThreadList'
 import { MarkdownView } from '@/presentation/components/proposal/MarkdownView'
 import { MissingVoters } from './MissingVoters'
 import { ProposalActions } from './ProposalActions'
@@ -14,6 +16,9 @@ interface Props {
   meId: string
   /** Links point at ids; the card shows titles, which is what a reader recognises. */
   titleOf: (proposalId: string) => string | undefined
+  threads: Thread[]
+  slug: string
+  onChanged: () => void
   onEdit: () => void
   onVote: (value: VoteValue) => void
   onReopen: () => void
@@ -35,6 +40,9 @@ export function ProposalCard({
   participants,
   meId,
   titleOf,
+  threads,
+  slug,
+  onChanged,
   onEdit,
   onVote,
   onReopen,
@@ -100,6 +108,16 @@ export function ProposalCard({
           <MissingVoters pending={proposal.pending} participants={participants} />
         </>
       )}
+
+      <ThreadList
+        proposalId={proposal.id}
+        proposalAuthorId={proposal.createdBy}
+        threads={threads}
+        participants={participants}
+        meId={meId}
+        slug={slug}
+        onChanged={onChanged}
+      />
 
       <ProposalActions
         proposal={proposal}

@@ -415,3 +415,56 @@ begin
 
   raise notice 'PASS only the creator edits, and only until the proposal is finished';
 end $$;
+
+-- Threads: capped in the board, complete when opened, and resolvable by the two people who may.
+do $$
+declare v_prop uuid; v_thread uuid := gen_random_uuid(); v_board json; v_all json; i int; v_rejected boolean;
+begin
+  perform agora.create_group('Threads agora', 'rpctestb', 'alice', 'tok-ab');
+  perform agora.add_participant('rpctestb', 'bob', 'tok-bb');
+  perform agora.add_participant('rpctestb', 'carol', 'tok-cb');
+  v_prop := agora.create_proposal('tok-ab', 'rpctestb', json_build_object('title', 'Paint the hallway'));
+
+  perform agora.add_thread('tok-bb', v_thread, v_prop, gen_random_uuid(), 'What colour?');
+  for i in 1..4 loop
+    perform agora.add_comment('tok-cb', gen_random_uuid(), v_thread, 'reply ' || i);
+  end loop;
+
+  v_board := agora.get_board('rpctestb', 'tok-ab');
+  if json_array_length(v_board->'threads'->0->'comments') <> 3 then
+    raise exception 'FAIL: the board should carry three comments, not the lot';
+  end if;
+  if (v_board->'threads'->0->>'commentCount') <> '5' then
+    raise exception 'FAIL: the real count should still be reported';
+  end if;
+
+  v_all := agora.get_thread_comments('rpctestb', 'tok-ab', v_thread);
+  if json_array_length(v_all) <> 5 then
+    raise exception 'FAIL: opening the thread should bring every comment';
+  end if;
+
+  -- Neither the thread author nor the proposal author: no.
+  v_rejected := false;
+  begin
+    perform agora.set_thread_resolved('tok-cb', v_thread, true);
+  exception when sqlstate 'PT403' then v_rejected := true;
+  end;
+  if not v_rejected then raise exception 'FAIL: a bystander resolved the thread'; end if;
+
+  -- The thread's author can, and so can the proposal's.
+  perform agora.set_thread_resolved('tok-bb', v_thread, true);
+  if (select resolved_at from agora.comment_threads where id = v_thread) is null then
+    raise exception 'FAIL: the thread was not resolved';
+  end if;
+  perform agora.set_thread_resolved('tok-ab', v_thread, false);
+  if (select resolved_at from agora.comment_threads where id = v_thread) is not null then
+    raise exception 'FAIL: the thread was not reopened';
+  end if;
+
+  -- Nothing is ever destroyed by resolving.
+  if (select count(*) from agora.comments where thread_id = v_thread) <> 5 then
+    raise exception 'FAIL: comments went missing';
+  end if;
+
+  raise notice 'PASS threads are capped in the board, complete on demand, and resolvable by two people';
+end $$;

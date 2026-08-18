@@ -315,6 +315,14 @@ export class InMemoryBoardRepository implements BoardRepository {
     if (thread) this.row(thread.proposalId).updatedAt = this.now()
   }
 
+  async threadComments(input: { slug: string; threadId: string }): Promise<Comment[]> {
+    this.calls.push('threadComments')
+    const agora = this.agora(input.slug)
+    return agora.comments
+      .filter((comment) => comment.threadId === input.threadId)
+      .map(({ threadId: _threadId, ...comment }) => comment)
+  }
+
   async setThreadResolved(input: { threadId: string; resolved: boolean }): Promise<void> {
     this.calls.push('setThreadResolved')
     const agora = this.threadAgora(input.threadId)

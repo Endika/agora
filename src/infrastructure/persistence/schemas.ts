@@ -105,6 +105,15 @@ export const identitySchema = z.object({
   participant_id: z.string(),
 })
 
+const comment = z.object({
+  id: z.string(),
+  authorId: z.string(),
+  body: z.string(),
+  createdAt: z.string(),
+})
+
+export const commentsSchema = z.array(comment)
+
 export const previewSchema = z.object({
   slug: z.string(),
   name: z.string(),

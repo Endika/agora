@@ -3,11 +3,13 @@ import type {
   AgoraPreview,
   BoardRepository,
   BoardSnapshot,
+  Comment,
   DeleteResult,
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
 import {
+  commentsSchema,
   deleteResultSchema,
   identitySchema,
   parseBoard,
@@ -179,6 +181,16 @@ export class SupabaseBoardRepository implements BoardRepository {
       p_thread: input.threadId,
       p_body: input.body,
     })
+  }
+
+  async threadComments(input: { slug: string; threadId: string }): Promise<Comment[]> {
+    return commentsSchema.parse(
+      await this.rpc('get_thread_comments', {
+        p_slug: input.slug,
+        p_device_token: this.deviceToken(),
+        p_thread: input.threadId,
+      }),
+    )
   }
 
   async setThreadResolved(input: { threadId: string; resolved: boolean }): Promise<void> {

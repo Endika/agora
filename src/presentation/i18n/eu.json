@@ -144,5 +144,19 @@
     "limit": "Hamar irudi proposamen bakoitzeko, nahikoa da.",
     "alt": "Proposamenaren {{n}}. irudia",
     "open": "Ikusi irudi osoa"
+  },
+  "threads": {
+    "heading": "Iruzkinak",
+    "open": "Iruzkindu",
+    "reply": "Erantzun",
+    "send": "Bidali",
+    "placeholder": "Idatzi zure iruzkina",
+    "resolve": "Markatu ebatzita",
+    "reopen": "Berrireki haria",
+    "resolved": "Ebatzita",
+    "showAll": "Ikusi {{count}} iruzkinak",
+    "none": "Oraindik ez dago iruzkinik.",
+    "empty": "Idatzi zerbait bidali aurretik.",
+    "count": "{{count}} iruzkin"
   }
 }

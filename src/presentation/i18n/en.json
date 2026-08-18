@@ -144,5 +144,19 @@
     "limit": "Ten images per proposal, which is plenty.",
     "alt": "Image {{n}} of the proposal",
     "open": "See the full image"
+  },
+  "threads": {
+    "heading": "Comments",
+    "open": "Comment",
+    "reply": "Reply",
+    "send": "Send",
+    "placeholder": "Write your comment",
+    "resolve": "Mark as resolved",
+    "reopen": "Reopen the thread",
+    "resolved": "Resolved",
+    "showAll": "See all {{count}} comments",
+    "none": "No comments yet.",
+    "empty": "Write something before sending it.",
+    "count": "{{count}} comments"
   }
 }
