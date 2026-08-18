@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import type { ActionQueue } from '@/domain/ports/ActionQueue'
 import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
@@ -7,6 +8,9 @@ export interface BoardState {
   repo: BoardRepository
   visited: VisitedAgorasStore
   images: ProposalImages
+  queue: ActionQueue
+  /** Drains the queue and refreshes; used when the connection comes back. */
+  sync: () => Promise<void>
   slug: string | null
   board: BoardSnapshot | null
   /** 'joining' means the agora exists but this device is not a participant yet. */

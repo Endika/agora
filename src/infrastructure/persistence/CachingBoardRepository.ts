@@ -28,13 +28,19 @@ export class CachingBoardRepository implements BoardRepository {
     const cached = await this.store.load(slug)
     if (!cached) return this.fetchFull(slug)
 
-    const version = await this.remote.getVersion(slug)
-    if (version === cached.version) return cached
+    // With a snapshot in hand, no network failure should reach the UI: the board opens offline, which is
+    // the whole point of keeping it on the device.
+    try {
+      const version = await this.remote.getVersion(slug)
+      if (version === cached.version) return cached
 
-    const delta = await this.remote.getBoardSince(slug, cached.version)
-    const merged = merge(cached, delta)
-    await this.keep(slug, merged)
-    return merged
+      const delta = await this.remote.getBoardSince(slug, cached.version)
+      const merged = merge(cached, delta)
+      await this.keep(slug, merged)
+      return merged
+    } catch {
+      return cached
+    }
   }
 
   async getBoardSince(slug: string, since: string): Promise<BoardSnapshot> {

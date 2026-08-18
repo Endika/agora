@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { ActionQueue } from '@/domain/ports/ActionQueue'
 import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import { BoardContext, type BoardState } from './boardContext'
@@ -23,18 +24,26 @@ export function BoardProvider({
   repo,
   visited,
   images,
+  queue,
+  replay,
   slug,
   children,
 }: {
   repo: BoardRepository
   visited: VisitedAgorasStore
   images: ProposalImages
+  queue: ActionQueue
+  replay: () => Promise<unknown>
   slug: string | null
   children: ReactNode
 }) {
   const [result, setResult] = useState<Result | null>(null)
   const [nonce, setNonce] = useState(0)
   const reload = useCallback(() => setNonce((n) => n + 1), [])
+  const sync = useCallback(async () => {
+    await replay()
+    reload()
+  }, [replay, reload])
 
   useEffect(() => {
     if (!slug) return
@@ -83,13 +92,15 @@ export function BoardProvider({
       repo,
       visited,
       images,
+      queue,
+      sync,
       slug,
       board: fresh?.board ?? null,
       status: !slug ? 'idle' : (fresh?.phase ?? 'loading'),
       error: fresh?.error ?? null,
       reload,
     }
-  }, [repo, visited, images, slug, result, reload])
+  }, [repo, visited, images, queue, sync, slug, result, reload])
 
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>
 }

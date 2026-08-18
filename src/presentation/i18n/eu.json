@@ -210,5 +210,12 @@
     "button": "Instalatu",
     "iosHint": "Instalatzeko: Partekatu → Gehitu hasierako pantailara.",
     "dismiss": "Ez, eskerrik asko"
+  },
+  "sync": {
+    "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da.",
+    "pending": "{{count}} bidali gabe",
+    "failed": "{{count}} ezin izan dira bidali",
+    "failedExplain": "Berandu iritsi dira: bozketa itxita zegoen edo txanda aldatu zen.",
+    "dismissFailed": "Ulertuta"
   }
 }

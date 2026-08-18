@@ -210,5 +210,12 @@
     "button": "Install",
     "iosHint": "To install: Share → Add to Home Screen.",
     "dismiss": "No thanks"
+  },
+  "sync": {
+    "offline": "Offline. What you do now is sent when you are back.",
+    "pending": "{{count}} not sent yet",
+    "failed": "{{count}} could not be sent",
+    "failedExplain": "They arrived late: the vote had closed or the round had moved on.",
+    "dismissFailed": "Got it"
   }
 }

@@ -210,5 +210,12 @@
     "button": "Instalar",
     "iosHint": "Para instalarla: Compartir → Añadir a pantalla de inicio.",
     "dismiss": "No, gracias"
+  },
+  "sync": {
+    "offline": "Sin conexión. Lo que hagas se envía al volver.",
+    "pending": "{{count}} sin enviar",
+    "failed": "{{count}} no se pudieron enviar",
+    "failedExplain": "Llegaron tarde: la votación ya se había cerrado o la ronda había cambiado.",
+    "dismissFailed": "Entendido"
   }
 }

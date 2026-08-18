@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react'
 import { render } from '@testing-library/react'
+import type { ActionQueue } from '@/domain/ports/ActionQueue'
 import type { PreparedUpload, ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgora, VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
+import { InMemoryActionQueue } from '@/infrastructure/sync/IdbActionQueue'
 import { BoardProvider } from '@/presentation/context/BoardProvider'
 
 /** An in-memory stand-in for the device's own list, so tests never touch localStorage. */
@@ -61,18 +63,28 @@ export function renderWithBoard(
     repo?: InMemoryBoardRepository
     visited?: VisitedAgorasStore
     images?: InMemoryProposalImages
+    queue?: ActionQueue
     slug?: string | null
   } = {},
 ) {
   const repo = options.repo ?? new InMemoryBoardRepository()
   const visited = options.visited ?? new InMemoryVisitedAgoras()
   const images = options.images ?? new InMemoryProposalImages()
+  const queue = options.queue ?? new InMemoryActionQueue()
   return {
     repo,
     visited,
     images,
+    queue,
     ...render(
-      <BoardProvider repo={repo} visited={visited} images={images} slug={options.slug ?? null}>
+      <BoardProvider
+        repo={repo}
+        visited={visited}
+        images={images}
+        queue={queue}
+        replay={() => Promise.resolve()}
+        slug={options.slug ?? null}
+      >
         {ui}
       </BoardProvider>,
     ),

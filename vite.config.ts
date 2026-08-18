@@ -32,7 +32,12 @@ export default defineConfig({
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {
@@ -40,9 +45,21 @@ export default defineConfig({
         // precached — the app would open offline with system fonts.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}'],
         navigateFallback: '/agora/index.html',
-        // The board is cached by CachingBoardRepository (IndexedDB, version-gated), not here:
-        // a service-worker cache of the REST calls would fetch payloads the version gate avoids.
-        runtimeCaching: [],
+        // The board is cached by CachingBoardRepository (IndexedDB, version-gated), not here: a
+        // service-worker cache of the REST calls would fetch payloads the version gate avoids.
+        runtimeCaching: [
+          {
+            // Image paths carry a uuidv7 and never change, so cache-first is safe and a device pays for
+            // an image exactly once.
+            urlPattern: /\/storage\/v1\/object\/public\/agora-images\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'agora-images',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       devOptions: { enabled: false },
     }),

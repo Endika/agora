@@ -14,6 +14,14 @@ import type {
   Thread,
 } from '@/domain/repositories/BoardRepository'
 
+/**
+ * The fake refuses the way the database refuses: with the same PT4xx codes, because the offline queue
+ * decides between "retry later" and "set aside" by reading them.
+ */
+function refuse(code: 'PT400' | 'PT403' | 'PT404' | 'PT409', message: string): Error {
+  return Object.assign(new Error(message), { code })
+}
+
 interface Vote {
   proposalId: string
   participantId: string
@@ -78,7 +86,7 @@ export class InMemoryBoardRepository implements BoardRepository {
 
   private agora(slug: string): Agora {
     const found = this.agoras.get(slug)
-    if (!found) throw new Error('unknown agora')
+    if (!found) throw refuse('PT404', 'unknown agora')
     return found
   }
 
@@ -86,7 +94,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     for (const agora of this.agoras.values()) {
       if (agora.proposals.some((p) => p.id === proposalId)) return agora
     }
-    throw new Error('unknown proposal')
+    throw refuse('PT404', 'unknown proposal')
   }
 
   /** Test seam: keep acting as this participant, the way a device token would. */
@@ -130,7 +138,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('claim')
     const agora = this.agora(input.slug)
     if (!agora.participants.some((p) => p.id === input.participantId)) {
-      throw new Error('unknown participant')
+      throw refuse('PT404', 'unknown participant')
     }
     this.me = input.participantId
     return { slug: input.slug, participantId: input.participantId }
@@ -140,9 +148,9 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('addParticipant')
     const agora = this.agora(input.slug)
     const name = input.name.trim()
-    if (name.length === 0) throw new Error('a participant needs a name')
+    if (name.length === 0) throw refuse('PT400', 'a participant needs a name')
     if (agora.participants.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
-      throw new Error('name taken')
+      throw refuse('PT409', 'name taken')
     }
     const id = this.id('participant')
     agora.participants.push({ id, name })
@@ -218,8 +226,8 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('castVote')
     const agora = this.byProposal(input.proposalId)
     const row = this.row(input.proposalId)
-    if (row.status !== 'open') throw new Error('the vote is closed')
-    if (row.round !== input.round) throw new Error('stale round')
+    if (row.status !== 'open') throw refuse('PT409', 'the vote is closed')
+    if (row.round !== input.round) throw refuse('PT409', 'stale round')
 
     const existing = agora.votes.find(
       (v) => v.proposalId === row.id && v.participantId === this.me && v.round === row.round,
@@ -241,8 +249,8 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('reopenProposal')
     const agora = this.byProposal(proposalId)
     const row = this.row(proposalId)
-    if (row.status !== 'debating') throw new Error('not in debate')
-    if (row.createdBy !== this.me) throw new Error('only the creator may reopen')
+    if (row.status !== 'debating') throw refuse('PT409', 'not in debate')
+    if (row.createdBy !== this.me) throw refuse('PT403', 'only the creator may reopen')
     row.round += 1
     row.status = 'open'
     row.updatedAt = this.now()
@@ -253,10 +261,10 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('closeProposal')
     const agora = this.byProposal(input.proposalId)
     const row = this.row(input.proposalId)
-    if (row.status !== 'debating') throw new Error('not in debate')
-    if (row.createdBy !== this.me) throw new Error('only the creator may close')
+    if (row.status !== 'debating') throw refuse('PT409', 'not in debate')
+    if (row.createdBy !== this.me) throw refuse('PT403', 'only the creator may close')
     if (input.reason.trim().length < 10)
-      throw new Error('a closing reason needs at least 10 characters')
+      throw refuse('PT400', 'a closing reason needs at least 10 characters')
     row.status = 'closed'
     row.closedReason = input.reason
     row.updatedAt = this.now()
@@ -267,7 +275,8 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('completeProposal')
     const agora = this.byProposal(input.proposalId)
     const row = this.row(input.proposalId)
-    if (row.status !== 'approved') throw new Error('only an approved proposal can be marked done')
+    if (row.status !== 'approved')
+      throw refuse('PT409', 'only an approved proposal can be marked done')
     row.status = 'completed'
     row.actualCents = input.actualCents
     row.completedAt = this.now()
@@ -327,10 +336,10 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('setThreadResolved')
     const agora = this.threadAgora(input.threadId)
     const thread = agora.threads.find((t) => t.id === input.threadId)
-    if (!thread) throw new Error('unknown thread')
+    if (!thread) throw refuse('PT404', 'unknown thread')
     const owner = this.row(thread.proposalId).createdBy
     if (this.me !== thread.authorId && this.me !== owner) {
-      throw new Error('only the thread author or the proposal author may resolve it')
+      throw refuse('PT403', 'only the thread author or the proposal author may resolve it')
     }
     thread.resolvedAt = input.resolved ? this.now() : null
     thread.resolvedBy = input.resolved ? this.me : null
@@ -340,7 +349,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('setExpenseShare')
     const row = this.row(input.proposalId)
     if (row.status === 'completed')
-      throw new Error('the expense is frozen once the proposal is done')
+      throw refuse('PT409', 'the expense is frozen once the proposal is done')
     const shares = (this.shares[row.id] ??= new Map())
     shares.set(this.me, input.optedIn)
     row.updatedAt = this.now()
@@ -382,7 +391,7 @@ export class InMemoryBoardRepository implements BoardRepository {
       found.paidShares = [...set]
       return
     }
-    throw new Error('unknown liquidation')
+    throw refuse('PT404', 'unknown liquidation')
   }
 
   async attachImage(input: {
@@ -397,7 +406,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     this.calls.push('attachImage')
     const row = this.row(input.proposalId)
     const list = (this.images[row.id] ??= [])
-    if (list.length >= 10) throw new Error('at most 10 images per proposal')
+    if (list.length >= 10) throw refuse('PT400', 'at most 10 images per proposal')
     if (list.some((i) => i.id === input.id)) return
     list.push({
       id: input.id,
@@ -417,7 +426,7 @@ export class InMemoryBoardRepository implements BoardRepository {
   private row(proposalId: string): Row {
     const agora = this.byProposal(proposalId)
     const found = agora.proposals.find((p) => p.id === proposalId)
-    if (!found) throw new Error('unknown proposal')
+    if (!found) throw refuse('PT404', 'unknown proposal')
     return found
   }
 
@@ -425,7 +434,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     for (const agora of this.agoras.values()) {
       if (agora.threads.some((t) => t.id === threadId)) return agora
     }
-    throw new Error('unknown thread')
+    throw refuse('PT404', 'unknown thread')
   }
 
   private log(agora: Agora, proposalId: string | null, type: string, description: string): void {
