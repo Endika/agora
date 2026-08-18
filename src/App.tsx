@@ -4,6 +4,7 @@ import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
 import type { BoardRepository } from '@/domain/repositories/BoardRepository'
 import { AgoraApp } from '@/presentation/AgoraApp'
+import { PrivacyNotice } from '@/presentation/components/legal/PrivacyNotice'
 import { BoardProvider } from '@/presentation/context/BoardProvider'
 import { useRoute } from '@/presentation/routing'
 
@@ -18,7 +19,8 @@ export interface Wiring {
 
 /** Every adapter is injected: this component knows nothing about Supabase, IndexedDB or the network. */
 export function App({ repo, visited, images, queue, network, replay }: Wiring) {
-  const { slug, proposalId } = useRoute()
+  const { slug, proposalId, privacy } = useRoute()
+  if (privacy) return <PrivacyNotice />
   return (
     <BoardProvider
       repo={repo}
