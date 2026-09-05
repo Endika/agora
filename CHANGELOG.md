@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.2](https://github.com/Endika/agora/compare/v0.19.1...v0.19.2) (2026-09-05)
+
+
+### Chores
+
+* run the four CI gates in pre-commit ([c84cc68](https://github.com/Endika/agora/commit/c84cc68d5249ee9f481ebafacfb450a490643003))
+
 ## [0.19.1](https://github.com/Endika/agora/compare/v0.19.0...v0.19.1) (2026-09-05)
 
 
