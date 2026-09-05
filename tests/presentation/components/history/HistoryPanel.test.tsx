@@ -41,7 +41,7 @@ async function panelWith(entries: HistoryEntry[]) {
     history: [],
   }
 
-  return { repo, slug, ...renderWithBoard(<HistoryPanel board={board} />, { repo, slug }) }
+  return { slug, ...renderWithBoard(<HistoryPanel board={board} />, { repo, slug }) }
 }
 
 describe('HistoryPanel', () => {
