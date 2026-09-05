@@ -3,7 +3,7 @@ import { compressImage, type Bitmap, type ImageCodec } from '@/infrastructure/im
 
 const JPEG_HEAD = [0xff, 0xd8, 0xff, 0xe0]
 
-function jpeg(width: number, height: number): Blob {
+function jpeg(_width: number, _height: number): Blob {
   return new Blob([new Uint8Array([...JPEG_HEAD, ...new Array(64).fill(0)])], {
     type: 'image/jpeg',
   })
@@ -14,7 +14,7 @@ function fakeCodec(bytesAt: (quality: number, width: number) => number, bitmap: 
   const encodes: { width: number; quality: number }[] = []
   const codec: ImageCodec = {
     decode: async () => bitmap,
-    encode: async (_bitmap, width, height, quality) => {
+    encode: async (_bitmap, width, _height, quality) => {
       encodes.push({ width, quality })
       return new Blob([new Uint8Array(bytesAt(quality, width))], { type: 'image/webp' })
     },
