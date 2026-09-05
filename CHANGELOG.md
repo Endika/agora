@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.19.1](https://github.com/Endika/agora/compare/v0.19.0...v0.19.1) (2026-09-05)
+
+
+### Chores
+
+* **deps:** bump fast-uri in the security-npm group across 1 directory ([3ddfd06](https://github.com/Endika/agora/commit/3ddfd06d184035b4104e354757de6ac7c5b0c64a))
+* **deps:** bump the npm-minor-patch group with 13 updates ([1fac19f](https://github.com/Endika/agora/commit/1fac19fd24801c7264f029c2d62fb084d892694d))
+* **deps:** bump the npm-minor-patch group with 9 updates ([a49a28a](https://github.com/Endika/agora/commit/a49a28a951bd511b10c7e85c7573d90389521be5))
+* run lint, prettier and typecheck over tests too ([0e23197](https://github.com/Endika/agora/commit/0e23197c4956e4009e109fe85388a7bb03ecb7d2))
+
 ## [0.19.0](https://github.com/Endika/agora/compare/v0.18.2...v0.19.0) (2026-08-18)
 
 
