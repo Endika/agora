@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.4](https://github.com/Endika/agora/compare/v0.19.3...v0.19.4) (2026-09-08)
+
+
+### Chores
+
+* **deps-dev:** bump vitest and @vitest/coverage-v8 to 5.0.0 ([cea0820](https://github.com/Endika/agora/commit/cea08209631758b14441684913a5a7804ce3f339))
+
 ## [0.19.3](https://github.com/Endika/agora/compare/v0.19.2...v0.19.3) (2026-09-08)
 
 
