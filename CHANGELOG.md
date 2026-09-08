@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.3](https://github.com/Endika/agora/compare/v0.19.2...v0.19.3) (2026-09-08)
+
+
+### Chores
+
+* **deps:** bump the npm-minor-patch group with 13 updates ([df25203](https://github.com/Endika/agora/commit/df2520393ba56b60d8571c864f0caf780ceab8b0))
+
 ## [0.19.2](https://github.com/Endika/agora/compare/v0.19.1...v0.19.2) (2026-09-05)
 
 
