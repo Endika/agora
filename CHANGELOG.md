@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.0](https://github.com/Endika/agora/compare/v0.19.4...v0.20.0) (2026-09-16)
+
+
+### Features
+
+* **ci:** block PRs that introduce high-severity dependency advisories ([21c34ea](https://github.com/Endika/agora/commit/21c34ea65b11d92fe186e084f15aa94b4b37bbb5))
+
 ## [0.19.4](https://github.com/Endika/agora/compare/v0.19.3...v0.19.4) (2026-09-08)
 
 
