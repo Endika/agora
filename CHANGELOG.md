@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/Endika/agora/compare/v0.20.0...v0.21.0) (2026-09-16)
+
+
+### Features
+
+* **ci:** add CodeQL static analysis ([99023ed](https://github.com/Endika/agora/commit/99023ed9ade782d2bf2ccf1999277da650f8f456))
+
 ## [0.20.0](https://github.com/Endika/agora/compare/v0.19.4...v0.20.0) (2026-09-16)
 
 
