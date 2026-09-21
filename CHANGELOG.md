@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.22.0](https://github.com/Endika/agora/compare/v0.21.0...v0.22.0) (2026-09-21)
+
+
+### Features
+
+* **actions:** give the two armed confirmations a way out ([1fbb239](https://github.com/Endika/agora/commit/1fbb23950022301fb7617e507db741addde71254))
+* **board:** a side panel on the desktop, the thread above the money ([9161748](https://github.com/Endika/agora/commit/916174872f21cb523d2c2aeca9b2587efce8196e))
+* **board:** give vote controls weight and stop card repetition ([724d9b6](https://github.com/Endika/agora/commit/724d9b68da8a6bb48c0b0d5761e397b948dc032a))
+* **board:** route the compose and edit sheets and keep the draft ([42df91b](https://github.com/Endika/agora/commit/42df91b0b57f3a64eb556c1a82af6103569b1a69))
+* **board:** say the secret ballot and the abstain rule on screen ([361bd6d](https://github.com/Endika/agora/commit/361bd6d5110a998ea967a93ee5ef5f98886e83e4))
+* **settings:** add the language and theme pickers ([8e085ab](https://github.com/Endika/agora/commit/8e085ab7034e249f8bb3b16e4ca928258fc81bb0))
+* **vote:** confirm the vote, mark your pebble, land the quorum ([666e183](https://github.com/Endika/agora/commit/666e18313f8355a014552c30adea0df85e2ac005))
+* **vote:** say the ballot opens at quorum, and show who voted what ([08df872](https://github.com/Endika/agora/commit/08df872048a6b3507ffdec42f78dbe5834c70820))
+
+
+### Bug Fixes
+
+* **a11y:** AA on filled controls, two columns and focus in the panel ([b24817e](https://github.com/Endika/agora/commit/b24817ebeab78e8dac4080ca10e1aa301efe052c))
+* **a11y:** bring the light palette and every filled control to WCAG AA ([27d2d29](https://github.com/Endika/agora/commit/27d2d29a6ab41ca4c86562786e2af487e53e2c9e))
+* **a11y:** give dark positive balance its own green ([f046ece](https://github.com/Endika/agora/commit/f046ece80475476b42f01c8c3d4d26ee6c5b99bb))
+* **a11y:** make the person switch a 44 px target, like the footer ([7e6edd6](https://github.com/Endika/agora/commit/7e6edd6b95d19b9cd5bef3d5187628ee94387cd6))
+* **a11y:** stop sheet focus trap re-arming on parent re-render ([a9a6269](https://github.com/Endika/agora/commit/a9a62692cfe1f0bf1a373d3ccb992a90d637f953))
+* **a11y:** strip CSS comments before parsing sync-check tokens ([5f5889c](https://github.com/Endika/agora/commit/5f5889c789c1e52ad0ee7b12362600f22b192f0e))
+* **a11y:** trap focus and inert the background while a sheet is open ([a3d35af](https://github.com/Endika/agora/commit/a3d35af0c3c1aa3d0cd45f96f0d75acb0422e8dd))
+* **a11y:** write &lt;html lang&gt; at boot, not only from the picker ([32b5a14](https://github.com/Endika/agora/commit/32b5a14e62ea2fc15d29f381bfe3ef7eeb98eea5))
+* **board:** case-insensitive delete match, add cancel option ([474b08b](https://github.com/Endika/agora/commit/474b08b37091faf1c5cf7271bed0d8c641d666fd))
+* **board:** confirm every destructive action before it runs ([7693763](https://github.com/Endika/agora/commit/76937638d694f0c8691b0d0c65d5140d5f8d5430))
+* **board:** leaving the panel always lands the focus on something ([e06d5a6](https://github.com/Endika/agora/commit/e06d5a607e8e2dead5a2c4ce5a1ba4ead229ac57))
+* **board:** move the pending-vote label to the button ([4c0157d](https://github.com/Endika/agora/commit/4c0157d5eae9b46c8c60d2ec90fee3ba46f52c68))
+* **board:** one voice decides the ballot rule's tense at any width ([963df19](https://github.com/Endika/agora/commit/963df1974a5551079fec2bf38eafa27e61a005c1))
+* **board:** restore missing voters, fix a11y and glyph gaps ([91edf18](https://github.com/Endika/agora/commit/91edf182c07608f7abc01dd71363d4d513b38cd7))
+* **board:** return to the proposal and keep the draft until it lands ([d5f9e18](https://github.com/Endika/agora/commit/d5f9e1884eeeb779865bd8454a434ec154d10fdb))
+* **board:** say the secret ballot once, at board level ([07f4102](https://github.com/Endika/agora/commit/07f41025bb0e03df1f8d7063181512fd4bed87d6))
+* **board:** say the secret-ballot rule once beside the panel ([c7b818f](https://github.com/Endika/agora/commit/c7b818fa0742921116efc601eb0dffa17bce7b16))
+* **board:** separate sharing, exporting and deleting sections ([0e94aa5](https://github.com/Endika/agora/commit/0e94aa5dbc5beb7c138b0be07e042800fa58bf3f))
+* **privacy:** say a resolved vote is published by name, for good ([5cfe2e3](https://github.com/Endika/agora/commit/5cfe2e33da7c363c747fa945f880959d71782d32))
+* **styles:** paint the focus ring with a token that clears 3:1 ([5650010](https://github.com/Endika/agora/commit/565001080ad8cd623be6043e98637ac536683c94))
+* **vote:** announce into a live region that was already there ([25bd00d](https://github.com/Endika/agora/commit/25bd00d6ba52b4a0ae585a8c433fd8f31db820c4))
+* **vote:** explain the open ballot in the past tense too ([24ebb94](https://github.com/Endika/agora/commit/24ebb94f345bb66a8343fd5a5f90b5175c09e77d))
+* **vote:** send each confirmation back to the copy it was cast from ([c69f43e](https://github.com/Endika/agora/commit/c69f43e2b349c67aca2de38e096ca5cdecfcf933))
+
+
+### Performance Improvements
+
+* **bundle:** defer supabase, qrcode and markdown off the entry chunk ([26554b4](https://github.com/Endika/agora/commit/26554b455e7679c99d5930bc9c38a992d5fdfd5c))
+* **bundle:** shrink zod with zod/mini and harden the deferrals ([0cc2109](https://github.com/Endika/agora/commit/0cc21097606081a3a20078d0db5847e44e99f9f8))
+
 ## [0.21.0](https://github.com/Endika/agora/compare/v0.20.0...v0.21.0) (2026-09-16)
 
 
