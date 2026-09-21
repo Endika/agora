@@ -289,3 +289,121 @@ begin
 
   raise notice 'PASS nothing in the schema can change a ballot mode once it is chosen';
 end $$;
+
+-- The attack the running tally made possible: a secret agora leaks the whole ballot, with names, to
+-- anyone who simply reads the board between votes. `pending` says who has not voted yet — by design,
+-- it is what unblocks a stalled round — so if the breakdown by sense moves when somebody's name
+-- leaves that list, the two together name the voter and the vote. Three reads reconstruct everything.
+--
+-- The assertion is therefore indistinguishability, not "the numbers are zero": two secret agoras set
+-- up identically, where the one voter votes `up` in the first and `down` in the second, must hand an
+-- observer payloads that cannot be told apart. If the payload cannot distinguish them, no observer can.
+do $$
+declare v_prop uuid; v_slug text; v_sense text; v_tallies text[] := '{}'; v_casts text[] := '{}';
+        v_before json; v_after json; v_board json;
+begin
+  foreach v_sense in array array['up', 'down', 'abstain'] loop
+    v_slug := 'ballot1' || (array_position(array['up', 'down', 'abstain'], v_sense))::text;
+    perform agora.create_group('Poll me', v_slug, 'alice', 'tok-a' || v_slug, false);
+    perform agora.add_participant(v_slug, 'bob', 'tok-b' || v_slug);
+    perform agora.add_participant(v_slug, 'carol', 'tok-c' || v_slug);
+    v_prop := agora.create_proposal('tok-a' || v_slug, v_slug, json_build_object('title', 'Paint it'));
+
+    -- Alice is the observer and never votes, so the round stays open and she stays in `pending`.
+    if v_sense = 'up' then
+      v_before := agora.get_board(v_slug, 'tok-a' || v_slug)->'proposals'->0;
+    end if;
+
+    perform agora.cast_vote('tok-b' || v_slug, v_prop, 1, v_sense::agora.vote_value);
+    if (select status::text from agora.proposals where id = v_prop) is distinct from 'open' then
+      raise exception 'FAIL: the round closed early, so this proves nothing about an open one';
+    end if;
+
+    v_board := agora.get_board(v_slug, 'tok-a' || v_slug);
+    v_tallies := v_tallies || (v_board->'proposals'->0->'tally')::text;
+    v_casts := v_casts || (v_board->'proposals'->0->'tally'->>'cast');
+    if v_sense = 'up' then
+      v_after := v_board->'proposals'->0;
+    end if;
+  end loop;
+
+  -- Up, down and abstain must be one and the same payload to anybody watching.
+  if v_tallies[1] is distinct from v_tallies[2] or v_tallies[1] is distinct from v_tallies[3] then
+    raise exception 'FAIL: an open round in a secret agora tells up from down from abstain: %', v_tallies;
+  end if;
+
+  -- The feature that lives in the same object has to survive: one person voted, and that is public.
+  if v_casts is distinct from array['1', '1', '1'] then
+    raise exception 'FAIL: the secret agora stopped counting how many people have voted: %', v_casts;
+  end if;
+
+  -- And the differencing attack itself, read before and after the one vote. Only `cast` may move.
+  if (v_before->'tally'->>'cast') is distinct from '0' then
+    raise exception 'FAIL: the fixture is wrong, somebody had already voted';
+  end if;
+  if ((v_after->'tally')::jsonb - 'cast') is distinct from ((v_before->'tally')::jsonb - 'cast') then
+    raise exception 'FAIL: polling across a vote moved the breakdown: % then %',
+      v_before->'tally', v_after->'tally';
+  end if;
+  if (v_after->'tally'->>'cast') is distinct from '1' then
+    raise exception 'FAIL: the observer cannot even see that somebody voted';
+  end if;
+  -- `pending` is untouched on purpose: it is the feature, and it is a name, never a leaning.
+  if json_array_length(v_after->'pending') is distinct from 2 then
+    raise exception 'FAIL: pending stopped naming who still has to vote, which was not the fix';
+  end if;
+
+  raise notice 'PASS an open round in a secret agora cannot be differenced into who voted what';
+end $$;
+
+-- Once it resolves, the secret agora publishes the real breakdown: that is the moment the senses
+-- become public in both modes, and redaction must not outlive the round.
+do $$
+declare v_prop uuid; v_tally json;
+begin
+  perform agora.create_group('Resolved split', 'ballot14', 'alice', 'tok-a14', false);
+  perform agora.add_participant('ballot14', 'bob', 'tok-b14');
+  perform agora.add_participant('ballot14', 'carol', 'tok-c14');
+  v_prop := agora.create_proposal('tok-a14', 'ballot14', json_build_object('title', 'Paint it'));
+
+  perform agora.cast_vote('tok-a14', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-b14', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-c14', v_prop, 1, 'down');
+
+  v_tally := agora.get_board('ballot14', 'tok-a14')->'proposals'->0->'tally';
+  if v_tally::text is distinct from
+     json_build_object('up', 2, 'down', 1, 'abstain', 0, 'cast', 3, 'net', 1)::text then
+    raise exception 'FAIL: a resolved secret proposal did not publish its real breakdown: %', v_tally;
+  end if;
+
+  raise notice 'PASS a resolved proposal publishes the real breakdown, in a secret agora too';
+end $$;
+
+-- The control: in an open agora the round is meant to be readable as it happens, so the very same
+-- attack must still work. This is what stops the fix from being applied to both modes by accident.
+do $$
+declare v_prop uuid; v_up json; v_down json; v_slug text; v_sense text;
+begin
+  foreach v_sense in array array['up', 'down'] loop
+    v_slug := 'ballot2' || (array_position(array['up', 'down'], v_sense))::text;
+    perform agora.create_group('Watch me', v_slug, 'alice', 'tok-a' || v_slug, true);
+    perform agora.add_participant(v_slug, 'bob', 'tok-b' || v_slug);
+    perform agora.add_participant(v_slug, 'carol', 'tok-c' || v_slug);
+    v_prop := agora.create_proposal('tok-a' || v_slug, v_slug, json_build_object('title', 'Paint it'));
+    perform agora.cast_vote('tok-b' || v_slug, v_prop, 1, v_sense::agora.vote_value);
+    if v_sense = 'up' then
+      v_up := agora.get_board(v_slug, 'tok-a' || v_slug)->'proposals'->0->'tally';
+    else
+      v_down := agora.get_board(v_slug, 'tok-a' || v_slug)->'proposals'->0->'tally';
+    end if;
+  end loop;
+
+  if v_up::text is not distinct from v_down::text then
+    raise exception 'FAIL: an open agora stopped showing the round as it happens: % vs %', v_up, v_down;
+  end if;
+  if (v_up->>'up') is distinct from '1' or (v_down->>'down') is distinct from '1' then
+    raise exception 'FAIL: an open agora lost its running tally: % vs %', v_up, v_down;
+  end if;
+
+  raise notice 'PASS an open agora still shows the round developing, which is its whole point';
+end $$;

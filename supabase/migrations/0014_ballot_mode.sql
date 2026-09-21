@@ -97,10 +97,13 @@ returns json language sql security definer set search_path = '' as $$
     select p.*,
            t.up, t.down, t.abstain, t.cast_total,
            t.up - t.down as net,
+           g.ballot_open,
            case p.status when 'approved' then 0
                          when 'open' then 1 when 'debating' then 1
                          when 'completed' then 2 else 3 end as bucket
-      from agora.proposals p join tallies t on t.id = p.id
+      from agora.proposals p
+      join tallies t on t.id = p.id
+      join agora.groups g on g.id = p.group_id
      where p.group_id = p_group
   )
   select json_build_object(
@@ -131,8 +134,25 @@ returns json language sql security definer set search_path = '' as $$
                'completedAt', pr.completed_at,
                'tags', coalesce((select json_agg(tg.tag order by tg.tag)
                                    from agora.proposal_tags tg where tg.proposal_id = pr.id), '[]'::json),
-               'tally', json_build_object('up', pr.up, 'down', pr.down, 'abstain', pr.abstain,
-                                          'cast', pr.cast_total, 'net', pr.net),
+               -- The count is public, the breakdown is not — while a secret round is open.
+               --
+               -- `pending` names everyone who has not voted yet, deliberately: it is what unblocks a
+               -- stalled round. So a running breakdown by sense is not an aggregate at all. Read the
+               -- board between two votes and difference them, and the number that moved names the
+               -- sense while the name that left `pending` names the voter; three reads reconstruct an
+               -- entire secret ballot. `cast` alone cannot do that — it says somebody voted, which is
+               -- the same thing `pending` already says, and nothing about which way.
+               --
+               -- The keys stay put and go to zero rather than disappearing: the payload has one shape,
+               -- and a client that has to ask whether a key exists is a client that will one day
+               -- forget to. Once the proposal leaves 'open' the real breakdown is published in both
+               -- modes — that is the moment the senses become public — so this redaction never
+               -- outlives the round it protects.
+               'tally', case when pr.ballot_open or pr.status <> 'open'
+                          then json_build_object('up', pr.up, 'down', pr.down, 'abstain', pr.abstain,
+                                                 'cast', pr.cast_total, 'net', pr.net)
+                          else json_build_object('up', 0, 'down', 0, 'abstain', 0,
+                                                 'cast', pr.cast_total, 'net', 0) end,
                'myVote', (select v.value from agora.votes v
                            where v.proposal_id = pr.id and v.round = pr.round and v.participant_id = p_me),
                'votesRevealed', pr.status <> 'open',
@@ -146,13 +166,12 @@ returns json language sql security definer set search_path = '' as $$
                -- time (0001:80), as the ordering key there. The two order keys are mutually exclusive by
                -- construction: for a given agora exactly one of them is ever non-null.
                'votes', case when pr.status <> 'open' then coalesce((
-                          select json_agg(case when b.ballot_open
+                          select json_agg(case when pr.ballot_open
                                             then json_build_object('participantId', v.participant_id, 'value', v.value)
                                             else json_build_object('value', v.value) end
-                                          order by case when b.ballot_open then v.created_at end,
-                                                   case when b.ballot_open then null else v.id end)
+                                          order by case when pr.ballot_open then v.created_at end,
+                                                   case when pr.ballot_open then null else v.id end)
                             from agora.votes v
-                            cross join (select g2.ballot_open from agora.groups g2 where g2.id = p_group) b
                            where v.proposal_id = pr.id and v.round = pr.round), '[]'::json)
                         end,
                -- Who still has to vote: a name, never a leaning. This is what unblocks a vote.
