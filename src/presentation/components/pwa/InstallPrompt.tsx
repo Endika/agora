@@ -65,7 +65,7 @@ export function InstallPrompt() {
           type="button"
           onClick={() => void install()}
           className="min-h-11 rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('install.button')}
         </button>

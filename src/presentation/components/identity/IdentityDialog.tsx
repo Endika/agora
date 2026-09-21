@@ -102,7 +102,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             type="button"
             onClick={() => setAdding(true)}
             className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('identity.notOnTheList')}
           </button>
@@ -134,7 +134,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
               type="submit"
               disabled={busy}
               className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-60"
-              style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+              style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
             >
               {t('identity.add')}
             </button>

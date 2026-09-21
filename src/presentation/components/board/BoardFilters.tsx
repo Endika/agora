@@ -21,10 +21,11 @@ export function BoardFilters({
 }) {
   const { t } = useTranslation()
 
+  // --brand-strong, not --brand: this fill carries text, and --brand under --brand-ink is 3.08:1.
   const chip = (active: boolean) => ({
-    background: active ? 'var(--brand)' : 'var(--surface)',
+    background: active ? 'var(--brand-strong)' : 'var(--surface)',
     color: active ? 'var(--brand-ink)' : 'var(--ink)',
-    borderColor: active ? 'var(--brand)' : 'var(--border)',
+    borderColor: active ? 'var(--brand-strong)' : 'var(--border)',
   })
 
   return (

@@ -125,6 +125,16 @@ describe('design tokens', () => {
     }
   })
 
+  it('el relleno de marca pasa AA con la tinta que le ponen encima los componentes', () => {
+    // The fills test above pairs every fill with --on-fill; the brand fill ships with --brand-ink
+    // on it. Checking only the first pairing is how --brand survived at 3.08:1 in thirteen places.
+    for (const block of ['light', 'dark'] as const) {
+      expect(
+        contrast(token('brand-ink', block), token('brand-strong', block)),
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
   it('los delimitadores de control y las piedras vacías pasan 3:1', () => {
     for (const block of ['light', 'dark'] as const) {
       for (const bg of ['surface', 'surface-sunken', 'ground'] as const) {

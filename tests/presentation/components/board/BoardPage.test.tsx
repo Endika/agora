@@ -788,7 +788,7 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     ).toBeInTheDocument()
   })
 
-  it('la tira de filtros deja de pedir scroll en cuanto hay sitio', async () => {
+  it('la tira de filtros lleva la regla que la hace envolver a partir de sm', async () => {
     const { repo, slug } = await agoraWith(['alice', 'bob'])
     await repo.createProposal({ slug, title: 'Pintar el pasillo', tags: ['obras', 'salón'] })
     const board = await repo.getBoard(slug)
@@ -812,6 +812,45 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     expect(history.length).toBe(before)
   })
 
+  it('abrir el panel lleva el foco dentro, no lo deja veinte tabulaciones atrás', async () => {
+    await openProposal(true)
+
+    // Non-modal content the reader explicitly asked for: moving focus to it is allowed, and not
+    // moving it leaves the panel sixteen-plus tab stops past the card that opened it.
+    expect(screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })).toHaveFocus()
+  })
+
+  it('«Volver al tablón» devuelve el foco a la tarjeta, no al body', async () => {
+    await openProposal(true)
+    const panel = screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+
+    await userEvent.click(within(panel).getByRole('button', { name: 'Volver al tablón' }))
+
+    expect(screen.getByRole('link', { name: 'Cambiar el sofá del salón' })).toHaveFocus()
+  })
+
+  it('con el tablón para él solo las tarjetas van a dos columnas, y a una junto al panel', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    await repo.createProposal({ slug, title: 'Comprar un proyector' })
+    const board = await repo.getBoard(slug)
+    matchMediaMatches(true)
+
+    const closed = renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, {
+      repo,
+      slug,
+    })
+    expect(screen.getByRole('list')).toHaveClass('lg:grid-cols-2')
+    closed.unmount()
+
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    // The panel takes the second track, so the cards give it back by collapsing to one column.
+    expect(screen.getAllByRole('list')[0]).not.toHaveClass('lg:grid-cols-2')
+  })
+
   it('el hilo se lee junto al voto y el dinero después, en el panel y en la hoja', async () => {
     for (const wide of [true, false]) {
       const view = await openProposal(wide)
@@ -828,5 +867,35 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
       ).toBeTruthy()
       view.unmount()
     }
+  })
+})
+
+describe('BoardPage, el relleno de marca', () => {
+  async function board() {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    const snapshot = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={snapshot} route={{ kind: 'board', slug }} />, { repo, slug })
+  }
+
+  // --brand under --brand-ink is 3.08:1. The token file has carried --brand-strong for a while;
+  // what these two assert is that the call sites actually reach for it, which is the half the
+  // token-level contrast test cannot see.
+  it('la llamada principal se rellena con --brand-strong', async () => {
+    await board()
+
+    expect(screen.getByRole('button', { name: 'Nueva propuesta' })).toHaveStyle({
+      background: 'var(--brand-strong)',
+    })
+  })
+
+  it('el filtro activo también, borde incluido', async () => {
+    await board()
+
+    const chip = screen.getByRole('button', { name: 'Todo' })
+    expect(chip).toHaveStyle({ background: 'var(--brand-strong)' })
+    // Read off the inline style: jsdom resolves no custom property, so a `border-color` shorthand
+    // holding a var() comes back empty from getComputedStyle and toHaveStyle cannot see it.
+    expect(chip.style.borderColor).toBe('var(--brand-strong)')
   })
 })

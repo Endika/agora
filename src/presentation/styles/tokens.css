@@ -46,7 +46,9 @@
   --ink-muted: #5a6259;
   --on-fill: #ffffff;
 
-  /* Brand — icon, hero, primary action. Never a balance, never an error. */
+  /* Brand — icon, hero, primary action. Never a balance, never an error.
+     --brand is the bare mark: strokes, accents, the focus ring. Anything filled that carries
+     text takes --brand-strong, because --brand under --brand-ink is 3.08:1. */
   --brand: #ff5a47;
   --brand-ink: #ffffff;
   --brand-strong: #cc4839;
