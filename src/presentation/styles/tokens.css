@@ -39,19 +39,21 @@
   --surface: #fbfcfa;
   --surface-sunken: #e2e5dd;
   --border: #cdd2c7;
+  --border-control: #858981;
 
   /* Text */
   --ink: #1b211e;
   --ink-muted: #5a6259;
+  --on-fill: #ffffff;
 
   /* Brand — icon, hero, primary action. Never a balance, never an error. */
   --brand: #ff5a47;
   --brand-ink: #ffffff;
-  --brand-strong: #e8472f;
+  --brand-strong: #cc4839;
 
   /* Money semantics */
-  --pos: #2f7d5d;
-  --warn: #c9821b;
+  --pos: #2b7255;
+  --warn: #8d5b13;
   --danger: #b3261e;
 
   /* Votes: their own scale. Stone means "cast but not revealed". */
@@ -59,7 +61,7 @@
   --vote-down: #2f4a7a;
   --vote-abstain: #6f756d;
   --pebble: #7c8478;
-  --pebble-empty: #a9b0a2;
+  --pebble-empty: #7f847a;
 
   --radius: 0.75rem;
   --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
@@ -74,19 +76,21 @@
     --surface: #1e2422;
     --surface-sunken: #101413;
     --border: #33403b;
+    --border-control: #5a7168;
     --ink: #e7eae5;
     --ink-muted: #a3ada5;
+    --on-fill: #1b211e;
     --brand: #ff7a66;
     --brand-ink: #1b211e;
     --brand-strong: #ff9481;
     --pos: #4fa37c;
     --warn: #e0a040;
-    --danger: #e2564a;
+    --danger: #e9594c;
     --vote-up: #4fa37c;
     --vote-down: #6b8cc4;
     --vote-abstain: #a3ada5;
     --pebble: #97a199;
-    --pebble-empty: #4c5652;
+    --pebble-empty: #626f6a;
   }
 }
 
@@ -96,19 +100,21 @@
   --surface: #1e2422;
   --surface-sunken: #101413;
   --border: #33403b;
+  --border-control: #5a7168;
   --ink: #e7eae5;
   --ink-muted: #a3ada5;
+  --on-fill: #1b211e;
   --brand: #ff7a66;
   --brand-ink: #1b211e;
   --brand-strong: #ff9481;
   --pos: #4fa37c;
   --warn: #e0a040;
-  --danger: #e2564a;
+  --danger: #e9594c;
   --vote-up: #4fa37c;
   --vote-down: #6b8cc4;
   --vote-abstain: #a3ada5;
   --pebble: #97a199;
-  --pebble-empty: #4c5652;
+  --pebble-empty: #626f6a;
 }
 
 body {

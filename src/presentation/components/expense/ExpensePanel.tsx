@@ -142,7 +142,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
           className="min-h-11 justify-self-start rounded-[--radius] border px-4 font-medium"
           style={{
             background: iAmIn ? 'var(--pos)' : 'var(--surface)',
-            color: iAmIn ? '#ffffff' : 'var(--ink)',
+            color: iAmIn ? 'var(--on-fill)' : 'var(--ink)',
             borderColor: iAmIn ? 'var(--pos)' : 'var(--border)',
           }}
         >
@@ -208,7 +208,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
                       type="button"
                       onClick={() => run(() => repo.removePayment(payment.id), onChanged)}
                       className="min-h-11 rounded-[--radius] px-3 font-medium"
-                      style={{ background: 'var(--danger)', color: '#ffffff' }}
+                      style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
                     >
                       {t('expense.removeConfirm')}
                     </button>

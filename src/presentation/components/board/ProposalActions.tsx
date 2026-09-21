@@ -186,7 +186,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             disabled={reason.trim().length < 10}
             onClick={() => onClose(reason)}
             className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-50"
-            style={{ background: 'var(--danger)', color: '#ffffff' }}
+            style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
           >
             {t('actions.closeConfirm')}
           </button>
