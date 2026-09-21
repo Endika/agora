@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
 
 /**
  * Rendered as an SVG data URI rather than onto a canvas: it works without a canvas, scales to any
@@ -10,7 +9,9 @@ export function QrCode({ value, label }: { value: string; label: string }) {
 
   useEffect(() => {
     let live = true
-    QRCode.toString(value, { type: 'svg', margin: 1 })
+    // Imported here, not at the top: only the share dialog draws a QR, and it is 50 KB of it.
+    import('qrcode')
+      .then(({ default: QRCode }) => QRCode.toString(value, { type: 'svg', margin: 1 }))
       .then((svg) => {
         if (live) setSrc(`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`)
       })

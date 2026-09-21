@@ -22,14 +22,16 @@ import type { AgoraClient } from './SupabaseClient'
 
 /** Thin by design: one RPC per port method, validation at the boundary, no logic of its own. */
 export class SupabaseBoardRepository implements BoardRepository {
+  /** A promise, not a client: the Supabase module downloads while the cached board already paints. */
   constructor(
-    private readonly client: AgoraClient,
+    private readonly client: Promise<AgoraClient>,
     private readonly deviceToken: () => string,
     private readonly slugGenerator: () => string,
   ) {}
 
   private async rpc(name: string, args: Record<string, unknown>): Promise<unknown> {
-    const { data, error } = await this.client.rpc(name, args)
+    const client = await this.client
+    const { data, error } = await client.rpc(name, args)
     if (error) throw Object.assign(new Error(error.message), { code: error.code })
     return data
   }

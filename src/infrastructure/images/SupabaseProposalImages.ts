@@ -3,17 +3,17 @@ import type { PreparedUpload, ProposalImages } from '@/domain/ports/ProposalImag
 import type { BoardRepository } from '@/domain/repositories/BoardRepository'
 import { compressImage } from './compressImage'
 import { BrowserImageCodec } from './BrowserImageCodec'
+import { BUCKET, publicUrl } from './publicUrl'
 import type { AgoraClient } from '@/infrastructure/persistence/SupabaseClient'
-
-const BUCKET = 'agora-images'
 
 /** One year, immutable: the path carries a uuidv7 and never changes, so a device pays once per image. */
 const CACHE_CONTROL = '31536000'
 
 export class SupabaseProposalImages implements ProposalImages {
   constructor(
-    private readonly client: AgoraClient,
+    private readonly client: Promise<AgoraClient>,
     private readonly repo: BoardRepository,
+    private readonly projectUrl: string,
   ) {}
 
   async prepare(file: Blob): Promise<PreparedUpload> {
@@ -37,7 +37,7 @@ export class SupabaseProposalImages implements ProposalImages {
     const base = `${input.slug}/${input.proposalId}/${id}`
     const path = `${base}.webp`
     const thumbPath = `${base}-t.webp`
-    const storage = this.client.storage.from(BUCKET)
+    const storage = (await this.client).storage.from(BUCKET)
 
     for (const [at, blob] of [
       [path, input.prepared.full],
@@ -62,7 +62,8 @@ export class SupabaseProposalImages implements ProposalImages {
     })
   }
 
+  /** Synchronous on purpose: `ImageGallery` calls it during render, before the client has loaded. */
   urlFor(path: string): string {
-    return this.client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+    return publicUrl(this.projectUrl, path)
   }
 }

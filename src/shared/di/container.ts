@@ -10,7 +10,7 @@ import { QueuingBoardRepository } from '@/infrastructure/sync/QueuingBoardReposi
 import { CachingBoardRepository } from '@/infrastructure/persistence/CachingBoardRepository'
 import { IdbBoardStore } from '@/infrastructure/persistence/IdbBoardStore'
 import { SupabaseBoardRepository } from '@/infrastructure/persistence/SupabaseBoardRepository'
-import { createAgoraClient } from '@/infrastructure/persistence/SupabaseClient'
+import { agoraConfig, createAgoraClient } from '@/infrastructure/persistence/SupabaseClient'
 
 /** Eight URL-friendly characters. Not a UUID: this one ends up in the link people share. */
 export function agoraSlug(): string {
@@ -22,10 +22,14 @@ export function agoraSlug(): string {
  * BoardRepository and cannot import an adapter — ESLint enforces it.
  *
  * A missing configuration is returned, not thrown: the app has to be able to render a message about
- * it rather than dying with a blank page.
+ * it rather than dying with a blank page. That is why this stays synchronous while the client it
+ * wires is a promise: the env is checked here and now, the Supabase module arrives later.
  */
 export function buildApp(): Wiring | { error: string } {
   try {
+    const { url } = agoraConfig()
+    // Created once, awaited by whoever needs it: the module downloads a single time, and the cached
+    // board paints without waiting for it.
     const client = createAgoraClient()
     const queue = new IdbActionQueue()
     const network = BrowserOnlineDetector
@@ -40,7 +44,7 @@ export function buildApp(): Wiring | { error: string } {
     return {
       repo,
       visited: VisitedAgoras,
-      images: new SupabaseProposalImages(client, repo),
+      images: new SupabaseProposalImages(client, repo, url),
       queue,
       network,
       replay: () => replayer.run(),

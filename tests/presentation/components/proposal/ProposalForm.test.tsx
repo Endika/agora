@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProposalForm } from '@/presentation/components/proposal/ProposalForm'
 import { makeProposal } from '../../../domain/support/makeProposal'
@@ -79,8 +79,9 @@ describe('ProposalForm', () => {
     await userEvent.type(screen.getByLabelText('Descripción'), '## Plan <script>alert(1)</script>')
     await userEvent.click(screen.getByRole('tab', { name: 'Vista previa' }))
 
-    const preview = screen.getByTestId('description-preview')
-    expect(preview.querySelector('h2')).not.toBeNull()
+    // The parser is loaded on demand, so the heading only appears once it has arrived.
+    const preview = await screen.findByTestId('description-preview')
+    await waitFor(() => expect(preview.querySelector('h2')).not.toBeNull())
     expect(preview.querySelector('script')).toBeNull()
   })
 

@@ -8,6 +8,28 @@
     <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
     <meta name="theme-color" content="#EBEDE7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#151A18" media="(prefers-color-scheme: dark)" />
+    <!-- The three self-hosted faces, fetched alongside the CSS instead of after it. -->
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/bricolage-grotesque-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/instrument-sans-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="%BASE_URL%fonts/ibm-plex-mono-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <title>Agora</title>
     <script>
       // Apply the stored theme before first paint so the ground never flashes.
