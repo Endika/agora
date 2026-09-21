@@ -20,20 +20,20 @@ interface Props {
   onClose: (reason: string) => void
   onComplete: (actualCents: number | null) => void
   onChanged: () => void
-  /**
-   * Whether this copy has to carry the ballot-rule sentence — secret until quorum, signed after.
-   * The board says it once, above the list; in a sheet that covers the board the detail has to say
-   * it again, in a side panel beside a board that is still on screen it must not — 300 px apart,
-   * twice, is noise.
-   */
-  explainSecret: boolean
   /** A vote cast from this panel is still in the air. */
   votePending?: boolean
   /** What the reader just voted, once it landed. */
   voteDone?: string | null
 }
 
-/** Everything about one proposal: the full text, the images, the money and the conversation. */
+/**
+ * Everything about one proposal: the full text, the images, the money and the conversation.
+ *
+ * It always carries the ballot-rule sentence — secret until quorum, signed after — because it is
+ * what the reader asked for and it is the only thing that knows which tense that proposal is in.
+ * The board suppresses its own copy whenever one of these is on screen, so the rule is said once,
+ * in one tense, at every width.
+ */
 export function ProposalDetail({
   proposal,
   board,
@@ -43,7 +43,6 @@ export function ProposalDetail({
   onClose,
   onComplete,
   onChanged,
-  explainSecret,
   votePending = false,
   voteDone = null,
 }: Props) {
@@ -102,7 +101,7 @@ export function ProposalDetail({
           participants={board.participants}
           cast={proposal.tally.cast}
           revealed={proposal.votes}
-          explainSecret={explainSecret}
+          explainSecret
           mine={proposal.myVote !== null}
         />
         {proposal.status === 'open' && (

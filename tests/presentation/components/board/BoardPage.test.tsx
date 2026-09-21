@@ -1413,3 +1413,107 @@ describe('BoardPage, dos votos en el aire a la vez', () => {
     expect(within(panel).getByRole('status')).toHaveTextContent('')
   })
 })
+describe('BoardPage, un solo tiempo verbal por ruta', () => {
+  /** A board that is genuinely mixed: one proposal resolved, one still taking votes. */
+  async function mixedBoard() {
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'])
+    const settled = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    for (const name of ['Ekin', 'Amaia', 'Iker']) {
+      as(name)
+      await repo.castVote({ proposalId: settled, round: 1, value: 'up' })
+    }
+    as('Ekin')
+    return { repo, slug, settled, board: await repo.getBoard(slug) }
+  }
+
+  it('una propuesta resuelta se lee en pasado a 390 px y a 1280 px, no una en cada uno', async () => {
+    // Measured: at 390 px the sheet said "Nadie vio estos votos…" and at 1280 px the same route
+    // was still promising secrecy, 143 px above the published roll of names — because the board
+    // decided the tense on "is anything open?" and the detail on "is this one resolved?".
+    for (const wide of [false, true]) {
+      const { repo, slug, settled, board } = await mixedBoard()
+      matchMediaMatches(wide)
+      const view = renderWithBoard(
+        <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: settled }} />,
+        { repo, slug },
+      )
+
+      const onScreen = [
+        ...screen.queryAllByText(SECRET),
+        ...screen.queryAllByText(SECRET_PAST),
+      ].filter((node) => !node.closest('[inert]'))
+      expect(onScreen).toHaveLength(1)
+      expect(onScreen[0]).toHaveTextContent(SECRET_PAST)
+      view.unmount()
+    }
+  })
+
+  it('y una que sigue abierta se lee en futuro a los dos anchos, también en tablón mixto', async () => {
+    for (const wide of [false, true]) {
+      const { repo, slug, board } = await mixedBoard()
+      const stillOpen = board.proposals.find((proposal) => proposal.status === 'open')!
+      matchMediaMatches(wide)
+      const view = renderWithBoard(
+        <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: stillOpen.id }} />,
+        { repo, slug },
+      )
+
+      const onScreen = [
+        ...screen.queryAllByText(SECRET),
+        ...screen.queryAllByText(SECRET_PAST),
+      ].filter((node) => !node.closest('[inert]'))
+      expect(onScreen).toHaveLength(1)
+      expect(onScreen[0]).toHaveTextContent(SECRET)
+      view.unmount()
+    }
+  })
+
+  it('un filtro que solo deja propuestas resueltas las explica en pasado', async () => {
+    // Same reason: the paragraph describes the list under it. Asked of the whole board, a tag
+    // whose proposals are all settled was still being promised secrecy in the future tense.
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'])
+    const settled = await repo.createProposal({
+      slug,
+      title: 'Cambiar el sofá del salón',
+      tags: ['salon'],
+    })
+    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    for (const name of ['Ekin', 'Amaia', 'Iker']) {
+      as(name)
+      await repo.castVote({ proposalId: settled, round: 1, value: 'up' })
+    }
+    as('Ekin')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    // Something is still open, so the unfiltered board promises secrecy.
+    expect(screen.getByText(SECRET)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: '#salon' }))
+
+    expect(screen.getByText(SECRET_PAST)).toBeInTheDocument()
+    expect(screen.queryByText(SECRET)).toBeNull()
+  })
+
+  it('un filtro que no deja nada en pantalla no explica la regla del voto', async () => {
+    // The sentence sits directly above the list and describes it. Gated on the whole board, it
+    // went on explaining the ballot over "Aquí no hay nada todavía".
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia'])
+    const id = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    as('Ekin')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.getByText(SECRET)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Me toca votar' }))
+
+    expect(
+      screen.getByText('Aquí no hay nada todavía. La primera propuesta la pones tú.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(SECRET)).toBeNull()
+    expect(screen.queryByText(SECRET_PAST)).toBeNull()
+  })
+})
