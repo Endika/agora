@@ -24,13 +24,8 @@ import { ProposalDetail } from './ProposalDetail'
 export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route }) {
   const { t } = useTranslation()
   const { repo, reload, images: pipeline } = useBoard()
-  const { run, error, pending, done } = useAction()
+  const { run, error, pendingFor, doneFor } = useAction()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
-
-  // Which copy of the vote controls is waiting for an answer. One hook serves every proposal on
-  // the board and the same proposal can be on screen twice — once as a card, once in the panel
-  // beside it — so the confirmation has to name the place it belongs to, or it appears twice.
-  const [voting, setVoting] = useState<string | null>(null)
 
   // From `lg` up there is room to read a proposal without covering the board it came from, so the
   // same route renders as a side panel instead of a sheet. Same address, same node, different shape.
@@ -74,10 +69,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     return true
   })
 
-  const act = (action: () => Promise<unknown>) => {
-    setVoting(null)
-    run(action, reload)
-  }
+  const act = (action: () => Promise<unknown>) => run(action, reload)
 
   // Images are picked before the proposal exists, so they are uploaded once it has an id.
   const attachAll = async (proposalId: string, draft: ProposalDraft) => {
@@ -109,11 +101,18 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     })
   }
 
+  // Which copy of the vote controls a write belongs to. The same proposal can be on screen twice —
+  // once as a card, once in the panel beside it — and every result has to find its way back to the
+  // exact place the tap came from, however many other writes overtake it on the way.
   const voteKey = (proposalId: string, where: 'card' | 'detail') => `${where}:${proposalId}`
+
+  // Pending is a fact about the *proposal*, not about one copy of its buttons: both copies go dead
+  // while either one is writing, so nothing can be queued behind a write that is still going.
+  const voteBusy = (proposalId: string) =>
+    pendingFor(voteKey(proposalId, 'card')) || pendingFor(voteKey(proposalId, 'detail'))
 
   const actionsFor = (proposal: Proposal, where: 'card' | 'detail') => ({
     onVote: (value: VoteValue) => {
-      setVoting(voteKey(proposal.id, where))
       run(
         () => repo.castVote({ proposalId: proposal.id, round: proposal.round, value }),
         reload,
@@ -121,6 +120,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         // and "You abstained" are not the same shape, and a slot would force one of them to be
         // wrong.
         t(`psephoi.voted.${value}`),
+        voteKey(proposal.id, where),
       )
     },
     onEdit: () => openEdit(board.group.slug, proposal.id),
@@ -175,8 +175,8 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         threads={board.threads.filter((thread) => thread.proposalId === proposal.id)}
         slug={board.group.slug}
         onVote={actionsFor(proposal, 'card').onVote}
-        votePending={pending && voting === voteKey(proposal.id, 'card')}
-        voteDone={voting === voteKey(proposal.id, 'card') ? done : null}
+        votePending={voteBusy(proposal.id)}
+        voteDone={doneFor(voteKey(proposal.id, 'card'))}
       />
     </li>
   )
@@ -225,8 +225,8 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
               board={board}
               onChanged={reload}
               explainSecret
-              votePending={pending && voting === voteKey(open.id, 'detail')}
-              voteDone={voting === voteKey(open.id, 'detail') ? done : null}
+              votePending={voteBusy(open.id)}
+              voteDone={doneFor(voteKey(open.id, 'detail'))}
               {...actionsFor(open, 'detail')}
             />
           </Sheet>
@@ -297,8 +297,8 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
             board={board}
             onChanged={reload}
             explainSecret={false}
-            votePending={pending && voting === voteKey(open.id, 'detail')}
-            voteDone={voting === voteKey(open.id, 'detail') ? done : null}
+            votePending={voteBusy(open.id)}
+            voteDone={doneFor(voteKey(open.id, 'detail'))}
             {...actionsFor(open, 'detail')}
           />
         </aside>
