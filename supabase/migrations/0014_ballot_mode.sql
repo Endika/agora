@@ -10,14 +10,28 @@
 -- retroactively publish votes cast under a promise of secrecy, and flipping it the other way would not
 -- unpublish the ones already read. There is deliberately no RPC that writes this column after the insert.
 --
--- `default true` leaves every agora that already exists exactly as it is today.
+-- On the shape of `create_group`, and on what actually keeps the live app working through this migration.
+-- Two things do, and the four-argument function is neither of them:
 --
--- On the shape of `create_group`: the fifth argument is added **without a default**, and the old
--- four-argument form is kept as a wrapper that passes `true`. A default would make a four-argument call
--- ambiguous between the two signatures and Postgres would refuse it — which would break agora creation for
--- every client still running the old frontend, i.e. everyone, in the window between this migration and the
--- deploy. Without defaults, four arguments resolve to the wrapper and five to the real thing. The wrapper
--- can be dropped in a later migration, once nobody has the old bundle in cache.
+--   1. **The fifth argument has no `default`.** A default would make the four-argument call the deployed
+--      frontend still makes ambiguous between the two signatures, and Postgres would refuse it outright:
+--      "function agora.create_group(unknown, unknown, unknown, unknown) is not unique". Agoras would be
+--      uncreatable for everyone in the window between this migration and the deploy. Without a default the
+--      five-argument form is not a candidate for a four-argument call at all, so four arguments resolve to
+--      the four-argument form and five to the five, with nothing to disambiguate.
+--   2. **The column's `default true`.** That is what makes an insert that never mentions `ballot_open`
+--      mean an open ballot, so every agora that already exists — and every one the old frontend creates
+--      before the deploy — stays exactly as it is today.
+--
+-- The four-argument `create_group` is **not** a new wrapper and is not the safeguard: it has existed since
+-- 0006:104 and has been granted to `anon` since 0006:169. What happens below is a `create or replace` of
+-- it, and the only reason to do that is hygiene — one insert body instead of two that drift apart the
+-- first time the insert changes. Deleting that replacement would leave 0006's body in place and the live
+-- app working, which is precisely why it cannot be the thing protecting anybody.
+--
+-- So, for whoever revisits this: the no-default discipline is the safeguard. Do not relax it on the
+-- grounds that the four-argument form is there to catch it. The four-argument form can be dropped in a
+-- later migration, once nobody has the old bundle in cache, and that changes nothing about point 1.
 
 alter table agora.groups
   add column if not exists ballot_open boolean not null default true;
@@ -53,7 +67,10 @@ begin
 end;
 $$;
 
--- The wrapper the deployed frontend keeps calling. One line, no default, no ambiguity.
+-- The four-argument form the deployed frontend calls. It already existed (0006:104) and is already
+-- granted to anon (0006:169); this is a `create or replace` of it, for hygiene alone — so there is one
+-- insert body rather than two that drift. It is not what keeps the old frontend working: the absence of
+-- a default on the fifth argument is, together with the column's own `default true`. See the header.
 create or replace function agora.create_group(
   p_name text, p_slug text, p_creator_name text, p_device_token text
 ) returns json language sql security definer set search_path = '' as $$

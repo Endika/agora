@@ -62,7 +62,7 @@ end $$;
 
 -- The invariant: in a secret agora a resolved proposal ships no attribution at all.
 do $$
-declare v_prop uuid; v_board json; v_votes json; v_text text; i int;
+declare v_prop uuid; v_board json; v_delta json; v_votes json; v_text text; i int;
         v_order text[]; v_by_id text[]; v_by_time text[];
 begin
   perform agora.create_group('Secret board', 'ballot05', 'alice', 'tok-a5', false);
@@ -107,6 +107,16 @@ begin
   -- Your own vote is yours to see: it is the only one the client may attribute.
   if (v_board->'proposals'->0->>'myVote') is distinct from 'up' then
     raise exception 'FAIL: myVote went missing in a secret agora';
+  end if;
+
+  -- The delta read is the same board_json, but the promise has to hold on the payload the client
+  -- actually receives most of the time, so it is pinned here rather than left to inheritance.
+  v_delta := agora.get_board_since('ballot05', 'tok-a5', now() - interval '1 second');
+  if v_delta::text like '%participantId%' then
+    raise exception 'FAIL: the delta read of a secret agora published attribution: %', v_delta;
+  end if;
+  if json_array_length(v_delta->'proposals'->0->'votes') is distinct from 4 then
+    raise exception 'FAIL: the delta lost the secret votes (got %)', v_delta->'proposals'->0->'votes';
   end if;
 
   -- Stripping the name is not enough: `pending` names the people who have not voted yet, so anyone
@@ -172,7 +182,7 @@ begin
   end if;
   select array_agg(distinct e->>'participantId') into v_ids
     from json_array_elements(v_votes) e;
-  if array_length(v_ids, 1) is distinct from 4 or v_ids @> array[null]::text[] then
+  if array_length(v_ids, 1) is distinct from 4 then
     raise exception 'FAIL: expected one attributed vote per participant, got %', v_ids;
   end if;
   if not (select bool_and(exists (select 1 from agora.participants pa where pa.id::text = t.voter))
@@ -234,29 +244,47 @@ begin
   raise notice 'PASS the board carries the ballot mode in both modes, full read and delta';
 end $$;
 
--- There is no way to change it, and that is checked against the catalogue rather than by reading
--- the migrations: a setter added later would have to be added here too before this goes green.
+-- There is no way to change it, and that is checked against the catalogue rather than by reading the
+-- migrations. The predicate is write-shaped, not name-shaped: what makes a function dangerous is that it
+-- updates the column, not that somebody called it "ballot". A name-based scan misses
+-- `set_group_mode(p_slug, p_open)` entirely, and this block proves it does not by writing exactly that
+-- function and watching the check catch it.
 do $$
 declare v_offenders text;
 begin
+  -- `update agora.groups … ballot_open`, in the body of any agora function. board_json reads the column
+  -- and create_group inserts it; neither is a way to change an agora's mind after the fact.
   select string_agg(p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', ', ')
     into v_offenders
     from pg_proc p
     join pg_namespace n on n.oid = p.pronamespace
    where n.nspname = 'agora'
-     and p.proname <> 'create_group'
-     and (p.proname like '%ballot%'
-          or exists (select 1 from unnest(coalesce(p.proargnames, array[]::text[])) a
-                      where a like '%ballot%'));
+     and p.prosrc ~* 'update[[:space:]]+agora\.groups[^;]*ballot_open';
   if v_offenders is not null then
     raise exception 'FAIL: the ballot mode can be changed after creation, via %', v_offenders;
   end if;
 
-  -- And no overload of create_group sets it on an agora that already exists: the only two forms are
-  -- the real one and the wrapper that fills it in.
+  -- And the check has teeth: the obvious setter, written here and rolled back with the transaction.
+  create function agora.set_group_mode(p_slug text, p_open boolean) returns void
+  language sql security definer set search_path = '' as $f$
+    update agora.groups set ballot_open = p_open where slug = p_slug;
+  $f$;
+
+  select string_agg(p.proname, ', ') into v_offenders
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'agora'
+     and p.prosrc ~* 'update[[:space:]]+agora\.groups[^;]*ballot_open';
+  if v_offenders is distinct from 'set_group_mode' then
+    raise exception 'FAIL: a setter that flips the column went unnoticed (offenders: %)', v_offenders;
+  end if;
+  drop function agora.set_group_mode(text, boolean);
+
+  -- And no overload of create_group sets it on an agora that already exists: the only two forms are the
+  -- five-argument one and the four-argument one it replaced.
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'agora' and p.proname = 'create_group') is distinct from 2 then
-    raise exception 'FAIL: expected exactly two create_group forms, the five-argument one and its wrapper';
+    raise exception 'FAIL: expected exactly two create_group forms, the five-argument one and the four';
   end if;
 
   raise notice 'PASS nothing in the schema can change a ballot mode once it is chosen';
