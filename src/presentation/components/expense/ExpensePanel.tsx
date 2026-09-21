@@ -29,6 +29,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
   const [amount, setAmount] = useState('')
   const [recording, setRecording] = useState(false)
   const [amountError, setAmountError] = useState<string | null>(null)
+  const [removing, setRemoving] = useState<string | null>(null)
 
   const total = proposal.actualCents ?? proposal.estimatedCents
   if (total === null) return null
@@ -198,20 +199,44 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
         <div className="grid gap-1">
           <h5 className="text-sm font-medium">{t('expense.myPayments')}</h5>
           <ul className="grid gap-1 text-sm">
-            {myPayments.map((payment) => (
-              <li key={payment.id} className="flex items-center justify-between gap-2">
-                <span style={{ fontFamily: 'var(--font-data)' }}>{money(payment.cents)}</span>
-                <button
-                  type="button"
-                  onClick={() => run(() => repo.removePayment(payment.id), onChanged)}
-                  aria-label={t('expense.removePayment', { amount: money(payment.cents) })}
-                  className="min-h-11 rounded-[--radius] border px-3"
-                  style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
+            {myPayments.map((payment) =>
+              removing === payment.id ? (
+                <li key={payment.id} className="flex items-center justify-between gap-2">
+                  <span style={{ fontFamily: 'var(--font-data)' }}>{money(payment.cents)}</span>
+                  <span className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => run(() => repo.removePayment(payment.id), onChanged)}
+                      className="min-h-11 rounded-[--radius] px-3 font-medium"
+                      style={{ background: 'var(--danger)', color: '#ffffff' }}
+                    >
+                      {t('expense.removeConfirm')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRemoving(null)}
+                      className="min-h-11 rounded-[--radius] border px-3"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      {t('common.no')}
+                    </button>
+                  </span>
+                </li>
+              ) : (
+                <li key={payment.id} className="flex items-center justify-between gap-2">
+                  <span style={{ fontFamily: 'var(--font-data)' }}>{money(payment.cents)}</span>
+                  <button
+                    type="button"
+                    onClick={() => setRemoving(payment.id)}
+                    aria-label={t('expense.removePayment', { amount: money(payment.cents) })}
+                    className="min-h-11 rounded-[--radius] border px-3"
+                    style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
+                  >
+                    ×
+                  </button>
+                </li>
+              ),
+            )}
           </ul>
         </div>
       )}

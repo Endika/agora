@@ -22,7 +22,8 @@
     "cancel": "Cancel",
     "close": "Close",
     "loading": "Loading…",
-    "offline": "Offline. What you do now is sent when you are back."
+    "offline": "Offline. What you do now is sent when you are back.",
+    "no": "No"
   },
   "board": {
     "empty": "Nothing here yet. The first proposal is yours to make.",
@@ -65,6 +66,9 @@
     "closeReasonHint": "At least 10 characters. The group gets to read it.",
     "closeConfirm": "Close the proposal",
     "complete": "Mark as done",
+    "completeFreezes": "Without an estimated cost, the expense will freeze as soon as you mark it as done.",
+    "completeConfirm": "Yes, it is done",
+    "reopenConfirm": "Yes, reopen it",
     "round": "Round {{round}}"
   },
   "setup": {
@@ -202,6 +206,7 @@
     "share": "share",
     "left": "left",
     "removePayment": "Remove the {{amount}} payment",
+    "removeConfirm": "Yes, remove it",
     "myPayments": "Your payments",
     "over": "{{amount}} over",
     "totalOver": "{{amount}} more than the total has gone in: the estimate fell short, or somebody put in extra.",

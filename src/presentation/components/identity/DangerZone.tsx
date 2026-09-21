@@ -51,7 +51,7 @@ export function DangerZone({
 
       <button
         type="submit"
-        disabled={confirmName.trim().length === 0}
+        disabled={confirmName.trim() !== agoraName.trim()}
         className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium disabled:opacity-50"
         style={{ background: 'var(--danger)', color: '#ffffff' }}
       >
