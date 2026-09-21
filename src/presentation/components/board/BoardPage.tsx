@@ -160,11 +160,21 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
   // Leaving the panel puts focus back on the card it came from, the way the sheet already does for
   // its opener. Landing on <body> loses a keyboard reader their place in a fifteen-card list.
+  //
+  // The card is not always able to take it. An archived proposal's card lives inside the collapsed
+  // `Archivadas` disclosure, where the anchor is in the document and cannot be focused at all —
+  // measured in Chromium: focus fell to <body>, in exactly the case where the list is longest. A
+  // filter can also leave the card unrendered. So the landing steps outwards until it finds
+  // something that can actually hold the focus: the card, else the disclosure that hides it, else
+  // the top of the board.
+  const newProposal = useRef<HTMLButtonElement | null>(null)
+
   const leavePanel = () => {
-    if (open) {
-      const href = proposalHref(board.group.slug, open.id)
-      document.querySelector<HTMLElement>(`a[href="${href}"]`)?.focus()
-    }
+    const href = open ? proposalHref(board.group.slug, open.id) : null
+    const card = href === null ? null : document.querySelector<HTMLElement>(`a[href="${href}"]`)
+    const hidden = card?.closest('details:not([open])')
+    const landing = hidden?.querySelector<HTMLElement>('summary') ?? card ?? newProposal.current
+    landing?.focus()
     closeSheet()
   }
 
@@ -236,6 +246,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
         <button
           type="button"
+          ref={newProposal}
           onClick={() => openCompose(board.group.slug)}
           className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
