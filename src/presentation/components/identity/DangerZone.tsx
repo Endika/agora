@@ -48,9 +48,11 @@ export function DangerZone({
         />
       </label>
 
-      <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
-        {error ?? ''}
-      </p>
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

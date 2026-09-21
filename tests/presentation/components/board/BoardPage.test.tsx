@@ -311,6 +311,24 @@ describe('BoardPage', () => {
     expect(tallyMentions).toBe(1)
   })
 
+  it('el grupo de filtros no se llama como su primer botón', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const group = screen.getByRole('group', { name: 'Filtrar las propuestas' })
+    expect(within(group).getByRole('button', { name: 'Todo' })).toBeInTheDocument()
+  })
+
+  it('explica en pantalla que el voto en blanco también cuenta para el quórum', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.getByText('En blanco también cuenta para el quórum')).toBeInTheDocument()
+  })
+
   it('freezes the vote once the proposal is resolved', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })

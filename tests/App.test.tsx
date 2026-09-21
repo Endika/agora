@@ -62,6 +62,17 @@ describe('App', () => {
     expect(screen.getByText(/Versión/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '#/privacy')
   })
+
+  it('no monta ninguna alerta en el formulario de crear ágora hasta que falla el envío', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event')
+    render(<App {...wiring()} />)
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Crear el ágora' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('El ágora necesita un nombre.')
+  })
 })
 
 describe('App, un enlace que entra directo', () => {

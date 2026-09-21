@@ -68,9 +68,11 @@ export function ImagePicker({
         onChange={(event) => void pick(event.target.files)}
       />
 
-      <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
-        {error ?? ''}
-      </p>
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       {images.length > 0 && (
         <ul className="flex flex-wrap gap-2">

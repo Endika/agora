@@ -17,7 +17,8 @@
     "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
-    "abstain": "En blanco"
+    "abstain": "En blanco",
+    "abstainCounts": "En blanco también cuenta para el quórum"
   },
   "common": {
     "cancel": "Cancelar",
@@ -30,6 +31,7 @@
     "empty": "Aquí no hay nada todavía. La primera propuesta la pones tú.",
     "countPendingMine": "Te toca votar {{count}}",
     "filterAll": "Todo",
+    "filterHeading": "Filtrar las propuestas",
     "filterPendingMine": "Me toca votar",
     "filterTag": "Etiqueta {{tag}}",
     "clearFilters": "Quitar filtros",

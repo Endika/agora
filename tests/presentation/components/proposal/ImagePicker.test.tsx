@@ -29,6 +29,14 @@ describe('ImagePicker', () => {
     expect(draft!.images).toHaveLength(1)
   })
 
+  it('no monta ninguna región de alerta hasta que falla una subida', async () => {
+    renderWithBoard(
+      <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+    )
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('says so plainly when an image will not fit', async () => {
     const images = new InMemoryProposalImages()
     images.rejectWith = 'IMAGE_TOO_LARGE'
@@ -40,7 +48,7 @@ describe('ImagePicker', () => {
     )
 
     await userEvent.upload(screen.getByLabelText('Añadir imagen'), photo('huge.jpg'))
-    expect(await screen.findByText(/no baja de 200 KB/)).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(/no baja de 200 KB/)
   })
 
   it('refuses a file that is not a jpg, png or webp', async () => {

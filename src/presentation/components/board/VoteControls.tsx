@@ -19,27 +19,32 @@ export function VoteControls({
   const open = canVote(proposal)
 
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={t('psephoi.choose')}>
-      {OPTIONS.map((value) => {
-        const chosen = proposal.myVote === value
-        return (
-          <button
-            key={value}
-            type="button"
-            disabled={!open}
-            aria-pressed={chosen}
-            onClick={() => onVote(value)}
-            className="min-h-11 min-w-0 flex-1 rounded-[--radius] border px-2 font-medium disabled:opacity-50"
-            style={{
-              background: chosen ? `var(--vote-${value})` : 'var(--surface-sunken)',
-              color: chosen ? 'var(--on-fill)' : 'var(--ink)',
-              borderColor: chosen ? `var(--vote-${value})` : 'var(--border-control)',
-            }}
-          >
-            {t(`psephoi.${value}`)}
-          </button>
-        )
-      })}
+    <div className="grid gap-1">
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('psephoi.choose')}>
+        {OPTIONS.map((value) => {
+          const chosen = proposal.myVote === value
+          return (
+            <button
+              key={value}
+              type="button"
+              disabled={!open}
+              aria-pressed={chosen}
+              onClick={() => onVote(value)}
+              className="min-h-11 min-w-0 flex-1 rounded-[--radius] border px-2 font-medium disabled:opacity-50"
+              style={{
+                background: chosen ? `var(--vote-${value})` : 'var(--surface-sunken)',
+                color: chosen ? 'var(--on-fill)' : 'var(--ink)',
+                borderColor: chosen ? `var(--vote-${value})` : 'var(--border-control)',
+              }}
+            >
+              {t(`psephoi.${value}`)}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+        {t('psephoi.abstainCounts')}
+      </p>
     </div>
   )
 }

@@ -270,9 +270,11 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
         </div>
       )}
 
-      <p role="alert" style={{ color: 'var(--danger)' }}>
-        {error ?? ''}
-      </p>
+      {error && (
+        <p role="alert" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <button
