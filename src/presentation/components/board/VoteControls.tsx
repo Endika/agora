@@ -9,9 +9,14 @@ const OPTIONS: VoteValue[] = ['up', 'abstain', 'down']
  * difference between "I don't mind" and "I haven't looked".
  *
  * Voting is the most consequential thing anybody does here and it costs one tap, so the app has to
- * be the one that acknowledges it: the three buttons go dead while the write is in the air — a
- * double tap used to cast twice — and a live region says out loud what was just voted. There is no
- * confirmation step and no undo: the tap is the vote, as it always was.
+ * be the one that acknowledges it: the three buttons go dead while the write is in the air, and a
+ * live region says out loud what was just voted. There is no confirmation step and no undo: the tap
+ * is the vote, as it always was.
+ *
+ * What the disabled state buys is that nothing can be queued *behind* a write that is still going —
+ * the slow case, which is the one that used to leave people tapping. Against a local write that
+ * returns in the same tick both halves of a double tap still land, and that is harmless: casting
+ * the same value twice is an upsert of the same row.
  */
 export function VoteControls({
   proposal,
@@ -53,11 +58,14 @@ export function VoteControls({
           )
         })}
       </div>
-      {done !== null && (
-        <p className="text-sm font-medium" style={{ color: 'var(--ink)' }} role="status">
-          {done}
-        </p>
-      )}
+      {/* Always in the DOM, empty until there is something to say. A live region inserted with its
+          text already in it is frequently not announced — screen readers watch these for changes,
+          not for arrivals — and the announcement that would be lost is the first one, which is the
+          whole point of this. Standing there empty also reserves the line, so the confirmation
+          does not shove the rest of the card down as it appears. */}
+      <p role="status" className="min-h-5 text-sm font-medium" style={{ color: 'var(--ink)' }}>
+        {done}
+      </p>
       <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
         {t('psephoi.abstainCounts')}
       </p>

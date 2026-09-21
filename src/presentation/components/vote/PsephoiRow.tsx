@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { VoteValue } from '@/domain/entities/Proposal'
 
@@ -23,6 +24,9 @@ interface Props {
 /** A long row should not take a second to finish arriving, so the stagger stops counting at eight. */
 const STAGGER_CAP = 8
 
+/** Comfortably past both the 180 ms landing and the 260 ms reduced-motion fade that replaces it. */
+const LANDING_MS = 400
+
 /**
  * The signature element. Athenians voted with pebbles — psephos means both "pebble" and "vote" —
  * so a vote here is a pebble and each proposal carries one slot per participant.
@@ -35,6 +39,9 @@ const STAGGER_CAP = 8
  * Two things are allowed to move. Your own pebble lands when you cast it, and the whole row fades
  * up when quorum turns it from stone to colour. Both are marked `data-motion` so the reduced-motion
  * rule in `tokens.css` can swap the movement for a fade instead of deleting the moment.
+ *
+ * `data-motion` is the only way past that rule, so it stays inside this file: two values, two
+ * animations, both about the vote. A test counts them.
  */
 export function PsephoiRow({ participants, cast, revealed, explainSecret, mine = false }: Props) {
   const { t } = useTranslation()
@@ -44,6 +51,24 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
   // Only while the vote is secret. Once every pebble carries its colour, pointing at one of them
   // and calling it yours would hand a shoulder-surfer the answer for free.
   const marked = mine && !revealed && filled > 0
+
+  // The ceremony belongs to your vote arriving, not to a node appearing in a list. Keyed to a DOM
+  // position it also fired every time somebody *else* voted — the ring stepped one pebble to the
+  // right and played your animation for their vote — and again on every first paint. An effect on
+  // `mine` fires once, when your own vote lands, and never for anybody else's.
+  const [landing, setLanding] = useState(false)
+  const already = useRef(mine)
+  useEffect(() => {
+    const arrived = mine && !already.current
+    already.current = mine
+    if (!arrived) return undefined
+    setLanding(true)
+    // Taken off again once it is over, so that a node moved by a later re-sort of the board does
+    // not restart it. `onAnimationEnd` would be exact, but jsdom has no AnimationEvent and an
+    // untestable branch is worse than a timer that outlasts both durations.
+    const timer = setTimeout(() => setLanding(false), LANDING_MS)
+    return () => clearTimeout(timer)
+  }, [mine])
 
   return (
     <>
@@ -60,9 +85,11 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           // Abstain is a ring, not another shade of grey: revealed it would otherwise look exactly like
           // an unrevealed pebble, and colour must never be the only thing carrying the meaning.
           const hollow = value === 'abstain'
-          // The last one, because that is the one that was just added: it mounts with the vote, so
-          // it is the pebble that can be seen to land. Position says nothing about direction.
-          const own = marked && i === filled - 1
+          // Always the first slot. There is no person-to-pebble mapping to be right about, so the
+          // position is arbitrary — but it has to be *fixed*: a ring that walks rightwards as other
+          // people vote teaches a mapping that does not exist, on the one screen whose whole
+          // premise is that it does not.
+          const own = marked && i === 0
           return (
             <span
               // The key changes the moment the row is revealed, so every pebble remounts and the
@@ -71,7 +98,8 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
               data-testid={own ? 'pebble-mine' : 'pebble-cast'}
               {...(value ? { 'data-vote': value } : {})}
               {...(revealed ? { 'data-motion': 'row-reveal' } : {})}
-              {...(own ? { 'data-motion': 'pebble-land' } : {})}
+              {...(own && landing ? { 'data-motion': 'pebble-land' } : {})}
+              onAnimationEnd={own && landing ? () => setLanding(false) : undefined}
               title={value ? t(`psephoi.${value}`) : undefined}
               className={hollow ? 'size-3.5 rounded-full border-[3px]' : 'size-3.5 rounded-full'}
               style={{
@@ -84,9 +112,9 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
                       // same on the card, in the sheet and in the panel.
                       outline: '2px solid var(--ink)',
                       outlineOffset: '2px',
-                      animation: 'pebble-land 180ms ease-out both',
                     }
                   : {}),
+                ...(own && landing ? { animation: 'pebble-land 180ms ease-out both' } : {}),
                 ...(revealed
                   ? {
                       animation: 'row-reveal 240ms ease-out both',

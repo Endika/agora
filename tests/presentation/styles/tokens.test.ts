@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 
 /** WCAG 2.x relative luminance and contrast ratio, straight from the spec. */
 function luminance(hex: string): number {
@@ -233,5 +233,31 @@ describe('motion under prefers-reduced-motion', () => {
       expect(frames).toContain('opacity')
       expect(frames).not.toContain('transform')
     }
+  })
+})
+
+describe('the reduced-motion escape hatch stays small', () => {
+  function sources(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+      entry.isDirectory()
+        ? sources(`${dir}/${entry.name}`)
+        : /\.tsx?$/.test(entry.name)
+          ? [`${dir}/${entry.name}`]
+          : [],
+    )
+  }
+
+  it('only the pebble row may opt out, and only for its two animations', () => {
+    // `*:not([data-motion])` is a hole in the blanket that flattens motion. It is meant for the
+    // two moments that carry information; anything else reaching for it is reaching for an
+    // exemption from somebody's stated preference, and should have to argue for it here first.
+    const users = sources('src').filter((file) =>
+      readFileSync(file, 'utf8').includes("'data-motion'"),
+    )
+    expect(users).toEqual(['src/presentation/components/vote/PsephoiRow.tsx'])
+
+    const row = readFileSync(users[0]!, 'utf8')
+    const values = [...row.matchAll(/'data-motion': '([a-z-]+)'/g)].map((match) => match[1])
+    expect(new Set(values)).toEqual(new Set(['pebble-land', 'row-reveal']))
   })
 })
