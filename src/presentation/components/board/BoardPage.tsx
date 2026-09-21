@@ -191,10 +191,13 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         {/* Opening a proposal is a route, so the phone's back button closes it. */}
         {open && !wide && (
           <Sheet label={open.title} onClose={closeSheet}>
+            {/* The sheet covers the board, so the board's copy of the secret-ballot line is not on
+                screen and this one has to say it. */}
             <ProposalDetail
               proposal={open}
               board={board}
               onChanged={reload}
+              explainSecret
               {...actionsFor(open)}
             />
           </Sheet>
@@ -259,7 +262,14 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
           >
             {t('board.back')}
           </button>
-          <ProposalDetail proposal={open} board={board} onChanged={reload} {...actionsFor(open)} />
+          {/* The board is still on screen beside this, and it already says it once. */}
+          <ProposalDetail
+            proposal={open}
+            board={board}
+            onChanged={reload}
+            explainSecret={false}
+            {...actionsFor(open)}
+          />
         </aside>
       )}
     </div>
