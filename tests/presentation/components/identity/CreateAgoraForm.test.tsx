@@ -65,6 +65,20 @@ describe('CreateAgoraForm', () => {
     expect(board.group.ballotOpen).toBe(true)
   })
 
+  it('selects an option when its hint text is clicked, not just its radio dot', async () => {
+    renderWithBoard(<CreateAgoraForm onCreated={() => {}} />, { slug: null })
+
+    const open = screen.getByRole('radio', { name: 'Con tu nombre' })
+    expect(open).not.toBeChecked()
+
+    // The whole row is the target, not the 20x20 dot: this is what proves it, by clicking rather
+    // than measuring a wrapper.
+    await userEvent.click(
+      screen.getByText('Cuando se resuelva la propuesta, tu voto llevará tu nombre.'),
+    )
+    expect(open).toBeChecked()
+  })
+
   it('lets picking open and then secret again land back on the protected default', async () => {
     const repo = new InMemoryBoardRepository()
     let created: string | null = null
