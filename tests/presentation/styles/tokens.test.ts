@@ -26,6 +26,34 @@ function token(name: string, block: 'light' | 'dark'): string {
   return match[1]!
 }
 
+/**
+ * Extracts the declaration body of the rule/at-rule that opens at `marker`, matching braces so
+ * nested rules (like the `@media` inside `:root:not([data-theme='light'])`) don't spill out.
+ */
+function ruleBody(source: string, marker: string): string {
+  const markerIndex = source.indexOf(marker)
+  if (markerIndex === -1) throw new Error(`marker ${JSON.stringify(marker)} not found`)
+  const openIndex = source.indexOf('{', markerIndex)
+  let depth = 0
+  for (let i = openIndex; i < source.length; i++) {
+    if (source[i] === '{') depth++
+    else if (source[i] === '}') {
+      depth--
+      if (depth === 0) return source.slice(openIndex + 1, i)
+    }
+  }
+  throw new Error(`unbalanced braces after ${JSON.stringify(marker)}`)
+}
+
+/** Parses every `--token: value;` declaration in a rule body into a name → value map. */
+function declarations(body: string): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const match of body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/gi)) {
+    map.set(match[1]!, match[2]!.trim())
+  }
+  return map
+}
+
 describe('design tokens', () => {
   it('meets AA for body text on both grounds', () => {
     expect(contrast(token('ink', 'light'), token('ground', 'light'))).toBeGreaterThanOrEqual(4.5)
@@ -101,6 +129,17 @@ describe('design tokens', () => {
   it('el voto a favor no es el mismo color que el saldo positivo', () => {
     for (const block of ['light', 'dark'] as const) {
       expect(token('vote-up', block)).not.toBe(token('pos', block))
+    }
+  })
+
+  it('los dos bloques oscuros — @media y [data-theme] — coinciden token a token', () => {
+    const mediaBlock = declarations(ruleBody(css, '@media (prefers-color-scheme: dark)'))
+    const explicitBlock = declarations(ruleBody(css, ":root[data-theme='dark']"))
+
+    expect(mediaBlock.size).toBeGreaterThan(0)
+    expect(new Set(mediaBlock.keys())).toEqual(new Set(explicitBlock.keys()))
+    for (const [name, value] of mediaBlock) {
+      expect(explicitBlock.get(name)).toBe(value)
     }
   })
 })
