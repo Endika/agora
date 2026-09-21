@@ -79,6 +79,7 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
           participants={participants.length}
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
+          explainSecret={false}
         />
         {proposal.votesRevealed && (
           <p

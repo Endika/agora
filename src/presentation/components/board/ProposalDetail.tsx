@@ -88,6 +88,7 @@ export function ProposalDetail({
           participants={board.participants.length}
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
+          explainSecret
         />
         {proposal.status === 'open' && (
           <>

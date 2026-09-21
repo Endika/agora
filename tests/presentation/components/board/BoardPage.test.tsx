@@ -329,6 +329,55 @@ describe('BoardPage', () => {
     expect(screen.getByText('En blanco también cuenta para el quórum')).toBeInTheDocument()
   })
 
+  it('dice una sola vez, sobre la lista, que el voto es secreto mientras algo sigue abierto', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Rent a van' })
+    await repo.createProposal({ slug, title: 'Buy chairs' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.getAllByText('Los votos se ven al alcanzar el quórum')).toHaveLength(1)
+  })
+
+  it('no dice que el voto es secreto en el tablón si no queda nada abierto', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
+  })
+
+  it('la tarjeta de la lista no lleva la frase del secreto, solo el tablón', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const card = screen.getByRole('article')
+    expect(within(card).queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
+    expect(screen.getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
+  })
+
+  it('el detalle repite la frase del secreto, porque se puede abrir sin pasar por el tablón', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
+  })
+
   it('freezes the vote once the proposal is resolved', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })

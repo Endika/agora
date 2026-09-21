@@ -47,6 +47,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     (proposal) => proposal.status === 'open' && proposal.myVote === null,
   ).length
 
+  // The secret ballot is a property of the agora, not of any one proposal, so it is said once
+  // here rather than once per open card. A board with nothing left open has nothing to hide.
+  const hasSecretVote = board.proposals.some((proposal) => proposal.status === 'open')
+
   const visible = board.proposals.filter((proposal) => {
     if (filter.kind === 'pending-mine')
       return proposal.status === 'open' && proposal.myVote === null
@@ -164,6 +168,12 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
       </button>
 
       <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
+
+      {hasSecretVote && (
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+          {t('psephoi.secret')}
+        </p>
+      )}
 
       {live.length === 0 && archived.length === 0 ? (
         <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>

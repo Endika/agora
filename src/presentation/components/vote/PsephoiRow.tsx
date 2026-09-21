@@ -6,6 +6,13 @@ interface Props {
   cast: number
   /** Null while the vote is open. Once resolved, every vote in the round. */
   revealed: VoteValue[] | null
+  /**
+   * Whether this row is allowed to explain the secret ballot in text. The row itself cannot tell
+   * whether it is the one copy of that sentence on the page, so the caller says so explicitly —
+   * the board says it once above the list, the detail repeats it because it can be opened on its
+   * own, and the list card never does, to avoid saying it once per open proposal.
+   */
+  explainSecret: boolean
 }
 
 /**
@@ -15,9 +22,9 @@ interface Props {
  * The row *is* the rule: an empty slot is somebody who has not voted, a stone pebble is a vote cast
  * but not revealed, and colour only ever appears once the vote is over. Nothing explains the secret
  * ballot because nothing has to — except that a screen-reader-only cue is not enough on its own, so
- * the same fact is also said in text, once, below the row.
+ * the same fact is also said in text where the caller asks for it.
  */
-export function PsephoiRow({ participants, cast, revealed }: Props) {
+export function PsephoiRow({ participants, cast, revealed, explainSecret }: Props) {
   const { t } = useTranslation()
   const filled = revealed ? revealed.length : Math.min(cast, participants)
   const empty = Math.max(0, participants - filled)
@@ -58,7 +65,7 @@ export function PsephoiRow({ participants, cast, revealed }: Props) {
           />
         ))}
       </div>
-      {!revealed && (
+      {explainSecret && !revealed && (
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
           {t('psephoi.secret')}
         </p>

@@ -4,31 +4,43 @@ import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 
 describe('PsephoiRow', () => {
   it('shows one slot per participant, empty for whoever has not voted', () => {
-    render(<PsephoiRow participants={4} cast={2} revealed={null} />)
+    render(<PsephoiRow participants={4} cast={2} revealed={null} explainSecret={false} />)
     expect(screen.getAllByTestId('pebble-cast')).toHaveLength(2)
     expect(screen.getAllByTestId('pebble-empty')).toHaveLength(2)
   })
 
   it('carries no sentiment at all while the vote is open', () => {
-    const { container } = render(<PsephoiRow participants={4} cast={4} revealed={null} />)
+    const { container } = render(
+      <PsephoiRow participants={4} cast={4} revealed={null} explainSecret={false} />,
+    )
     expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
   })
 
-  it('dice en pantalla que el voto es secreto mientras no hay quórum, sin duplicarlo por voz', () => {
-    render(<PsephoiRow participants={5} cast={2} revealed={null} />)
+  it('dice en pantalla que el voto es secreto cuando el llamador lo pide, sin duplicarlo por voz', () => {
+    render(<PsephoiRow participants={5} cast={2} revealed={null} explainSecret />)
     expect(screen.getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
     expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
   })
 
+  it('no lo dice si el llamador no lo pide, aunque el voto siga siendo secreto', () => {
+    render(<PsephoiRow participants={5} cast={2} revealed={null} explainSecret={false} />)
+    expect(screen.queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
+  })
+
   it('deja de decirlo una vez revelados, y no lo dice dos veces por voz', () => {
-    render(<PsephoiRow participants={2} cast={2} revealed={['up', 'down']} />)
+    render(<PsephoiRow participants={2} cast={2} revealed={['up', 'down']} explainSecret />)
     expect(screen.queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
     expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
   })
 
   it('reveals every pebble once the proposal resolved', () => {
     render(
-      <PsephoiRow participants={4} cast={4} revealed={['up', 'abstain', 'abstain', 'abstain']} />,
+      <PsephoiRow
+        participants={4}
+        cast={4}
+        revealed={['up', 'abstain', 'abstain', 'abstain']}
+        explainSecret={false}
+      />,
     )
     const pebbles = screen.getAllByTestId('pebble-cast')
     expect(pebbles[0]).toHaveAttribute('data-vote', 'up')
@@ -37,7 +49,14 @@ describe('PsephoiRow', () => {
   })
 
   it('tells the three votes apart by shape as well as colour', () => {
-    render(<PsephoiRow participants={3} cast={3} revealed={['up', 'down', 'abstain']} />)
+    render(
+      <PsephoiRow
+        participants={3}
+        cast={3}
+        revealed={['up', 'down', 'abstain']}
+        explainSecret={false}
+      />,
+    )
     const pebbles = screen.getAllByTestId('pebble-cast')
     expect(pebbles[0]).toHaveAttribute('title', 'A favor')
     expect(pebbles[1]).toHaveAttribute('title', 'En contra')
@@ -48,7 +67,7 @@ describe('PsephoiRow', () => {
   })
 
   it('announces the count for anyone not seeing the pebbles', () => {
-    render(<PsephoiRow participants={5} cast={3} revealed={null} />)
+    render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} />)
     expect(screen.getByRole('img')).toHaveAccessibleName(/3.*5/)
   })
 })
