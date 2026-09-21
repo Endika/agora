@@ -24,7 +24,16 @@ export function Sheet({
 }) {
   const { t } = useTranslation()
   const panel = useRef<HTMLDivElement | null>(null)
+  const onCloseRef = useRef(onClose)
 
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
+  // Deliberately `[]`: every call site passes a fresh inline `onClose`, so depending on it would
+  // re-run this effect (un-inert, refocus) on every parent re-render, yanking focus out of
+  // whatever the user is typing in. `onCloseRef` gives the handlers below the current callback
+  // without the effect needing to know it changed.
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
     const background = [...document.body.children].filter(
@@ -37,7 +46,7 @@ export function Sheet({
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
         return
       }
       if (event.key !== 'Tab') return
@@ -68,7 +77,7 @@ export function Sheet({
       document.body.style.overflow = previousOverflow
       opener?.focus?.()
     }
-  }, [onClose])
+  }, [])
 
   return createPortal(
     <div
