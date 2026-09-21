@@ -20,16 +20,21 @@ const wiring = () => ({
 afterEach(async () => {
   localStorage.clear()
   document.documentElement.removeAttribute('data-theme')
-  document.documentElement.lang = 'es'
+  // No `lang = 'es'` here: it used to reset the attribute to the very value the bug left behind,
+  // so a test could never tell a working <html lang> from a hardcoded one. Changing the language
+  // back is enough — `initI18n` follows it.
   await i18next.changeLanguage('es')
 })
 
 describe('el pie: idioma y tema alcanzables', () => {
   it('cambiar el idioma actualiza <html lang> y se traduce la interfaz', async () => {
     render(<App {...wiring()} />)
+    expect(document.documentElement.lang).toBe('es')
 
     await userEvent.selectOptions(screen.getByLabelText('Idioma'), 'English')
 
+    // Written by the i18n layer, not by the picker: the attribute follows the language wherever
+    // the language is changed from.
     expect(document.documentElement.lang).toBe('en')
     expect(await screen.findByRole('button', { name: 'Create the agora' })).toBeInTheDocument()
   })

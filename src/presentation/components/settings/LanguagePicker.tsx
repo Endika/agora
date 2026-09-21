@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { LOCALES } from '@/presentation/i18n'
 
-/** The detector already persists `agora:locale` on changeLanguage; this only sets <html lang>. */
+/**
+ * The detector persists `agora:locale` on changeLanguage, and `initI18n` keeps `<html lang>` in
+ * step with it from boot onwards — so this only has to change the language.
+ */
 export function LanguagePicker() {
   const { t, i18n } = useTranslation()
 
@@ -10,11 +13,7 @@ export function LanguagePicker() {
       <span>{t('settings.language')}</span>
       <select
         value={i18n.language}
-        onChange={(event) => {
-          const locale = event.target.value
-          void i18n.changeLanguage(locale)
-          document.documentElement.lang = locale
-        }}
+        onChange={(event) => void i18n.changeLanguage(event.target.value)}
         className="min-h-11 min-w-0 rounded-[--radius] border px-2"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
