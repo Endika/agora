@@ -8,6 +8,10 @@ import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
 import { matchMediaMatches } from '../../../support/matchMedia'
 
+/** The one sentence that has to be on screen before anybody taps a vote button. */
+const SECRET =
+  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
+
 beforeEach(() => {
   localStorage.clear()
   window.location.hash = ''
@@ -346,7 +350,7 @@ describe('BoardPage', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
-    expect(screen.getAllByText('Los votos se ven al alcanzar el quórum')).toHaveLength(1)
+    expect(screen.getAllByText(SECRET)).toHaveLength(1)
   })
 
   it('no dice que el voto es secreto en el tablón si no queda nada abierto', async () => {
@@ -361,7 +365,7 @@ describe('BoardPage', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
-    expect(screen.queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
+    expect(screen.queryByText(SECRET)).toBeNull()
   })
 
   it('la tarjeta de la lista no lleva la frase del secreto, solo el tablón', async () => {
@@ -371,8 +375,8 @@ describe('BoardPage', () => {
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     const card = screen.getByRole('article')
-    expect(within(card).queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
-    expect(screen.getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
+    expect(within(card).queryByText(SECRET)).toBeNull()
+    expect(screen.getByText(SECRET)).toBeInTheDocument()
   })
 
   it('el detalle repite la frase del secreto, porque se puede abrir sin pasar por el tablón', async () => {
@@ -385,7 +389,89 @@ describe('BoardPage', () => {
     )
 
     const dialog = screen.getByRole('dialog')
-    expect(within(dialog).getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
+    expect(within(dialog).getByText(SECRET)).toBeInTheDocument()
+  })
+
+  /** A resolved proposal with a name in each of the three senses, seeded through the real port. */
+  async function resolvedWithNames() {
+    const names = [
+      'Ekin Etxebarria Goikoetxea',
+      'Amaia Urrutikoetxea Zabaleta',
+      'Maddi Aranburu Olabarrieta',
+      'Jon Azpiazu Iturriaga',
+      'Iker Bengoetxea Mendizabal',
+    ]
+    const { repo, slug, as } = await agoraWith(names)
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    const senses: VoteValue[] = ['up', 'up', 'up', 'abstain', 'down']
+    for (const [index, name] of names.entries()) {
+      as(name)
+      await repo.castVote({ proposalId: id, round: 1, value: senses[index]! })
+    }
+    as(names[0]!)
+    return { repo, slug, id, names, board: await repo.getBoard(slug) }
+  }
+
+  it('una vez resuelta, el tablón dice quién votó qué, agrupado por sentido', async () => {
+    const { repo, slug, board } = await resolvedWithNames()
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const roll = within(screen.getByRole('article')).getByTestId('vote-roll')
+    expect(within(roll).getByTestId('roll-up')).toHaveTextContent(
+      'A favor: Ekin Etxebarria Goikoetxea, Amaia Urrutikoetxea Zabaleta, Maddi Aranburu Olabarrieta',
+    )
+    expect(within(roll).getByTestId('roll-abstain')).toHaveTextContent(
+      'En blanco: Jon Azpiazu Iturriaga',
+    )
+    expect(within(roll).getByTestId('roll-down')).toHaveTextContent(
+      'En contra: Iker Bengoetxea Mendizabal',
+    )
+  })
+
+  it('la atribución llega también a la hoja y al panel lateral', async () => {
+    for (const wide of [true, false]) {
+      const { repo, slug, id, board } = await resolvedWithNames()
+      matchMediaMatches(wide)
+      const view = renderWithBoard(
+        <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+        { repo, slug },
+      )
+      const shell = wide
+        ? screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+        : screen.getByRole('dialog')
+      expect(within(shell).getByTestId('roll-down')).toHaveTextContent(
+        'En contra: Iker Bengoetxea Mendizabal',
+      )
+      view.unmount()
+    }
+  })
+
+  it('MIENTRAS LA PROPUESTA SIGUE ABIERTA el tablón no pone ni un nombre junto a un sentido', async () => {
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('Amaia')
+    await repo.castVote({ proposalId: id, round: 1, value: 'down' })
+
+    as('Ekin')
+    const board = await repo.getBoard(slug)
+    expect(board.proposals[0]!.status).toBe('open')
+    const { container } = renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'board', slug }} />,
+      { repo, slug },
+    )
+
+    // Secrecy during the round is the premise of the whole screen. Three ways it could break:
+    // a roll rendered early, a coloured pebble, or a pebble you can hover for the answer.
+    expect(screen.queryByTestId('vote-roll')).toBeNull()
+    expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
+    for (const pebble of screen.getAllByTestId('pebble-cast')) {
+      expect(pebble).not.toHaveAttribute('title')
+    }
+
+    // And the name of the one person who has voted appears nowhere at all — while somebody who
+    // has not is named out loud, which is what stops this test passing on an empty card.
+    expect(screen.getByTestId('missing-voters')).toHaveTextContent('Ekin')
+    expect(container.textContent).not.toContain('Amaia')
   })
 
   it('freezes the vote once the proposal is resolved', async () => {
@@ -853,8 +939,6 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
   })
 
   it('la frase del voto secreto se dice una sola vez en pantalla, sea cual sea la forma', async () => {
-    const SECRET = 'Los votos se ven al alcanzar el quórum'
-
     // Counted across the whole document on purpose, minus whatever sits under `inert` — the sheet
     // marks the board inert, so the board's copy is neither seen nor announced while it is up.
     // The board says it once above the list and the detail says it when it covers the board; each

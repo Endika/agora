@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { VoteValue } from '@/domain/entities/Proposal'
+import type { CastVote, VoteValue } from '@/domain/entities/Proposal'
+import type { Participant } from '@/domain/repositories/BoardRepository'
 
 interface Props {
-  participants: number
+  /** Everyone entitled to vote: the row's length, and the names the roll is written from. */
+  participants: Participant[]
   cast: number
-  /** Null while the vote is open. Once resolved, every vote in the round. */
-  revealed: VoteValue[] | null
+  /** Null while the vote is open. Once resolved, every vote in the round, with its voter. */
+  revealed: CastVote[] | null
   /**
-   * Whether this row is allowed to explain the secret ballot in text. The row itself cannot tell
+   * Whether this row is allowed to explain the ballot rule in text. The row itself cannot tell
    * whether it is the one copy of that sentence on the page, so the caller says so explicitly —
    * the board says it once above the list, the detail repeats it because it can be opened on its
    * own, and the list card never does, to avoid saying it once per open proposal.
@@ -24,17 +26,30 @@ interface Props {
 /** A long row should not take a second to finish arriving, so the stagger stops counting at eight. */
 const STAGGER_CAP = 8
 
-/** Comfortably past both the 180 ms landing and the 260 ms reduced-motion fade that replaces it. */
-const LANDING_MS = 400
+/**
+ * Comfortably past both landing variants: the 180 ms `pebble-land` set inline below and the
+ * 200 ms `pebble-land-still` that `tokens.css` swaps in under reduced motion. (260 ms is
+ * `row-reveal-still`, a different keyframe on a different element — it never gates this timer.)
+ * A test in `tokens.test.ts` reads both durations out of the source and holds this above them.
+ */
+export const LANDING_MS = 400
+
+/** Grouped the way the row reads: in favour, blank, against. Only groups with a vote are shown. */
+const ROLL_ORDER: VoteValue[] = ['up', 'abstain', 'down']
 
 /**
  * The signature element. Athenians voted with pebbles — psephos means both "pebble" and "vote" —
  * so a vote here is a pebble and each proposal carries one slot per participant.
  *
  * The row *is* the rule: an empty slot is somebody who has not voted, a stone pebble is a vote cast
- * but not revealed, and colour only ever appears once the vote is over. Nothing explains the secret
- * ballot because nothing has to — except that a screen-reader-only cue is not enough on its own, so
- * the same fact is also said in text where the caller asks for it.
+ * but not revealed, and colour only ever appears once the vote is over. What the row cannot say is
+ * the half of the rule that changes how people vote — that the ballot is secret only until quorum,
+ * and carries your name afterwards — so the same fact is said in text where the caller asks for it,
+ * before anybody taps anything.
+ *
+ * Once it resolves the row keeps being the summary and the roll underneath is the detail: who voted
+ * what, grouped by sense. That is also the accessible copy of it — the row is a single `role="img"`,
+ * so its pebbles are not reachable one by one, and a screen reader gets the attribution as text.
  *
  * Two things are allowed to move. Your own pebble lands when you cast it, and the whole row fades
  * up when quorum turns it from stone to colour. Both are marked `data-motion` so the reduced-motion
@@ -45,12 +60,32 @@ const LANDING_MS = 400
  */
 export function PsephoiRow({ participants, cast, revealed, explainSecret, mine = false }: Props) {
   const { t } = useTranslation()
-  const filled = revealed ? revealed.length : Math.min(cast, participants)
-  const empty = Math.max(0, participants - filled)
+  const total = participants.length
+  const filled = revealed ? revealed.length : Math.min(cast, total)
+  const empty = Math.max(0, total - filled)
 
   // Only while the vote is secret. Once every pebble carries its colour, pointing at one of them
   // and calling it yours would hand a shoulder-surfer the answer for free.
   const marked = mine && !revealed && filled > 0
+
+  // A vote whose voter is gone has no name to print. Erasure cascades onto votes, so this is
+  // defensive rather than expected — but a missing name must drop out of the roll, never render
+  // as "undefined" next to a sense.
+  const nameOf = (participantId: string) =>
+    participants.find((person) => person.id === participantId)?.name
+
+  // Built only from `revealed`, which is the server's own "the round is over" signal. While the
+  // proposal is open there is no list to leak, because there is nothing to build it from.
+  const roll = (revealed ?? [])
+    .reduce<{ value: VoteValue; names: string[] }[]>((groups, vote) => {
+      const name = nameOf(vote.participantId)
+      if (name === undefined) return groups
+      const group = groups.find((candidate) => candidate.value === vote.value)
+      if (group) group.names.push(name)
+      else groups.push({ value: vote.value, names: [name] })
+      return groups
+    }, [])
+    .sort((a, b) => ROLL_ORDER.indexOf(a.value) - ROLL_ORDER.indexOf(b.value))
 
   // The ceremony belongs to your vote arriving, not to a node appearing in a list. Keyed to a DOM
   // position it also fired every time somebody *else* voted — the ring stepped one pebble to the
@@ -77,11 +112,12 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
         role="img"
         aria-label={t(marked ? 'psephoi.progressMine' : 'psephoi.progress', {
           cast: filled,
-          total: participants,
+          total,
         })}
       >
         {Array.from({ length: filled }, (_, i) => {
-          const value = revealed?.[i]
+          const vote = revealed?.[i]
+          const value = vote?.value
           // Abstain is a ring, not another shade of grey: revealed it would otherwise look exactly like
           // an unrevealed pebble, and colour must never be the only thing carrying the meaning.
           const hollow = value === 'abstain'
@@ -90,6 +126,10 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           // people vote teaches a mapping that does not exist, on the one screen whose whole
           // premise is that it does not.
           const own = marked && i === 0
+          // The name only ever rides along once the round is over. Before that a pebble carries no
+          // title at all, so there is nothing to hover and nothing to read out.
+          const voter = vote ? nameOf(vote.participantId) : undefined
+          const label = value ? t(`psephoi.${value}`) : undefined
           return (
             <span
               // The key changes the moment the row is revealed, so every pebble remounts and the
@@ -100,7 +140,7 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
               {...(revealed ? { 'data-motion': 'row-reveal' } : {})}
               {...(own && landing ? { 'data-motion': 'pebble-land' } : {})}
               onAnimationEnd={own && landing ? () => setLanding(false) : undefined}
-              title={value ? t(`psephoi.${value}`) : undefined}
+              title={label && voter ? `${voter}: ${label}` : label}
               className={hollow ? 'size-3.5 rounded-full border-[3px]' : 'size-3.5 rounded-full'}
               style={{
                 ...(hollow
@@ -138,6 +178,32 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
           {t('psephoi.secret')}
         </p>
+      )}
+      {roll.length > 0 && (
+        // One sense per line, and names that wrap rather than truncate: a name is as long as
+        // somebody's name is, and at 280 px a single group already takes three lines. Inline with
+        // a separator — which is how the spec sketched it — puts the "·" at the start or the end
+        // of a wrapped line as soon as the names are real, and one group's tail ends up sharing a
+        // line with the next group's label. Aligned labels read faster and never do that.
+        // The label stays in --ink rather than its vote colour: --vote-up is 4.23:1 on --ground,
+        // a UI-component pass and a small-text fail. The colour is right above, in the pebbles.
+        <ul
+          data-testid="vote-roll"
+          aria-label={t('psephoi.roll')}
+          className="grid min-w-0 gap-y-1 text-sm"
+          style={{ color: 'var(--ink-muted)' }}
+        >
+          {roll.map((group) => (
+            <li
+              key={group.value}
+              className="min-w-0 break-words"
+              data-testid={`roll-${group.value}`}
+            >
+              <span style={{ color: 'var(--ink)' }}>{t(`psephoi.${group.value}`)}</span>
+              {`: ${group.names.join(', ')}`}
+            </li>
+          ))}
+        </ul>
       )}
     </>
   )

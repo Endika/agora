@@ -57,8 +57,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     (proposal) => proposal.status === 'open' && proposal.myVote === null,
   ).length
 
-  // The secret ballot is a property of the agora, not of any one proposal, so it is said once
-  // here rather than once per open card. A board with nothing left open has nothing to hide.
+  // How the ballot works is a property of the agora, not of any one proposal, so it is said once
+  // here rather than once per open card — and it has to be read *before* the first vote button,
+  // because "open at quorum, with your name on it" changes how somebody votes. A board with
+  // nothing left open has nothing still to keep.
   const hasSecretVote = board.proposals.some((proposal) => proposal.status === 'open')
 
   const visible = board.proposals.filter((proposal) => {
@@ -212,7 +214,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         {/* Opening a proposal is a route, so the phone's back button closes it. */}
         {open && !wide && (
           <Sheet label={open.title} onClose={closeSheet}>
-            {/* The sheet covers the board, so the board's copy of the secret-ballot line is not on
+            {/* The sheet covers the board, so the board's copy of the ballot-rule line is not on
                 screen and this one has to say it. */}
             <ProposalDetail
               proposal={open}

@@ -88,9 +88,9 @@ export function ProposalCard({
 
       <div className="grid gap-1">
         <PsephoiRow
-          participants={participants.length}
+          participants={participants}
           cast={proposal.tally.cast}
-          revealed={proposal.votes?.map((vote) => vote.value) ?? null}
+          revealed={proposal.votes}
           explainSecret={false}
           mine={proposal.myVote !== null}
         />

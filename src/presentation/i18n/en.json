@@ -13,12 +13,13 @@
   "psephoi": {
     "progress": "{{cast}} of {{total}} have voted",
     "progressMine": "{{cast}} of {{total}} have voted, yours among them",
-    "secret": "Votes are revealed at quorum",
+    "secret": "Nobody sees your vote until quorum is reached. After that the whole group sees it, with your name.",
     "choose": "Your vote",
     "up": "In favour",
     "down": "Against",
     "abstain": "Abstain",
     "abstainCounts": "Abstaining also counts towards quorum",
+    "roll": "Who voted what",
     "voted": {
       "up": "You voted in favour",
       "down": "You voted against",
