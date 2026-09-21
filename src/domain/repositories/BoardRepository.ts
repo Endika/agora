@@ -36,7 +36,7 @@ export interface HistoryEntry {
 export interface BoardSnapshot {
   /** Server-side watermark. The client compares it before asking for anything bigger. */
   version: string
-  group: { id: string; slug: string; name: string }
+  group: { id: string; slug: string; name: string; ballotOpen: boolean }
   me: Participant
   participants: Participant[]
   proposals: Proposal[]
@@ -69,7 +69,7 @@ export interface AgoraPreview {
 export type DeleteResult = { ok: true } | { ok: false; error: 'name_mismatch' }
 
 export interface BoardRepository {
-  createAgora(input: { name: string; creatorName: string }): Promise<Identity>
+  createAgora(input: { name: string; creatorName: string; ballotOpen: boolean }): Promise<Identity>
   preview(slug: string): Promise<AgoraPreview>
   /** "That one is me": points an existing name at this device. */
   claim(input: { slug: string; participantId: string }): Promise<Identity>

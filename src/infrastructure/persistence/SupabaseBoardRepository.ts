@@ -36,7 +36,11 @@ export class SupabaseBoardRepository implements BoardRepository {
     return data
   }
 
-  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
+  async createAgora(input: {
+    name: string
+    creatorName: string
+    ballotOpen: boolean
+  }): Promise<Identity> {
     // The slug is generated here, so a collision is ours to retry rather than the server's to solve.
     for (let attempt = 1; ; attempt++) {
       try {
@@ -45,6 +49,7 @@ export class SupabaseBoardRepository implements BoardRepository {
           p_slug: this.slugGenerator(),
           p_creator_name: input.creatorName,
           p_device_token: this.deviceToken(),
+          p_ballot_open: input.ballotOpen,
         })
         const parsed = identitySchema.parse(data)
         return { slug: parsed.slug, participantId: parsed.participant_id }

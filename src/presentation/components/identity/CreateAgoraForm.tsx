@@ -27,6 +27,8 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
       const identity = await repo.createAgora({
         name: agoraName.trim(),
         creatorName: name.trim(),
+        // Task 3 puts the choice on the form; until then every new agora is open, as they all were.
+        ballotOpen: true,
       })
       onCreated(identity.slug)
     } catch (cause) {

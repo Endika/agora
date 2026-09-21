@@ -36,7 +36,8 @@ const proposal = z.object({
   }),
   myVote: z.nullable(voteValue),
   votesRevealed: z.boolean(),
-  votes: z.nullable(z.array(z.object({ participantId: z.string(), value: voteValue }))),
+  // Optional, not nullable: a secret agora omits the key rather than sending it empty.
+  votes: z.nullable(z.array(z.object({ participantId: z.optional(z.string()), value: voteValue }))),
   pending: z.array(z.string()),
   images: z.array(
     z.object({
@@ -62,7 +63,7 @@ const proposal = z.object({
 
 export const boardSnapshotSchema = z.object({
   version: z.string(),
-  group: z.object({ id: z.string(), slug: z.string(), name: z.string() }),
+  group: z.object({ id: z.string(), slug: z.string(), name: z.string(), ballotOpen: z.boolean() }),
   me: participant,
   participants: z.array(participant),
   proposals: z.array(proposal),

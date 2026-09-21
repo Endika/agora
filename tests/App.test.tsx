@@ -78,7 +78,11 @@ describe('App', () => {
 describe('App, un enlace que entra directo', () => {
   async function agora() {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     return { repo, slug }
   }
 

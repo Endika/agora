@@ -25,6 +25,7 @@ async function agoraWith(names: string[]) {
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: names[0]!,
+    ballotOpen: true,
   })
   for (const name of names.slice(1)) await repo.addParticipant({ slug, name })
   const as = (name: string) => repo.actAs(repo.participantId(slug, name))
@@ -1140,7 +1141,11 @@ class HeldVotes extends InMemoryBoardRepository {
 
 describe('BoardPage, el momento de votar', () => {
   async function boardWith(repo: InMemoryBoardRepository, title: string) {
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     await repo.addParticipant({ slug, name: 'bob' })
     repo.actAs(repo.participantId(slug, 'alice'))
     const id = await repo.createProposal({ slug, title })
@@ -1336,7 +1341,11 @@ class QueuedVotes extends InMemoryBoardRepository {
 
 describe('BoardPage, dos votos en el aire a la vez', () => {
   async function twoOpenProposals(repo: InMemoryBoardRepository) {
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     await repo.addParticipant({ slug, name: 'bob' })
     repo.actAs(repo.participantId(slug, 'alice'))
     const first = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
