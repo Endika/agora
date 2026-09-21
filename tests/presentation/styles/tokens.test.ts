@@ -38,23 +38,41 @@ function contrast(a: string, b: string): number {
 
 const css = readFileSync('src/presentation/styles/tokens.css', 'utf8')
 
-/** Reads a token from a specific block, so light and dark are checked separately. */
-function token(name: string, block: 'light' | 'dark'): string {
-  const source =
-    block === 'light'
-      ? css.slice(0, css.indexOf('@media (prefers-color-scheme: dark)'))
-      : css.slice(css.indexOf(":root[data-theme='dark']"))
-  const match = source.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, 'i'))
-  if (!match) throw new Error(`token --${name} not found in the ${block} block`)
-  return match[1]!
-}
-
 /**
  * Strips CSS block comments so a brace, or a stale declaration left in a hand-sync note such as
  * "was --danger: #e9594c;", can never be read as live CSS.
  */
 function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '')
+}
+
+/**
+ * Reads a token from a specific block of some stylesheet, so light and dark are checked
+ * separately. Comments go first — `declarations()` already stripped them and this did not, so a
+ * commented-out `--x: …` sitting above the live one was the value every contrast assertion in
+ * this file would have been handed.
+ */
+function tokenIn(source: string, name: string, block: 'light' | 'dark'): string {
+  const stripped = stripComments(source)
+  const scope =
+    block === 'light'
+      ? stripped.slice(0, stripped.indexOf('@media (prefers-color-scheme: dark)'))
+      : stripped.slice(stripped.indexOf(":root[data-theme='dark']"))
+  const match = scope.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, 'i'))
+  if (!match) throw new Error(`token --${name} not found in the ${block} block`)
+  return match[1]!
+}
+
+/** The same, against the real stylesheet. */
+function token(name: string, block: 'light' | 'dark'): string {
+  return tokenIn(css, name, block)
+}
+
+/** The token the focus ring is actually painted with, read out of the rule rather than assumed. */
+function focusRingToken(): string {
+  const match = stripComments(css).match(/:focus-visible\s*\{[^}]*outline:[^;]*var\(--([a-z-]+)\)/)
+  if (!match) throw new Error('no :focus-visible outline in a var() to check')
+  return match[1]!
 }
 
 /**
@@ -167,6 +185,24 @@ describe('design tokens', () => {
         contrast(token('pebble-empty', block), token('surface', block)),
       ).toBeGreaterThanOrEqual(3)
     }
+    // The ruling that lifted --border-control out of 3.0035: an edge that clears 3:1 in the fourth
+    // decimal has not passed, it has rounded. The dark empty pebble sat at 3.0070 on --surface —
+    // the faintest pairing the dashed ring has — and gets held to the same bar the border got.
+    expect(
+      contrast(token('pebble-empty', 'dark'), token('surface', 'dark')),
+    ).toBeGreaterThanOrEqual(3.5)
+  })
+
+  it('el anillo de foco se distingue de las tres superficies (WCAG 1.4.11)', () => {
+    // Read out of the `:focus-visible` rule, not named here: the ring spent twelve axe-clean runs
+    // painted in --brand, which is 2.42:1 on --surface-sunken in light. axe has no rule for the
+    // contrast of a focus indicator, so nothing but this can catch it going back.
+    const ring = focusRingToken()
+    for (const block of ['light', 'dark'] as const) {
+      for (const bg of ['ground', 'surface', 'surface-sunken'] as const) {
+        expect(contrast(token(ring, block), token(bg, block))).toBeGreaterThanOrEqual(3)
+      }
+    }
   })
 
   it('el voto a favor no es el mismo color que el saldo positivo', () => {
@@ -207,6 +243,20 @@ describe('css parsing helpers', () => {
         ['b', '#222222'],
       ]),
     )
+  })
+
+  it('una declaración comentada no se lee como el valor vivo de un token', () => {
+    // `declarations()` stripped comments and `token()` did not, so a note left above a live
+    // declaration — the ordinary way somebody records what a value used to be — would have been
+    // read as the token, and every contrast assertion in this file would have checked the wrong
+    // colour while staying green.
+    const sheet = `
+      :root { /* --pos: #ff0000; retired */ --pos: #2b7255; }
+      @media (prefers-color-scheme: dark) { --pos: #5cb891; }
+      :root[data-theme='dark'] { /* --pos: #00ff00; */ --pos: #5cb891; }
+    `
+    expect(tokenIn(sheet, 'pos', 'light')).toBe('#2b7255')
+    expect(tokenIn(sheet, 'pos', 'dark')).toBe('#5cb891')
   })
 
   it('parses a normal balanced rule cleanly', () => {

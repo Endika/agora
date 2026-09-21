@@ -47,8 +47,11 @@
   --on-fill: #ffffff;
 
   /* Brand — icon, hero, primary action. Never a balance, never an error.
-     --brand is the bare mark: strokes, accents, the focus ring. Anything filled that carries
-     text takes --brand-strong, because --brand under --brand-ink is 3.08:1. */
+     --brand is the bare mark: strokes and accents, nothing that has to be *seen* against a
+     surface. Anything filled that carries text takes --brand-strong, because --brand under
+     --brand-ink is 3.08:1 — and so does the focus ring, because in light --brand is 2.62:1 on
+     --ground, 3.00:1 on --surface and 2.42:1 on --surface-sunken, all short of the 3:1 a focus
+     indicator owes (WCAG 1.4.11). */
   --brand: #ff5a47;
   --brand-ink: #ffffff;
   --brand-strong: #cc4839;
@@ -92,7 +95,7 @@
     --vote-down: #6b8cc4;
     --vote-abstain: #a3ada5;
     --pebble: #97a199;
-    --pebble-empty: #626f6a;
+    --pebble-empty: #717e79;
   }
 }
 
@@ -116,7 +119,7 @@
   --vote-down: #6b8cc4;
   --vote-abstain: #a3ada5;
   --pebble: #97a199;
-  --pebble-empty: #626f6a;
+  --pebble-empty: #717e79;
 }
 
 body {
@@ -133,9 +136,12 @@ h3 {
   letter-spacing: -0.02em;
 }
 
-/* Every interactive element keeps a visible focus ring (WCAG 2.4.11). */
+/* Every interactive element keeps a visible focus ring (WCAG 2.4.11), and the ring itself has to
+   be distinguishable from whatever is behind it (WCAG 1.4.11): --brand-strong is 3.91 / 4.48 /
+   3.62 in light and 8.22 / 7.37 / 8.67 in dark against --ground / --surface / --surface-sunken.
+   axe has no rule for this, which is how --brand sat here through twelve clean runs. */
 :focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--brand-strong);
   outline-offset: 2px;
 }
 
