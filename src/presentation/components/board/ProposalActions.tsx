@@ -13,7 +13,14 @@ interface Props {
   onComplete: (actualCents: number | null) => void
 }
 
-/** What a tie leaves open, and who gets to decide it. The RPC checks all of this again. */
+/**
+ * What a tie leaves open, and who gets to decide it. The RPC checks all of this again.
+ *
+ * Every one of these that cannot be undone arms first and asks second, and every armed state has
+ * a way out. Two of them did not: closing with a reason and completing with a cost replaced their
+ * own trigger, so the only exits were the browser's back button and reloading the page — on the
+ * two writes that end a proposal.
+ */
 export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onComplete }: Props) {
   const { t } = useTranslation()
   const [reason, setReason] = useState('')
@@ -95,25 +102,35 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
               {costError}
             </p>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              if (actual.trim().length === 0) {
-                onComplete(null)
-                return
-              }
-              const cents = parseEuros(actual)
-              if (cents === null) {
-                setCostError(t('expense.amountInvalid'))
-                return
-              }
-              onComplete(cents)
-            }}
-            className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
-          >
-            {t('actions.complete')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (actual.trim().length === 0) {
+                  onComplete(null)
+                  return
+                }
+                const cents = parseEuros(actual)
+                if (cents === null) {
+                  setCostError(t('expense.amountInvalid'))
+                  return
+                }
+                onComplete(cents)
+              }}
+              className="min-h-11 rounded-[--radius] px-4 font-medium"
+              style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
+            >
+              {t('actions.complete')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCompleting(false)}
+              className="min-h-11 rounded-[--radius] border px-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              {t('common.no')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -181,15 +198,25 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
           >
             {t('actions.closeReasonHint')}
           </p>
-          <button
-            type="button"
-            disabled={reason.trim().length < 10}
-            onClick={() => onClose(reason)}
-            className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-50"
-            style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
-          >
-            {t('actions.closeConfirm')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={reason.trim().length < 10}
+              onClick={() => onClose(reason)}
+              className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-50"
+              style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
+            >
+              {t('actions.closeConfirm')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setClosing(false)}
+              className="min-h-11 rounded-[--radius] border px-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              {t('common.no')}
+            </button>
+          </div>
         </div>
       )}
     </div>
