@@ -12,12 +12,18 @@
   },
   "psephoi": {
     "progress": "{{cast}} of {{total}} have voted",
+    "progressMine": "{{cast}} of {{total}} have voted, yours among them",
     "secret": "Votes are revealed at quorum",
     "choose": "Your vote",
     "up": "In favour",
     "down": "Against",
     "abstain": "Abstain",
-    "abstainCounts": "Abstaining also counts towards quorum"
+    "abstainCounts": "Abstaining also counts towards quorum",
+    "voted": {
+      "up": "You voted in favour",
+      "down": "You voted against",
+      "abstain": "You abstained"
+    }
   },
   "common": {
     "cancel": "Cancel",

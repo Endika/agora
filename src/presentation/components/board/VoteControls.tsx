@@ -7,13 +7,24 @@ const OPTIONS: VoteValue[] = ['up', 'abstain', 'down']
 /**
  * Three buttons of equal weight. Abstain is not a footnote: it counts for quorum and it is the
  * difference between "I don't mind" and "I haven't looked".
+ *
+ * Voting is the most consequential thing anybody does here and it costs one tap, so the app has to
+ * be the one that acknowledges it: the three buttons go dead while the write is in the air — a
+ * double tap used to cast twice — and a live region says out loud what was just voted. There is no
+ * confirmation step and no undo: the tap is the vote, as it always was.
  */
 export function VoteControls({
   proposal,
   onVote,
+  pending = false,
+  done = null,
 }: {
   proposal: Proposal
   onVote: (value: VoteValue) => void
+  /** A vote from this copy of the controls is still in flight. */
+  pending?: boolean
+  /** What was voted, once it landed. Null until then. */
+  done?: string | null
 }) {
   const { t } = useTranslation()
   const open = canVote(proposal)
@@ -27,7 +38,7 @@ export function VoteControls({
             <button
               key={value}
               type="button"
-              disabled={!open}
+              disabled={!open || pending}
               aria-pressed={chosen}
               onClick={() => onVote(value)}
               className="min-h-11 min-w-0 flex-1 rounded-[--radius] border px-2 font-medium disabled:opacity-50"
@@ -42,6 +53,11 @@ export function VoteControls({
           )
         })}
       </div>
+      {done !== null && (
+        <p className="text-sm font-medium" style={{ color: 'var(--ink)' }} role="status">
+          {done}
+        </p>
+      )}
       <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
         {t('psephoi.abstainCounts')}
       </p>

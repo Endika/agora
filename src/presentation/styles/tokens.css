@@ -139,11 +139,74 @@ h3 {
   outline-offset: 2px;
 }
 
+/* Motion. Two things move in this app and both of them are the vote: your own pebble arriving
+   when you cast it, and the whole row coming up from stone to colour the moment quorum lands.
+   Anything that animates here carries `data-motion`, which is also what the reduced-motion block
+   below keys off. */
+@keyframes pebble-land {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes row-reveal {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* The same two moments with the movement taken out. Opacity only: nothing scales, nothing
+   travels, and both land on exactly the state the full animation lands on. */
+@keyframes pebble-land-still {
+  from {
+    opacity: 0.2;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes row-reveal-still {
+  from {
+    opacity: 0.2;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* The usual blanket — minus whatever carries `data-motion`. Flattening those to 0.01ms would
+     not be calmer, it would delete the only feedback casting a vote has. Reduced motion asks for
+     less movement, not for less information. */
+  *:not([data-motion]),
+  *:not([data-motion])::before,
+  *:not([data-motion])::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* `!important` on the shorthand because the component sets `animation` inline, delay included,
+     and the staggered wave across the row has to become one calm fade. */
+  [data-motion='pebble-land'] {
+    animation: pebble-land-still 200ms ease-out both !important;
+  }
+
+  [data-motion='row-reveal'] {
+    animation: row-reveal-still 260ms ease-out both !important;
   }
 }

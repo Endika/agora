@@ -12,12 +12,18 @@
   },
   "psephoi": {
     "progress": "Han votado {{cast}} de {{total}}",
+    "progressMine": "Han votado {{cast}} de {{total}}, tu voto incluido",
     "secret": "Los votos se ven al alcanzar el quórum",
     "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
     "abstain": "En blanco",
-    "abstainCounts": "En blanco también cuenta para el quórum"
+    "abstainCounts": "En blanco también cuenta para el quórum",
+    "voted": {
+      "up": "Has votado a favor",
+      "down": "Has votado en contra",
+      "abstain": "Has votado en blanco"
+    }
   },
   "common": {
     "cancel": "Cancelar",

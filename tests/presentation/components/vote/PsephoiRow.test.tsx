@@ -66,6 +66,84 @@ describe('PsephoiRow', () => {
     expect(pebbles[0]!.className).not.toContain('border')
   })
 
+  it('marca tu piedra sin decir por dónde fue', () => {
+    render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} mine />)
+
+    const own = screen.getByTestId('pebble-mine')
+    // Presence, never direction: the ring says "yours is in" and nothing else. If this ever
+    // carries a vote, the secret ballot is over.
+    expect(own).not.toHaveAttribute('data-vote')
+    expect(own).not.toHaveAttribute('title')
+    expect(own.style.outline).toContain('var(--ink)')
+    // And it is stone, exactly like every other pebble in the row.
+    const others = screen.getAllByTestId('pebble-cast')
+    expect(others).toHaveLength(2)
+    for (const other of others) expect(other.style.background).toBe(own.style.background)
+    expect(own.style.background).toBe('var(--pebble)')
+  })
+
+  it('no marca nada si todavía no has votado', () => {
+    render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} />)
+    expect(screen.queryByTestId('pebble-mine')).toBeNull()
+    expect(screen.getAllByTestId('pebble-cast')).toHaveLength(3)
+  })
+
+  it('deja de señalar tu piedra en cuanto se revelan los votos', () => {
+    render(
+      <PsephoiRow participants={2} cast={2} revealed={['up', 'down']} explainSecret={false} mine />,
+    )
+    // With every pebble coloured, pointing at one of them and calling it yours would hand over
+    // the answer to anyone looking at the screen.
+    expect(screen.queryByTestId('pebble-mine')).toBeNull()
+    for (const pebble of screen.getAllByTestId('pebble-cast')) {
+      expect(pebble.style.outline).toBe('')
+    }
+  })
+
+  it('dice también por voz que tu voto ya está dentro, sin decir cuál', () => {
+    render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} mine />)
+    const label = screen.getByRole('img').getAttribute('aria-label') ?? ''
+    expect(label).toContain('tu voto incluido')
+    for (const word of ['favor', 'contra', 'blanco']) expect(label).not.toContain(word)
+  })
+
+  it('tu piedra aterriza, y la fila revelada entra escalonada', () => {
+    const { unmount } = render(
+      <PsephoiRow participants={3} cast={1} revealed={null} explainSecret={false} mine />,
+    )
+    const own = screen.getByTestId('pebble-mine')
+    expect(own).toHaveAttribute('data-motion', 'pebble-land')
+    expect(own.style.animation).toContain('pebble-land')
+    unmount()
+
+    render(
+      <PsephoiRow
+        participants={3}
+        cast={3}
+        revealed={['up', 'down', 'abstain']}
+        explainSecret={false}
+      />,
+    )
+    const pebbles = screen.getAllByTestId('pebble-cast')
+    for (const pebble of pebbles) {
+      expect(pebble).toHaveAttribute('data-motion', 'row-reveal')
+      expect(pebble.style.animation).toContain('row-reveal')
+    }
+    // Staggered, so the row reads as one thing arriving rather than three separate blinks.
+    expect(pebbles[0]!.style.animationDelay).toBe('0ms')
+    expect(pebbles[2]!.style.animationDelay).toBe('80ms')
+  })
+
+  it('las piedras se remontan al revelarse, para que la animación llegue a correr', () => {
+    const { rerender } = render(
+      <PsephoiRow participants={2} cast={2} revealed={null} explainSecret={false} />,
+    )
+    const before = screen.getAllByTestId('pebble-cast')[0]!
+    rerender(<PsephoiRow participants={2} cast={2} revealed={['up', 'up']} explainSecret={false} />)
+    // A CSS animation on a node that never left the DOM never plays. Same position, new node.
+    expect(screen.getAllByTestId('pebble-cast')[0]).not.toBe(before)
+  })
+
   it('announces the count for anyone not seeing the pebbles', () => {
     render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} />)
     expect(screen.getByRole('img')).toHaveAccessibleName(/3.*5/)

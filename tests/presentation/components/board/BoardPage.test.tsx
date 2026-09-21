@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BoardPage } from '@/presentation/components/board/BoardPage'
+import type { VoteValue } from '@/domain/entities/Proposal'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
@@ -924,5 +925,173 @@ describe('BoardPage, el relleno de marca', () => {
     // Read off the inline style: jsdom resolves no custom property, so a `border-color` shorthand
     // holding a var() comes back empty from getComputedStyle and toHaveStyle cannot see it.
     expect(chip.style.borderColor).toBe('var(--brand-strong)')
+  })
+})
+
+/**
+ * The real repository with a latch on one method. Not a mock: the same class, the same write,
+ * doing the same thing — just not yet. Holding a vote in the air is the only way to look at the
+ * buttons while it is still in flight, because the in-memory write otherwise lands in the same
+ * tick as the click.
+ */
+class HeldVotes extends InMemoryBoardRepository {
+  hold = false
+  private open: (() => void) | null = null
+
+  override async castVote(input: {
+    proposalId: string
+    round: number
+    value: VoteValue
+  }): Promise<void> {
+    if (this.hold) await new Promise<void>((resolve) => (this.open = resolve))
+    return super.castVote(input)
+  }
+
+  release(): void {
+    this.hold = false
+    this.open?.()
+    this.open = null
+  }
+}
+
+describe('BoardPage, el momento de votar', () => {
+  async function boardWith(repo: InMemoryBoardRepository, title: string) {
+    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    await repo.addParticipant({ slug, name: 'bob' })
+    repo.actAs(repo.participantId(slug, 'alice'))
+    const id = await repo.createProposal({ slug, title })
+    return { slug, id, board: await repo.getBoard(slug) }
+  }
+
+  it('confirma en voz y en pantalla lo que se acaba de votar', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    await userEvent.click(screen.getByRole('button', { name: 'A favor' }))
+
+    // role="status" is an aria-live=polite region: it is read out without stealing focus.
+    const live = await screen.findByRole('status')
+    expect(live).toHaveTextContent('Has votado a favor')
+  })
+
+  it('dice qué se votó, no solo que se votó', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    await userEvent.click(screen.getByRole('button', { name: 'En blanco' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Has votado en blanco')
+
+    await userEvent.click(screen.getByRole('button', { name: 'En contra' }))
+    await waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent('Has votado en contra'),
+    )
+  })
+
+  it('no se puede votar dos veces mientras la primera está en vuelo', async () => {
+    const repo = new HeldVotes()
+    const { slug, board } = await boardWith(repo, 'Alquilar una furgoneta')
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    repo.hold = true
+    await userEvent.click(screen.getByRole('button', { name: 'A favor' }))
+
+    for (const name of ['A favor', 'En blanco', 'En contra']) {
+      expect(screen.getByRole('button', { name })).toBeDisabled()
+    }
+    // The second tap of a double tap. It used to land, and cast a second vote.
+    await userEvent.click(screen.getByRole('button', { name: 'En contra' }))
+    expect(repo.calls.filter((call) => call === 'castVote')).toHaveLength(0)
+
+    await act(async () => {
+      repo.release()
+    })
+    await waitFor(() => expect(screen.getByRole('button', { name: 'En contra' })).toBeEnabled())
+    expect(repo.calls.filter((call) => call === 'castVote')).toHaveLength(1)
+  })
+
+  it('el voto en vuelo solo apaga los botones de su propia propuesta', async () => {
+    const repo = new HeldVotes()
+    const { slug } = await boardWith(repo, 'Pintar el pasillo')
+    await repo.createProposal({ slug, title: 'Comprar sillas' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const cards = screen.getAllByRole('article')
+    repo.hold = true
+    await userEvent.click(within(cards[0]!).getByRole('button', { name: 'A favor' }))
+
+    expect(within(cards[0]!).getByRole('button', { name: 'A favor' })).toBeDisabled()
+    expect(within(cards[1]!).getByRole('button', { name: 'A favor' })).toBeEnabled()
+    await act(async () => {
+      repo.release()
+    })
+  })
+
+  it('la confirmación se queda en la propuesta que se votó', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    await repo.createProposal({ slug, title: 'Comprar sillas' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const cards = screen.getAllByRole('article')
+    await userEvent.click(within(cards[0]!).getByRole('button', { name: 'A favor' }))
+
+    expect(await within(cards[0]!).findByRole('status')).toHaveTextContent('Has votado a favor')
+    expect(within(cards[1]!).queryByRole('status')).toBeNull()
+  })
+
+  it('se anuncia una sola vez aunque la propuesta esté en la lista y en el panel a la vez', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    const board = await repo.getBoard(slug)
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+
+    const panel = screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+    await userEvent.click(within(panel).getByRole('button', { name: 'A favor' }))
+
+    // Two copies of the same live region say the same sentence twice into a screen reader.
+    const spoken = await screen.findAllByRole('status')
+    expect(spoken).toHaveLength(1)
+    expect(within(panel).getByRole('status')).toHaveTextContent('Has votado a favor')
+  })
+
+  it('la tarjeta marca tu piedra en cuanto has votado, y no dice hacia dónde', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob', 'carol'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'down' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const card = screen.getByRole('article')
+    const own = within(card).getByTestId('pebble-mine')
+    expect(own).not.toHaveAttribute('data-vote')
+    expect(own.style.background).toBe('var(--pebble)')
+    // Nothing anywhere on the card leaks the direction while the round is still open.
+    expect(card.querySelectorAll('[data-vote]')).toHaveLength(0)
+    expect(within(card).getByRole('img').getAttribute('aria-label')).toContain('tu voto incluido')
+  })
+
+  it('sin voto propio no hay piedra marcada, aunque otras personas ya hayan votado', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob', 'carol'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.queryByTestId('pebble-mine')).toBeNull()
+    expect(screen.getAllByTestId('pebble-cast')).toHaveLength(1)
   })
 })
