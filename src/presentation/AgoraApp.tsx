@@ -13,9 +13,9 @@ import { InstallPrompt } from '@/presentation/components/pwa/InstallPrompt'
 import { SyncStatus } from '@/presentation/components/pwa/SyncStatus'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
-import { openAgora } from '@/presentation/routing'
+import { openAgora, type Route } from '@/presentation/routing'
 
-export function AgoraApp({ network, openId }: { network: OnlineDetector; openId: string | null }) {
+export function AgoraApp({ network, route }: { network: OnlineDetector; route: Route }) {
   const { t } = useTranslation()
   const { slug, board, status, error, reload, visited, queue, sync } = useBoard()
   const [switching, setSwitching] = useState(false)
@@ -96,7 +96,7 @@ export function AgoraApp({ network, openId }: { network: OnlineDetector; openId:
               </ul>
             </section>
 
-            <BoardPage board={board} openId={openId} />
+            <BoardPage board={board} route={route} />
 
             {/* Folded away: the board matters every time, everything below it does not. */}
             {/* The panel is only mounted once the disclosure is open, which is what makes the fetch lazy. */}

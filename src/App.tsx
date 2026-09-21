@@ -19,8 +19,8 @@ export interface Wiring {
 
 /** Every adapter is injected: this component knows nothing about Supabase, IndexedDB or the network. */
 export function App({ repo, visited, images, queue, network, replay }: Wiring) {
-  const { slug, proposalId, privacy } = useRoute()
-  if (privacy) return <PrivacyNotice />
+  const route = useRoute()
+  if (route.kind === 'privacy') return <PrivacyNotice />
   return (
     <BoardProvider
       repo={repo}
@@ -28,9 +28,9 @@ export function App({ repo, visited, images, queue, network, replay }: Wiring) {
       images={images}
       queue={queue}
       replay={replay}
-      slug={slug}
+      slug={'slug' in route ? route.slug : null}
     >
-      <AgoraApp network={network} openId={proposalId} />
+      <AgoraApp network={network} route={route} />
     </BoardProvider>
   )
 }

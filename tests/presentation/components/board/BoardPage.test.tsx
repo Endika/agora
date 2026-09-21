@@ -1,9 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BoardPage } from '@/presentation/components/board/BoardPage'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
+import { draftKey } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
+
+beforeEach(() => {
+  localStorage.clear()
+  window.location.hash = ''
+})
 
 async function agoraWith(names: string[]) {
   const repo = new InMemoryBoardRepository()
@@ -35,7 +41,7 @@ describe('BoardPage', () => {
 
     as('alice')
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     const titles = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
     expect(titles).toEqual(['Trip to the coast', 'Repaint the hallway', 'Buy a projector'])
@@ -48,7 +54,7 @@ describe('BoardPage', () => {
     await repo.castVote({ proposalId: id, round: 1, value: 'up' })
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     const missing = screen.getByTestId('missing-voters')
     expect(missing).toHaveTextContent('bob')
@@ -64,7 +70,10 @@ describe('BoardPage', () => {
 
     as('alice')
     const board = await repo.getBoard(slug)
-    const { container } = renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    const { container } = renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'board', slug }} />,
+      { repo, slug },
+    )
 
     expect(screen.getByText(/1 de 2 han votado/)).toBeInTheDocument()
     expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
@@ -81,7 +90,10 @@ describe('BoardPage', () => {
     await repo.castVote({ proposalId: id, round: 1, value: 'down' })
 
     const asBob = await repo.getBoard(slug)
-    const bobView = renderWithBoard(<BoardPage board={asBob} openId={id} />, { repo, slug })
+    const bobView = renderWithBoard(
+      <BoardPage board={asBob} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
     // The list row is still mounted behind the sheet, so the assertions scope to the dialog.
     const asBobDialog = within(screen.getByRole('dialog'))
     expect(asBobDialog.getByText('En debate')).toBeInTheDocument()
@@ -92,7 +104,10 @@ describe('BoardPage', () => {
 
     as('alice')
     const asAlice = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={asAlice} openId={id} />, { repo, slug })
+    renderWithBoard(
+      <BoardPage board={asAlice} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
     const asAliceDialog = within(screen.getByRole('dialog'))
     expect(asAliceDialog.getByRole('button', { name: 'Reabrir la votación' })).toBeInTheDocument()
     expect(asAliceDialog.getByRole('button', { name: 'Cerrar con motivo' })).toBeInTheDocument()
@@ -108,7 +123,10 @@ describe('BoardPage', () => {
     as('alice')
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={id} />, { repo, slug })
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
 
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar con motivo' }))
     await userEvent.type(screen.getByLabelText('Motivo'), 'no vale')
@@ -127,7 +145,7 @@ describe('BoardPage', () => {
     await repo.castVote({ proposalId: voted, round: 1, value: 'up' })
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     expect(screen.getByTestId('pending-mine-badge')).toHaveTextContent('1')
     await userEvent.click(screen.getByRole('button', { name: /Me toca votar/ }))
@@ -141,7 +159,7 @@ describe('BoardPage', () => {
     const { repo, slug } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     await userEvent.click(screen.getByRole('button', { name: 'A favor' }))
     await waitFor(() => expect(repo.calls).toContain('castVote'))
@@ -158,7 +176,7 @@ describe('BoardPage', () => {
 
     as('alice')
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     expect(screen.getByText('Aprobada')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'A favor' })).not.toBeInTheDocument()
@@ -177,7 +195,7 @@ describe('BoardPage, the list itself', () => {
         '## Plan\n\n- Salimos el viernes y volvemos el domingo por la tarde, con parada para comer\n- Hay que decidir quién conduce cada tramo del viaje y cómo repartimos la gasolina',
     })
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     // The syntax is gone and the text is cut, so the row stays a row.
     const preview = screen.getByText(/Plan · Salimos el viernes/)
@@ -193,7 +211,7 @@ describe('BoardPage, the list itself', () => {
     await repo.addComment({ commentId: 'c2', threadId: 't1', body: 'reply' })
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     expect(screen.getByRole('link', { name: 'Ver la propuesta' })).toHaveAttribute(
       'href',
@@ -210,7 +228,7 @@ describe('BoardPage, the list itself', () => {
     await repo.createProposal({ slug, title: 'Order the cake', deadline: soon })
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
     expect(screen.getByText('Quedan 3 días')).toBeInTheDocument()
   })
 
@@ -225,13 +243,103 @@ describe('BoardPage, the list itself', () => {
     })
     const board = await repo.getBoard(slug)
 
-    const list = renderWithBoard(<BoardPage board={board} openId={null} />, { repo, slug })
+    const list = renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, {
+      repo,
+      slug,
+    })
     expect(screen.queryByText('a comment body')).not.toBeInTheDocument()
     expect(screen.queryByText('Gasto')).not.toBeInTheDocument()
     list.unmount()
 
-    renderWithBoard(<BoardPage board={board} openId={id} />, { repo, slug })
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
     expect(screen.getByText('a comment body')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Gasto' })).toBeInTheDocument()
+  })
+})
+
+describe('BoardPage, redactar es una ruta y el borrador se queda', () => {
+  const dialog = () => within(screen.getByRole('dialog'))
+
+  it('abrir la hoja de redactar lleva la dirección a la ruta de redactar', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva propuesta' }))
+
+    // The address is what the back button undoes, which is the whole point of the sheet being here.
+    expect(window.location.hash).toBe(`#/g/${slug}/nueva`)
+  })
+
+  it('editar una propuesta también es una ruta', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+
+    await userEvent.click(dialog().getByRole('button', { name: 'Editar' }))
+
+    expect(window.location.hash).toBe(`#/g/${slug}/p/${id}/editar`)
+  })
+
+  it('cerrar la hoja conserva lo escrito, y al volver está ahí', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    const first = renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.click(dialog().getByRole('button', { name: 'Cerrar' }))
+    first.unmount()
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+
+    expect(dialog().getByLabelText('Título')).toHaveValue('Un sofá nuevo')
+  })
+
+  it('descartar el borrador se pide dos veces y entonces sí lo borra', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    const first = renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.click(dialog().getByRole('button', { name: 'Descartar el borrador' }))
+
+    // One click asks; it does not throw anything away.
+    expect(localStorage.getItem(draftKey(slug))).not.toBeNull()
+
+    await userEvent.click(dialog().getByRole('button', { name: 'Descartar de verdad' }))
+    expect(localStorage.getItem(draftKey(slug))).toBeNull()
+    first.unmount()
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+    expect(dialog().getByLabelText('Título')).toHaveValue('')
+  })
+
+  it('el borrador de una edición no se mezcla con el de una propuesta nueva', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    const editView = renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+
+    await userEvent.type(dialog().getByLabelText('Título'), ' grande')
+    editView.unmount()
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+    expect(dialog().getByLabelText('Título')).toHaveValue('')
   })
 })

@@ -94,7 +94,10 @@
     "costInvalid": "The cost is in euros, two decimals at most.",
     "edit": "Edit",
     "save": "Save changes",
-    "editHeading": "Edit the proposal"
+    "editHeading": "Edit the proposal",
+    "discard": "Discard the draft",
+    "discardConfirm": "Yes, discard it",
+    "draftRestored": "We brought back what you were writing. Images are not kept: you have to pick them again."
   },
   "identity": {
     "who": "Who are you?",
