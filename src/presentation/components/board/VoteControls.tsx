@@ -14,9 +14,16 @@ const OPTIONS: VoteValue[] = ['up', 'abstain', 'down']
  * is the vote, as it always was.
  *
  * What the disabled state buys is that nothing can be queued *behind* a write that is still going —
- * the slow case, which is the one that used to leave people tapping. Against a local write that
- * returns in the same tick both halves of a double tap still land, and that is harmless: casting
- * the same value twice is an upsert of the same row.
+ * the slow case, which is the one that used to leave people tapping. It holds for both copies of a
+ * proposal that is on screen twice: `pending` is a fact about the proposal, so the card's buttons
+ * and the panel's go dead together. Against a local write that returns in the same tick both halves
+ * of a double tap still land, and that is harmless: casting the same value twice is an upsert of
+ * the same row.
+ *
+ * `done` is the other half and is *not* shared: it belongs to the copy the tap came from, so a
+ * confirmation is only ever read out where somebody is looking. Two proposals voted in quick
+ * succession used to cross over, and the slower one's sentence was announced on the faster one's
+ * card.
  */
 export function VoteControls({
   proposal,

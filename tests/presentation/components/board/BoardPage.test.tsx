@@ -1251,3 +1251,165 @@ describe('BoardPage, el momento de votar', () => {
     expect(screen.getAllByTestId('pebble-cast')).toHaveLength(1)
   })
 })
+
+/**
+ * Every `castVote` waits at a gate until it is let through by name, so two writes can be started
+ * in one order and finished in the other — the shape of every crossover below, and the one thing
+ * a same-tick fake could never produce.
+ */
+class QueuedVotes extends InMemoryBoardRepository {
+  hold = false
+  private readonly gates: (() => void)[] = []
+
+  override async castVote(input: {
+    proposalId: string
+    round: number
+    value: VoteValue
+  }): Promise<void> {
+    if (this.hold) await new Promise<void>((resolve) => this.gates.push(resolve))
+    return super.castVote(input)
+  }
+
+  /** Lets the nth write started since the hold went on finish. */
+  release(nth: number): void {
+    this.gates[nth]?.()
+  }
+}
+
+describe('BoardPage, dos votos en el aire a la vez', () => {
+  async function twoOpenProposals(repo: InMemoryBoardRepository) {
+    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    await repo.addParticipant({ slug, name: 'bob' })
+    repo.actAs(repo.participantId(slug, 'alice'))
+    const first = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    const second = await repo.createProposal({ slug, title: 'Comprar sillas' })
+    return { slug, first, second, board: await repo.getBoard(slug) }
+  }
+
+  it('cada confirmación vuelve a su tarjeta aunque la segunda adelante a la primera', async () => {
+    // Measured in Chromium with the first write held 2 s and the second 200 ms: the second card
+    // ended up reading "Has votado a favor" out loud — the *other* card's vote — while its own
+    // "En contra" stayed pressed. One flag for the whole board belongs to whoever tapped last.
+    const repo = new QueuedVotes()
+    const { slug, board } = await twoOpenProposals(repo)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const cards = screen.getAllByRole('article')
+    repo.hold = true
+    await userEvent.click(within(cards[0]!).getByRole('button', { name: 'A favor' }))
+    await userEvent.click(within(cards[1]!).getByRole('button', { name: 'En contra' }))
+
+    // Started first, finished last: the crossover.
+    await act(async () => {
+      repo.release(1)
+    })
+    await act(async () => {
+      repo.release(0)
+    })
+
+    await waitFor(() =>
+      expect(within(cards[0]!).getByRole('status')).toHaveTextContent('Has votado a favor'),
+    )
+    expect(within(cards[1]!).getByRole('status')).toHaveTextContent('Has votado en contra')
+  })
+
+  it('y la tarjeta lenta no recupera sus botones porque otra haya terminado antes', async () => {
+    const repo = new QueuedVotes()
+    const { slug, board } = await twoOpenProposals(repo)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const cards = screen.getAllByRole('article')
+    repo.hold = true
+    await userEvent.click(within(cards[0]!).getByRole('button', { name: 'A favor' }))
+    await userEvent.click(within(cards[1]!).getByRole('button', { name: 'En contra' }))
+
+    await act(async () => {
+      repo.release(1)
+    })
+
+    // The second write is through; the first is still in the air and its buttons must stay dead.
+    await waitFor(() =>
+      expect(within(cards[1]!).getByRole('button', { name: 'A favor' })).toBeEnabled(),
+    )
+    for (const name of ['A favor', 'En blanco', 'En contra']) {
+      expect(within(cards[0]!).getByRole('button', { name })).toBeDisabled()
+    }
+
+    await act(async () => {
+      repo.release(0)
+    })
+    await waitFor(() =>
+      expect(within(cards[0]!).getByRole('button', { name: 'En blanco' })).toBeEnabled(),
+    )
+  })
+
+  it('el panel y una tarjeta tampoco se cruzan las confirmaciones', async () => {
+    const repo = new QueuedVotes()
+    const { slug, first, second, board } = await twoOpenProposals(repo)
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: first }} />,
+      { repo, slug },
+    )
+
+    const panel = screen.getByRole('complementary', { name: 'Pintar el pasillo' })
+    const other = screen
+      .getAllByRole('article')
+      .find((card) => within(card).queryByText('Comprar sillas') !== null)!
+    expect(second).toBeTruthy()
+
+    repo.hold = true
+    await userEvent.click(within(panel).getByRole('button', { name: 'A favor' }))
+    await userEvent.click(within(other).getByRole('button', { name: 'En contra' }))
+
+    await act(async () => {
+      repo.release(1)
+    })
+    await act(async () => {
+      repo.release(0)
+    })
+
+    await waitFor(() =>
+      expect(within(panel).getByRole('status')).toHaveTextContent('Has votado a favor'),
+    )
+    expect(within(other).getByRole('status')).toHaveTextContent('Has votado en contra')
+  })
+
+  it('con la propuesta en la lista y en el panel a la vez, un voto apaga las dos copias', async () => {
+    // What the VoteControls docblock promises: nothing can be queued behind a write that is still
+    // going. With the same proposal on screen twice, one copy's write left the other's buttons
+    // live, and the second tap landed on a row that was already being written.
+    const repo = new QueuedVotes()
+    const { slug, first, board } = await twoOpenProposals(repo)
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: first }} />,
+      { repo, slug },
+    )
+
+    const panel = screen.getByRole('complementary', { name: 'Pintar el pasillo' })
+    const card = screen
+      .getAllByRole('article')
+      .find((node) => within(node).queryByText('Pintar el pasillo') !== null)!
+    const elsewhere = screen
+      .getAllByRole('article')
+      .find((node) => within(node).queryByText('Comprar sillas') !== null)!
+
+    repo.hold = true
+    await userEvent.click(within(card).getByRole('button', { name: 'A favor' }))
+
+    expect(within(panel).getByRole('button', { name: 'En contra' })).toBeDisabled()
+    expect(within(card).getByRole('button', { name: 'En contra' })).toBeDisabled()
+    // And only that proposal: the rest of the board stays votable.
+    expect(within(elsewhere).getByRole('button', { name: 'A favor' })).toBeEnabled()
+
+    await act(async () => {
+      repo.release(0)
+    })
+    // The tap came from the card, so the card is where it is said — once.
+    await waitFor(() =>
+      expect(within(card).getByRole('status')).toHaveTextContent('Has votado a favor'),
+    )
+    expect(within(panel).getByRole('status')).toHaveTextContent('')
+  })
+})
