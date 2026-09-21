@@ -4,7 +4,9 @@ export type Filter = { kind: 'all' } | { kind: 'pending-mine' } | { kind: 'tag';
 
 /**
  * A horizontally scrollable strip: the *strip* scrolls, never the page. That is the difference
- * between a filter row and a horizontal-overflow bug at 320 px.
+ * between a filter row and a horizontal-overflow bug at 320 px. Once there is room — `sm` and up —
+ * the chips wrap onto a second line instead, because a scrollbar you never need is a filter you
+ * cannot see.
  */
 export function BoardFilters({
   tags,
@@ -29,7 +31,11 @@ export function BoardFilters({
     /* min-w-0 is the fix: without it this grid item refuses to shrink below its content and the *page*
        scrolls sideways instead of the strip. */
     <div className="-mx-4 min-w-0 overflow-x-auto px-4">
-      <div className="flex min-w-max gap-2" role="group" aria-label={t('board.filterHeading')}>
+      <div
+        className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap"
+        role="group"
+        aria-label={t('board.filterHeading')}
+      >
         <button
           type="button"
           onClick={() => onChange({ kind: 'all' })}
