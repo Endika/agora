@@ -124,7 +124,14 @@
     "agoraName": "Nombre del ágora",
     "agoraNameHint": "Cómo lo llamáis entre vosotros: la cuadrilla, el piso, la familia.",
     "submit": "Crear el ágora",
-    "nameRequired": "El ágora necesita un nombre."
+    "nameRequired": "El ágora necesita un nombre.",
+    "ballotMode": {
+      "legend": "¿Cómo se ven los votos?",
+      "secretLabel": "En secreto",
+      "secretHint": "Tu voto no llevará tu nombre nunca, ni siquiera cuando se resuelva la propuesta.",
+      "openLabel": "Con tu nombre",
+      "openHint": "Cuando se resuelva la propuesta, tu voto llevará tu nombre."
+    }
   },
   "danger": {
     "heading": "Borrar el ágora",

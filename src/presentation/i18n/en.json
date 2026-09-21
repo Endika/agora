@@ -124,7 +124,14 @@
     "agoraName": "Agora name",
     "agoraNameHint": "Whatever you call it between you: the flat, the crew, the family.",
     "submit": "Create the agora",
-    "nameRequired": "The agora needs a name."
+    "nameRequired": "The agora needs a name.",
+    "ballotMode": {
+      "legend": "How are votes seen?",
+      "secretLabel": "In secret",
+      "secretHint": "Your vote will never carry your name, not even once the proposal is resolved.",
+      "openLabel": "With your name",
+      "openHint": "Once the proposal is resolved, your vote will carry your name."
+    }
   },
   "danger": {
     "heading": "Delete the agora",

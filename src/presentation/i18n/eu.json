@@ -124,7 +124,14 @@
     "agoraName": "Agoraren izena",
     "agoraNameHint": "Zuen artean nola deitzen diozuen: pisua, koadrila, familia.",
     "submit": "Sortu agora",
-    "nameRequired": "Agorak izen bat behar du."
+    "nameRequired": "Agorak izen bat behar du.",
+    "ballotMode": {
+      "legend": "Nola ikusiko dira botoak?",
+      "secretLabel": "Ezkutuan",
+      "secretHint": "Zure botoak inoiz ez du zure izena eramango, proposamena ebatzi ondoren ere ez.",
+      "openLabel": "Zure izenarekin",
+      "openHint": "Proposamena ebazten denean, zure botoak zure izena eramango du."
+    }
   },
   "danger": {
     "heading": "Ezabatu agora",

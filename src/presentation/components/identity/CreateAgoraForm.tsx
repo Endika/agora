@@ -8,6 +8,8 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
   const { repo } = useBoard()
   const [agoraName, setAgoraName] = useState('')
   const [name, setName] = useState('')
+  // The secret mode is the default: the easy path is the one that protects.
+  const [ballotOpen, setBallotOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -27,8 +29,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
       const identity = await repo.createAgora({
         name: agoraName.trim(),
         creatorName: name.trim(),
-        // Task 3 puts the choice on the form; until then every new agora is open, as they all were.
-        ballotOpen: true,
+        ballotOpen,
       })
       onCreated(identity.slug)
     } catch (cause) {
@@ -61,6 +62,48 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
           {t('create.agoraNameHint')}
         </p>
       </div>
+
+      <fieldset className="grid gap-2 rounded-[--radius] border p-3" style={field}>
+        <legend className="px-1 font-medium">{t('create.ballotMode.legend')}</legend>
+
+        <div className="grid min-h-11 grid-cols-[auto_1fr] items-start gap-x-2 gap-y-0.5 py-1">
+          <input
+            type="radio"
+            id="ballot-mode-secret"
+            name="ballotMode"
+            checked={!ballotOpen}
+            onChange={() => setBallotOpen(false)}
+            aria-describedby="ballot-mode-secret-hint"
+            className="mt-1 h-5 w-5"
+          />
+          <label htmlFor="ballot-mode-secret" className="font-medium">
+            {t('create.ballotMode.secretLabel')}
+          </label>
+          <span />
+          <p id="ballot-mode-secret-hint" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {t('create.ballotMode.secretHint')}
+          </p>
+        </div>
+
+        <div className="grid min-h-11 grid-cols-[auto_1fr] items-start gap-x-2 gap-y-0.5 py-1">
+          <input
+            type="radio"
+            id="ballot-mode-open"
+            name="ballotMode"
+            checked={ballotOpen}
+            onChange={() => setBallotOpen(true)}
+            aria-describedby="ballot-mode-open-hint"
+            className="mt-1 h-5 w-5"
+          />
+          <label htmlFor="ballot-mode-open" className="font-medium">
+            {t('create.ballotMode.openLabel')}
+          </label>
+          <span />
+          <p id="ballot-mode-open-hint" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {t('create.ballotMode.openHint')}
+          </p>
+        </div>
+      </fieldset>
 
       <label className="grid gap-1">
         <span className="font-medium">{t('identity.yourName')}</span>
