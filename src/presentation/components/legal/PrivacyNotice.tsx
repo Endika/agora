@@ -1,13 +1,34 @@
+import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Logo } from '@/presentation/components/Logo'
+import { BoardContext } from '@/presentation/context/boardContext'
 
 /**
  * Short, plain and honest — a privacy notice nobody reads is a dark pattern with extra steps. It names every
  * processor, says where the data actually sits (London, not "the EU"), and points at the two things a person
  * can do about it: export the agora, or delete it.
+ *
+ * "Who can see this" is the one section that stopped being a single truth the day each agora started
+ * choosing its ballot. One paragraph cannot carry both answers: the reader's question is not "what can an
+ * agora do" but "is my vote going to carry my name", and a paragraph that answers it with "one of these
+ * two" answers nothing at all. So the shared half — the link is the key, an open round leaks nothing —
+ * stays in `privacy.visible`, and the half that differs is one of three paragraphs, chosen by the agora
+ * the reader came from.
+ *
+ * The context is optional on purpose. Reached from the home screen, or from a link somebody pasted, there
+ * is no agora and no mode to report: `privacy.visibleBoth` then describes the two and says where the
+ * answer for a given agora is written, which is the honest reading of "it depends". The component still
+ * renders bare, outside any provider, which is what keeps it a document and not a board screen.
  */
 export function PrivacyNotice() {
   const { t } = useTranslation()
+  const board = useContext(BoardContext)?.board ?? null
+  const visible =
+    board === null
+      ? 'privacy.visibleBoth'
+      : board.group.ballotOpen
+        ? 'privacy.visibleOpen'
+        : 'privacy.visibleSecret'
 
   const section = (heading: string, body: string[]) => (
     <section className="grid gap-2" key={heading}>
@@ -35,7 +56,7 @@ export function PrivacyNotice() {
       {section('privacy.whoHeading', ['privacy.who'])}
       {section('privacy.whatHeading', ['privacy.what', 'privacy.noAccounts'])}
       {section('privacy.basisHeading', ['privacy.basis'])}
-      {section('privacy.visibleHeading', ['privacy.visible'])}
+      {section('privacy.visibleHeading', ['privacy.visible', visible])}
 
       <section className="grid gap-2">
         <h2 className="text-xl font-semibold">{t('privacy.processorsHeading')}</h2>

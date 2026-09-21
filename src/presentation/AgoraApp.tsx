@@ -15,7 +15,7 @@ import { LanguagePicker } from '@/presentation/components/settings/LanguagePicke
 import { ThemePicker } from '@/presentation/components/settings/ThemePicker'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
-import { openAgora, type Route } from '@/presentation/routing'
+import { openAgora, privacyHref, type Route } from '@/presentation/routing'
 
 export function AgoraApp({ network, route }: { network: OnlineDetector; route: Route }) {
   const { t } = useTranslation()
@@ -178,7 +178,9 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
         style={{ color: 'var(--ink-muted)' }}
       >
         <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
-        <a href="#/privacy" className="min-h-11 content-center underline">
+        {/* Carries the agora along: half of "who can see this" is the ballot mode, and the notice
+            can only name the reader's own if it knows which agora they are reading from. */}
+        <a href={privacyHref(slug)} className="min-h-11 content-center underline">
           {t('footer.privacy')}
         </a>
         <LanguagePicker />

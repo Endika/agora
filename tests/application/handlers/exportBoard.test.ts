@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { exportBoard, exportFilename } from '@/application/handlers/exportBoard'
-import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
+import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { makeProposal, votes } from '../../domain/support/makeProposal'
 
 const board: BoardSnapshot = {
@@ -86,5 +87,105 @@ describe('exportBoard', () => {
   it('falls back to the slug when the name has nothing filename-safe in it', () => {
     const odd = { ...board, group: { ...board.group, name: '¿¡...!?' } }
     expect(exportFilename(odd, 'json', '2026-09-03')).toBe('abcd1234-2026-09-03.json')
+  })
+})
+
+/**
+ * The JSON export is `JSON.stringify` of the snapshot, so it inherits whatever the server sent —
+ * including, in a secret agora, the absence of the voter. That is a good property and a fragile
+ * one: it holds because of a decision taken two layers below, so it is asserted here rather than
+ * reasoned about, in both modes, through the repository that replicates what `get_board` sends.
+ */
+describe('exportBoard y el modo de voto del ágora', () => {
+  async function resolvedAgora(ballotOpen: boolean) {
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice', ballotOpen })
+    await repo.addParticipant({ slug, name: 'bob' })
+    const as = (name: string) => repo.actAs(repo.participantId(slug, name))
+
+    as('alice')
+    const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'down' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    const history = await repo.history({ slug })
+    const names = board.participants.map((participant) => participant.name)
+    return { repo, slug, board, history, names }
+  }
+
+  /** What the screen passes in: the same labels `ExportButtons` reads out of the bundle. */
+  const spanish = {
+    status: (status: string) => ({ debating: 'En debate' })[status] ?? status,
+    tally: labels.tally,
+  }
+
+  const castVotes = (snapshot: BoardSnapshot) =>
+    snapshot.proposals.flatMap((proposal) => proposal.votes ?? [])
+
+  it('en un ágora secreta el JSON no lleva participantId en ningún voto', async () => {
+    const { board, history } = await resolvedAgora(false)
+
+    const parsed = JSON.parse(exportBoard(board, 'json', spanish, history)) as BoardSnapshot
+    const cast = castVotes(parsed)
+
+    // Without this the rest passes on an export that simply has no votes in it.
+    expect(cast).toHaveLength(2)
+    for (const vote of cast) {
+      expect(Object.keys(vote)).toEqual(['value'])
+      expect('participantId' in vote).toBe(false)
+    }
+  })
+
+  it('y en un ágora abierta sí lo lleva, que es lo que hace valer la prueba anterior', async () => {
+    const { board, history, repo, slug } = await resolvedAgora(true)
+
+    const parsed = JSON.parse(exportBoard(board, 'json', spanish, history)) as BoardSnapshot
+    const cast = castVotes(parsed)
+
+    expect(cast).toHaveLength(2)
+    expect(cast.map((vote) => vote.participantId).sort()).toEqual(
+      [repo.participantId(slug, 'alice'), repo.participantId(slug, 'bob')].sort(),
+    )
+  })
+
+  it('lo que se va del JSON secreto es el votante, no todo identificador', async () => {
+    // A grep for an id over the whole payload proves nothing in either direction: `myVote`,
+    // `pending`, `shares`, `payments` and the history carry participant ids in both modes and are
+    // supposed to. The export is only allowed to lose the one association the mode is about.
+    const { board, history, repo, slug } = await resolvedAgora(false)
+    const alice = repo.participantId(slug, 'alice')
+
+    const parsed = JSON.parse(exportBoard(board, 'json', spanish, history)) as BoardSnapshot
+
+    expect(parsed.me.id).toBe(alice)
+    expect(parsed.proposals[0]!.myVote).toBe('up')
+    expect((parsed.history as HistoryEntry[]).map((entry) => entry.participantId)).toContain(alice)
+    expect(exportBoard(board, 'json', spanish, history)).toContain(alice)
+  })
+
+  it('el Markdown no lleva ni un voto, en ninguno de los dos modos', async () => {
+    // Markdown carries the tally and nothing else, which is why it is safe in both modes. Asserted
+    // so that adding a per-vote line later cannot go in quietly, on the mode where it would leak.
+    for (const ballotOpen of [true, false]) {
+      const { board, history, names } = await resolvedAgora(ballotOpen)
+      const md = exportBoard(board, 'md', spanish, history)
+
+      expect(md).toContain('**En debate** · 1 / 1 / 0')
+      for (const sense of [
+        /a favor/i,
+        /en contra/i,
+        /en blanco/i,
+        /\bup\b/,
+        /\bdown\b/,
+        /\babstain\b/,
+      ])
+        expect(md).not.toMatch(sense)
+      // Names appear once, on the roster line, and nowhere near a vote.
+      for (const name of names)
+        expect(md.split('\n').filter((line) => line.includes(name))).toEqual([names.join(' · ')])
+    }
   })
 })

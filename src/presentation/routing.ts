@@ -7,19 +7,23 @@ import { useEffect, useState } from 'react'
  */
 export type Route =
   | { kind: 'home' }
-  | { kind: 'privacy' }
+  /** The slug is what lets the notice say which ballot mode the reader is actually under. */
+  | { kind: 'privacy'; slug: string | null }
   | { kind: 'board'; slug: string }
   | { kind: 'proposal'; slug: string; proposalId: string }
   | { kind: 'compose'; slug: string }
   | { kind: 'edit'; slug: string; proposalId: string }
 
 const BOARD = /^#\/g\/([a-z0-9]{8})$/
+const PRIVACY = /^#\/g\/([a-z0-9]{8})\/privacidad$/
 const COMPOSE = /^#\/g\/([a-z0-9]{8})\/nueva$/
 const PROPOSAL = /^#\/g\/([a-z0-9]{8})\/p\/([0-9a-f-]{36})$/
 const EDIT = /^#\/g\/([a-z0-9]{8})\/p\/([0-9a-f-]{36})\/editar$/
 
 export function parseRoute(hash: string): Route {
-  if (hash === '#/privacy') return { kind: 'privacy' }
+  if (hash === '#/privacy') return { kind: 'privacy', slug: null }
+  const privacy = PRIVACY.exec(hash)
+  if (privacy) return { kind: 'privacy', slug: privacy[1]! }
   const edit = EDIT.exec(hash)
   if (edit) return { kind: 'edit', slug: edit[1]!, proposalId: edit[2]! }
   const proposal = PROPOSAL.exec(hash)
@@ -37,6 +41,15 @@ export function boardHref(slug: string): string {
 
 export function proposalHref(slug: string, proposalId: string): string {
   return `#/g/${slug}/p/${proposalId}`
+}
+
+/**
+ * Read from inside an agora, the privacy notice is about *that* agora: the ballot mode is half of
+ * "who can see this", and the two agoras answer it in opposite ways. Read from the home screen
+ * there is no agora yet, and the notice says so rather than picking one of the two answers.
+ */
+export function privacyHref(slug: string | null): string {
+  return slug ? `#/g/${slug}/privacidad` : '#/privacy'
 }
 
 export function composeHref(slug: string): string {

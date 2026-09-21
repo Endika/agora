@@ -63,6 +63,12 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '#/privacy')
   })
 
+  it('leída sin ágora, la nota describe los dos modos de voto en vez de elegir uno', () => {
+    window.location.hash = '#/privacy'
+    render(<App {...wiring()} />)
+    expect(screen.getByText(/Cada ágora elige al crearse/)).toBeInTheDocument()
+  })
+
   it('no monta ninguna alerta en el formulario de crear ágora hasta que falla el envío', async () => {
     const { default: userEvent } = await import('@testing-library/user-event')
     render(<App {...wiring()} />)
@@ -162,6 +168,28 @@ describe('App, un enlace que entra directo', () => {
 
     const switcher = screen.getByRole('button', { name: 'Cambiar de persona' })
     expect(switcher).toHaveClass(...target)
+  })
+
+  it('el enlace de privacidad se lleva el ágora, y la nota dice el modo de voto de esa ágora', async () => {
+    // Read from inside an agora the notice is about *that* agora: without the slug in the address
+    // it can only describe both modes and name neither, which is worse than the text it replaced.
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: false,
+    })
+    window.location.hash = `#/g/${slug}`
+    render(<App {...wiring()} repo={repo} />)
+
+    expect(await screen.findByRole('link', { name: 'Privacidad' })).toHaveAttribute(
+      'href',
+      `#/g/${slug}/privacidad`,
+    )
+
+    window.location.hash = `#/g/${slug}/privacidad`
+    expect(await screen.findByText(/Esta ágora tiene el voto secreto/)).toBeInTheDocument()
+    expect(screen.queryByText(/Cada ágora elige al crearse/)).toBeNull()
   })
 
   it('borrar el ágora se distingue visualmente, no es una cuarta caja gris igual', async () => {
