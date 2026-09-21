@@ -47,16 +47,20 @@ describe('BoardPage', () => {
     expect(titles).toEqual(['Trip to the coast', 'Repaint the hallway', 'Buy a projector'])
   })
 
-  it('names who has not voted yet, and nobody who has', async () => {
+  it('names who has not voted yet, and nobody who has, in the proposal detail', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob', 'carol'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })
     as('alice')
     await repo.castVote({ proposalId: id, round: 1, value: 'up' })
 
     const board = await repo.getBoard(slug)
-    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
 
-    const missing = screen.getByTestId('missing-voters')
+    // The list row is still mounted behind the sheet, so the assertion scopes to the dialog.
+    const missing = within(screen.getByRole('dialog')).getByTestId('missing-voters')
     expect(missing).toHaveTextContent('bob')
     expect(missing).toHaveTextContent('carol')
     expect(missing).not.toHaveTextContent('alice')
@@ -259,6 +263,20 @@ describe('BoardPage', () => {
     expect(id).toBeTruthy()
   })
 
+  it('gives the unchosen vote buttons a sunken surface and a readable border', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const unchosen = screen.getByRole('button', { name: 'A favor' })
+    expect(unchosen.style.background).toBe('var(--surface-sunken)')
+    expect(unchosen.style.borderColor).toBe('var(--border-control)')
+
+    await userEvent.click(unchosen)
+    await waitFor(() => expect(repo.calls).toContain('castVote'))
+  })
+
   it('freezes the vote once the proposal is resolved', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })
@@ -297,7 +315,7 @@ describe('BoardPage, the list itself', () => {
     expect(screen.queryByText(/^##/)).not.toBeInTheDocument()
   })
 
-  it('links into the proposal and counts its comments', async () => {
+  it('the title links into the proposal and the card counts its comments', async () => {
     const { repo, slug } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Paint the hallway' })
     await repo.addThread({ threadId: 't1', proposalId: id, commentId: 'c1', body: 'root' })
@@ -306,13 +324,26 @@ describe('BoardPage, the list itself', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
-    expect(screen.getByRole('link', { name: 'Ver la propuesta' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Paint the hallway' })).toHaveAttribute(
       'href',
       `#/g/${slug}/p/${id}`,
     )
     expect(screen.getByText('2 comentarios')).toBeInTheDocument()
     // Singular is singular: "1 comentarios" is what makes an app feel unfinished.
     expect(screen.queryByText('1 comentarios')).not.toBeInTheDocument()
+  })
+
+  it('la tarjeta ya no repite el recuento ni duplica el enlace al detalle', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    await repo.createProposal({ slug, title: 'Pintar la cocina' })
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.queryByRole('link', { name: 'Ver la propuesta' })).toBeNull()
+    expect(screen.queryAllByTestId('missing-voters')).toHaveLength(0)
+    expect(screen.getAllByRole('link', { name: 'Cambiar el sofá del salón' })).toHaveLength(1)
   })
 
   it('says how long the vote has left, in days', async () => {

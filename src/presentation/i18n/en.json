@@ -34,7 +34,6 @@
     "clearFilters": "Clear filters",
     "archived": "Archived ({{count}})",
     "archivedExplain": "Done, rejected and closed. Still here, just out of the way.",
-    "openProposal": "Open the proposal",
     "back": "Back to the board",
     "comments_one": "{{count}} comment",
     "comments_other": "{{count}} comments",

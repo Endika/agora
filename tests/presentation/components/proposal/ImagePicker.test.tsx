@@ -67,4 +67,13 @@ describe('ImagePicker', () => {
 
     expect(screen.queryByAltText('Imagen 1 de la propuesta')).not.toBeInTheDocument()
   })
+
+  it('the add-image button carries no emoji that can render as tofu', async () => {
+    renderWithBoard(
+      <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+    )
+
+    const button = screen.getByRole('button', { name: 'Añadir imagen' })
+    expect(button.textContent).toBe('Añadir imagen')
+  })
 })

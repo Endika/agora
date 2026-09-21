@@ -34,7 +34,6 @@
     "clearFilters": "Quitar filtros",
     "archived": "Archivadas ({{count}})",
     "archivedExplain": "Hechas, rechazadas y cerradas. Siguen aquí, solo no estorban.",
-    "openProposal": "Ver la propuesta",
     "back": "Volver al tablón",
     "comments_one": "{{count}} comentario",
     "comments_other": "{{count}} comentarios",

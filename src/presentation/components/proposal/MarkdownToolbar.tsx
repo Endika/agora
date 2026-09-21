@@ -1,5 +1,6 @@
-import type { RefObject } from 'react'
+import type { ComponentType, RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BoldIcon, HeadingIcon, ItalicIcon, LinkIcon, ListIcon, QuoteIcon } from './ToolbarIcons'
 
 interface Props {
   textarea: RefObject<HTMLTextAreaElement | null>
@@ -11,27 +12,27 @@ type Action =
   | { kind: 'wrap'; before: string; after: string; placeholder: string }
   | { kind: 'line'; prefix: string; placeholder: string }
 
-const ACTIONS: { key: string; label: string; action: Action }[] = [
+const ACTIONS: { key: string; Icon: ComponentType; action: Action }[] = [
   {
     key: 'heading',
-    label: '##',
+    Icon: HeadingIcon,
     action: { kind: 'line', prefix: '## ', placeholder: 'headingText' },
   },
   {
     key: 'bold',
-    label: 'B',
+    Icon: BoldIcon,
     action: { kind: 'wrap', before: '**', after: '**', placeholder: 'bold' },
   },
   {
     key: 'italic',
-    label: 'I',
+    Icon: ItalicIcon,
     action: { kind: 'wrap', before: '_', after: '_', placeholder: 'italic' },
   },
-  { key: 'list', label: '•', action: { kind: 'line', prefix: '- ', placeholder: 'listItem' } },
-  { key: 'quote', label: '❝', action: { kind: 'line', prefix: '> ', placeholder: 'quote' } },
+  { key: 'list', Icon: ListIcon, action: { kind: 'line', prefix: '- ', placeholder: 'listItem' } },
+  { key: 'quote', Icon: QuoteIcon, action: { kind: 'line', prefix: '> ', placeholder: 'quote' } },
   {
     key: 'link',
-    label: '🔗',
+    Icon: LinkIcon,
     action: { kind: 'wrap', before: '[', after: '](https://)', placeholder: 'linkText' },
   },
 ]
@@ -79,17 +80,17 @@ export function MarkdownToolbar({ textarea, value, onChange }: Props) {
 
   return (
     <div className="-mx-1 flex flex-wrap gap-1" role="group" aria-label={t('editor.toolbar')}>
-      {ACTIONS.map(({ key, label, action }) => (
+      {ACTIONS.map(({ key, Icon, action }) => (
         <button
           key={key}
           type="button"
           onClick={() => apply(action, action.placeholder)}
           aria-label={t(`editor.${key}`)}
           title={t(`editor.${key}`)}
-          className="min-h-11 min-w-11 rounded-[--radius] border font-medium"
+          className="grid min-h-11 min-w-11 place-items-center rounded-[--radius] border font-medium"
           style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
         >
-          {label}
+          <Icon />
         </button>
       ))}
     </div>
