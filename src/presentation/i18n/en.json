@@ -17,7 +17,8 @@
     "choose": "Your vote",
     "up": "In favour",
     "down": "Against",
-    "abstain": "Abstain"
+    "abstain": "Abstain",
+    "abstainCounts": "Abstaining also counts towards quorum"
   },
   "common": {
     "cancel": "Cancel",
@@ -30,6 +31,7 @@
     "empty": "Nothing here yet. The first proposal is yours to make.",
     "countPendingMine": "{{count}} waiting on your vote",
     "filterAll": "Everything",
+    "filterHeading": "Filter the proposals",
     "filterPendingMine": "Waiting on me",
     "filterTag": "Tag {{tag}}",
     "clearFilters": "Clear filters",

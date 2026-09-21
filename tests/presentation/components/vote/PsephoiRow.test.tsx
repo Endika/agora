@@ -12,7 +12,18 @@ describe('PsephoiRow', () => {
   it('carries no sentiment at all while the vote is open', () => {
     const { container } = render(<PsephoiRow participants={4} cast={4} revealed={null} />)
     expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
-    expect(screen.getByRole('img').getAttribute('aria-label')).toContain('quórum')
+  })
+
+  it('dice en pantalla que el voto es secreto mientras no hay quórum, sin duplicarlo por voz', () => {
+    render(<PsephoiRow participants={5} cast={2} revealed={null} />)
+    expect(screen.getByText('Los votos se ven al alcanzar el quórum')).toBeInTheDocument()
+    expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
+  })
+
+  it('deja de decirlo una vez revelados, y no lo dice dos veces por voz', () => {
+    render(<PsephoiRow participants={2} cast={2} revealed={['up', 'down']} />)
+    expect(screen.queryByText('Los votos se ven al alcanzar el quórum')).toBeNull()
+    expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
   })
 
   it('reveals every pebble once the proposal resolved', () => {

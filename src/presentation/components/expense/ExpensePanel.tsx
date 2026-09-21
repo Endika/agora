@@ -63,9 +63,9 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
       style={{ background: 'var(--surface-sunken)' }}
       aria-labelledby={`expense-${proposal.id}`}
     >
-      <h4 id={`expense-${proposal.id}`} className="font-semibold">
+      <h3 id={`expense-${proposal.id}`} className="font-semibold">
         {t('expense.heading')}
-      </h4>
+      </h3>
 
       {error && (
         <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
@@ -151,7 +151,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
       )}
 
       <div className="grid gap-1">
-        <h5 className="text-sm font-medium">
+        <h4 className="text-sm font-medium">
           {t('expense.balances')}
           {optedIn.length > 0 && (
             <span className="font-normal" style={{ color: 'var(--ink-muted)' }}>
@@ -159,7 +159,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
               {t('expense.whoIsIn', { count: optedIn.length })}
             </span>
           )}
-        </h5>
+        </h4>
 
         {result.balances.length === 0 ? (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -196,7 +196,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
 
       {myPayments.length > 0 && (
         <div className="grid gap-1">
-          <h5 className="text-sm font-medium">{t('expense.myPayments')}</h5>
+          <h4 className="text-sm font-medium">{t('expense.myPayments')}</h4>
           <ul className="grid gap-1 text-sm">
             {myPayments.map((payment) =>
               removing === payment.id ? (

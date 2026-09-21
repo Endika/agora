@@ -53,6 +53,15 @@ describe('IdentityDialog', () => {
     expect((await repo.preview(slug)).participants.map((p) => p.name)).toContain('Iker')
   })
 
+  it('no monta ninguna región de alerta mientras no hay error', async () => {
+    const { repo, slug } = await agora(['Endika'])
+    renderWithBoard(<IdentityDialog slug={slug} onIdentified={() => {}} />, { repo, slug })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'No estoy en la lista' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('sends a name that is already there back to the list', async () => {
     const { repo, slug } = await agora(['Endika'])
     renderWithBoard(<IdentityDialog slug={slug} onIdentified={() => {}} />, { repo, slug })

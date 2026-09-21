@@ -24,6 +24,32 @@ const proposal = (over: Partial<Parameters<typeof makeProposal>[0]> = {}) =>
 const money = (node: HTMLElement) => node.textContent!.replace(/\s/g, ' ')
 
 describe('ExpensePanel', () => {
+  it('no salta de h2 a h4: el gasto es h3, y sus sub-apartados h4', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 10_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    expect(screen.getByRole('heading', { level: 3, name: 'Gasto' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 4, name: /Quién ha puesto qué/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 4, name: 'Tus pagos' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 5 })).not.toBeInTheDocument()
+  })
+
   it('splits the total between whoever is in, cent-exact', () => {
     renderWithBoard(
       <ExpensePanel

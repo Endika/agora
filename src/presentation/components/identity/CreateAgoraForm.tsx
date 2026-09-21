@@ -72,9 +72,11 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
         />
       </label>
 
-      <p role="alert" style={{ color: 'var(--danger)' }}>
-        {error ?? ''}
-      </p>
+      {error && (
+        <p role="alert" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

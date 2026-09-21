@@ -36,6 +36,25 @@ describe('DangerZone', () => {
     await waitFor(() => expect(deleted).toBe(true))
   })
 
+  it('no monta ninguna región de alerta hasta que hay un error, y la muestra cuando lo hay', async () => {
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({ name: 'Piso Viejo', creatorName: 'Endika' })
+    renderWithBoard(
+      // The prop lags the real name, so the confirm text matches it but not what the repo holds.
+      <DangerZone slug={slug} agoraName="Piso de Gros" onDeleted={() => {}} />,
+      { repo, slug },
+    )
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+    await userEvent.type(screen.getByLabelText(/Escribe el nombre/), 'Piso de Gros')
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar para siempre' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'El nombre no coincide, así que no se ha borrado nada.',
+    )
+  })
+
   it('el botón de borrar solo se habilita cuando el nombre coincide', async () => {
     const repo = new InMemoryBoardRepository()
     const { slug } = await repo.createAgora({ name: 'Piso de Gros', creatorName: 'Endika' })

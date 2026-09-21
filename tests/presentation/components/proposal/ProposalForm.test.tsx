@@ -32,6 +32,14 @@ describe('ProposalForm', () => {
     )
   })
 
+  it('no monta ninguna región de alerta hasta que hay un error de validación', async () => {
+    renderWithBoard(
+      <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+    )
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
   it('refuses a title under three characters without calling back', async () => {
     const onSubmit = vi.fn()
     renderWithBoard(
@@ -41,7 +49,9 @@ describe('ProposalForm', () => {
     await userEvent.type(screen.getByLabelText('Título'), 'ab')
     await userEvent.click(screen.getByRole('button', { name: 'Publicar la propuesta' }))
 
-    expect(await screen.findByText('El título necesita al menos 3 caracteres.')).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'El título necesita al menos 3 caracteres.',
+    )
     expect(onSubmit).not.toHaveBeenCalled()
   })
 

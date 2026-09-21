@@ -123,9 +123,11 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             />
           </label>
 
-          <p role="alert" style={{ color: 'var(--danger)' }}>
-            {error ?? ''}
-          </p>
+          {error && (
+            <p role="alert" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
+          )}
 
           <div className="flex flex-wrap gap-2">
             <button
