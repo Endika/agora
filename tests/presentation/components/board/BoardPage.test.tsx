@@ -137,6 +137,53 @@ describe('BoardPage', () => {
     expect(screen.getByRole('button', { name: 'Cerrar la propuesta' })).toBeEnabled()
   })
 
+  it('marcar como hecha sin coste estimado pide confirmación y avisa de que el gasto se congela', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Alquilar la furgoneta' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Marcar como hecha' }))
+    expect(dialog.getByText(/el gasto quedará congelado/i)).toBeInTheDocument()
+    expect(repo.calls).not.toContain('completeProposal')
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Sí, está hecha' }))
+    await waitFor(() => expect(repo.calls).toContain('completeProposal'))
+  })
+
+  it('reabrir pide confirmación', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Pintar el salón' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'down' })
+    as('alice')
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Reabrir la votación' }))
+    expect(repo.calls).not.toContain('reopenProposal')
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Sí, reabrir' }))
+    await waitFor(() => expect(repo.calls).toContain('reopenProposal'))
+  })
+
   it('badges and filters what is waiting on my vote', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const mine = await repo.createProposal({ slug, title: 'Rent a van' })

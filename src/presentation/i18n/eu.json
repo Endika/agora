@@ -22,7 +22,8 @@
     "cancel": "Utzi",
     "close": "Itxi",
     "loading": "Kargatzen…",
-    "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da."
+    "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da.",
+    "no": "Ez"
   },
   "board": {
     "empty": "Oraindik ez dago ezer. Lehen proposamena zurea da.",
@@ -65,6 +66,9 @@
     "closeReasonHint": "Gutxienez 10 karaktere. Taldeak irakurriko du.",
     "closeConfirm": "Itxi proposamena",
     "complete": "Eginda markatu",
+    "completeFreezes": "Kosturik aurreikusi gabe, gastua izoztuta geratuko da eginda markatzen duzun unean.",
+    "completeConfirm": "Bai, eginda dago",
+    "reopenConfirm": "Bai, berrireki",
     "round": "{{round}}. txanda"
   },
   "setup": {
@@ -202,6 +206,7 @@
     "share": "dagokio",
     "left": "falta",
     "removePayment": "Kendu {{amount}}(e)ko ordainketa",
+    "removeConfirm": "Bai, kendu",
     "myPayments": "Zure ordainketak",
     "over": "{{amount}} gehiago",
     "totalOver": "Guztira baino {{amount}} gehiago sartu da: aurrekontua txikia zen edo norbaitek gehiegi jarri du.",

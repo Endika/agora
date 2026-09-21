@@ -22,7 +22,8 @@
     "cancel": "Cancelar",
     "close": "Cerrar",
     "loading": "Cargando…",
-    "offline": "Sin conexión. Lo que hagas se enviará al volver."
+    "offline": "Sin conexión. Lo que hagas se enviará al volver.",
+    "no": "No"
   },
   "board": {
     "empty": "Aquí no hay nada todavía. La primera propuesta la pones tú.",
@@ -65,6 +66,9 @@
     "closeReasonHint": "Mínimo 10 caracteres. Queda escrito para el grupo.",
     "closeConfirm": "Cerrar la propuesta",
     "complete": "Marcar como hecha",
+    "completeFreezes": "Sin coste estimado, el gasto quedará congelado en cuanto la marques como hecha.",
+    "completeConfirm": "Sí, está hecha",
+    "reopenConfirm": "Sí, reabrir",
     "round": "Ronda {{round}}"
   },
   "setup": {
@@ -202,6 +206,7 @@
     "share": "le toca",
     "left": "falta",
     "removePayment": "Quitar el pago de {{amount}}",
+    "removeConfirm": "Sí, quitarlo",
     "myPayments": "Tus pagos",
     "over": "{{amount}} de más",
     "totalOver": "Se ha puesto {{amount}} de más: el presupuesto se quedó corto o alguien puso de sobra.",

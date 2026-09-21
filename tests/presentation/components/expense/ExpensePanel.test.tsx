@@ -145,6 +145,41 @@ describe('ExpensePanel', () => {
     await waitFor(() => expect(repo.calls).toContain('addPayment'))
 
     await userEvent.click(screen.getByRole('button', { name: /Quitar el pago de 100,00/ }))
+    expect(repo.calls).not.toContain('removePayment')
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, quitarlo' }))
+    await waitFor(() => expect(repo.calls).toContain('removePayment'))
+  })
+
+  it('borrar un pago pide confirmación antes de ejecutarse', async () => {
+    const repo = new InMemoryBoardRepository()
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal({
+          payments: [
+            {
+              id: 'y1',
+              participantId: 'alice',
+              cents: 20_000,
+              createdAt: '2026-09-01T10:00:00.000Z',
+            },
+          ],
+        })}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+      { repo },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: /Quitar el pago de 200,00/ }))
+    expect(repo.calls).not.toContain('removePayment')
+    expect(screen.getByRole('button', { name: 'No' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'No' }))
+    expect(screen.getByRole('button', { name: /Quitar el pago de 200,00/ })).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: /Quitar el pago de 200,00/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, quitarlo' }))
     await waitFor(() => expect(repo.calls).toContain('removePayment'))
   })
 

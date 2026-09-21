@@ -19,6 +19,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
   const [reason, setReason] = useState('')
   const [closing, setClosing] = useState(false)
   const [completing, setCompleting] = useState(false)
+  const [reopening, setReopening] = useState(false)
   const [actual, setActual] = useState('')
   const [costError, setCostError] = useState<string | null>(null)
 
@@ -38,9 +39,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
       {canComplete(proposal) && !completing && (
         <button
           type="button"
-          onClick={() =>
-            proposal.estimatedCents === null ? onComplete(null) : setCompleting(true)
-          }
+          onClick={() => setCompleting(true)}
           className="min-h-11 rounded-[--radius] border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
@@ -48,7 +47,23 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         </button>
       )}
 
-      {canComplete(proposal) && completing && (
+      {canComplete(proposal) && completing && proposal.estimatedCents === null && (
+        <div className="grid gap-1">
+          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {t('actions.completeFreezes')}
+          </p>
+          <button
+            type="button"
+            onClick={() => onComplete(null)}
+            className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          >
+            {t('actions.completeConfirm')}
+          </button>
+        </div>
+      )}
+
+      {canComplete(proposal) && completing && proposal.estimatedCents !== null && (
         <div className="grid w-full gap-1">
           <label htmlFor={`actual-${proposal.id}`} className="font-medium">
             {t('expense.actualPrompt')}
@@ -92,14 +107,25 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         </div>
       )}
 
-      {canReopen(proposal, meId) && (
+      {canReopen(proposal, meId) && !reopening && (
+        <button
+          type="button"
+          onClick={() => setReopening(true)}
+          className="min-h-11 rounded-[--radius] px-4 font-medium"
+          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+        >
+          {t('actions.reopen')}
+        </button>
+      )}
+
+      {canReopen(proposal, meId) && reopening && (
         <button
           type="button"
           onClick={onReopen}
           className="min-h-11 rounded-[--radius] px-4 font-medium"
           style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
         >
-          {t('actions.reopen')}
+          {t('actions.reopenConfirm')}
         </button>
       )}
 
