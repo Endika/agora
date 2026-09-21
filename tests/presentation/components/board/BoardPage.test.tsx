@@ -262,6 +262,7 @@ describe('BoardPage', () => {
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
     expect(screen.getByTestId('pending-mine-badge')).toHaveTextContent('1')
+    expect(screen.getByTestId('pending-mine-badge')).toHaveAccessibleName('Te toca votar 1')
     await userEvent.click(screen.getByRole('button', { name: /Me toca votar/ }))
 
     const titles = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)

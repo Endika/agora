@@ -6,7 +6,6 @@
   "share": {
     "heading": "Partekatu agora",
     "explain": "Lotura hau irekitzen duena agoran sartzen da eta bozka dezake.",
-    "agoraLink": "Agoraren lotura",
     "qrAlt": "Agoraren loturaren QR kodea",
     "copy": "Kopiatu lotura",
     "copied": "Lotura kopiatuta"
@@ -24,7 +23,6 @@
     "cancel": "Utzi",
     "close": "Itxi",
     "loading": "Kargatzen…",
-    "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da.",
     "no": "Ez"
   },
   "board": {
@@ -33,8 +31,6 @@
     "filterAll": "Dena",
     "filterHeading": "Iragazi proposamenak",
     "filterPendingMine": "Nire txanda",
-    "filterTag": "{{tag}} etiketa",
-    "clearFilters": "Kendu iragazkiak",
     "archived": "Artxibatuta ({{count}})",
     "archivedExplain": "Eginda, ezetsita eta itxita. Hemen daude, bidean gabe.",
     "back": "Itzuli taulara",
@@ -52,9 +48,6 @@
     "closed": "Itxita"
   },
   "quorum": {
-    "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
-    "deadline": "{{date}}(e)an ixten da",
-    "noDeadline": "Epemugarik gabe: denek bozkatu arte irekita.",
     "net": "Emaitza {{net}}"
   },
   "missing": {
@@ -116,7 +109,6 @@
     "back": "Itzuli zerrendara",
     "nameRequired": "Idatzi zure izena.",
     "nameTaken": "Izen hori agoran dago. Aukeratu zerrendatik.",
-    "notMe": "Ez zara zu? Aukeratu berriro nor zaren.",
     "switch": "Aldatu pertsona"
   },
   "create": {
@@ -137,6 +129,18 @@
     "version": "{{version}} bertsioa",
     "privacy": "Pribatutasuna",
     "back": "Itzuli Agorara"
+  },
+  "settings": {
+    "language": "Hizkuntza",
+    "theme": "Itxura",
+    "themeSystem": "Automatikoa",
+    "themeLight": "Argia",
+    "themeDark": "Iluna",
+    "locale": {
+      "es": "Castellano",
+      "en": "English",
+      "eu": "Euskara"
+    }
   },
   "home": {
     "yourAgoras": "Zure agorak",
@@ -188,7 +192,6 @@
     "deviationOver": "Aurreikusitakoa baino {{amount}} gehiago",
     "deviationUnder": "Aurreikusitakoa baino {{amount}} gutxiago",
     "deviationNone": "Aurreikusitakoaren arabera atera da",
-    "sharesHeading": "Banaketa",
     "nobodyIn": "Oraindik inor ez da ordaintzen sartu.",
     "total": "Guztira {{amount}}",
     "paid": "jarrita",

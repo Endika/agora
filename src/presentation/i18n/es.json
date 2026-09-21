@@ -6,7 +6,6 @@
   "share": {
     "heading": "Comparte el ágora",
     "explain": "Quien abra este enlace entra en el ágora y puede votar.",
-    "agoraLink": "Enlace del ágora",
     "qrAlt": "Código QR del enlace del ágora",
     "copy": "Copiar el enlace",
     "copied": "Enlace copiado"
@@ -24,7 +23,6 @@
     "cancel": "Cancelar",
     "close": "Cerrar",
     "loading": "Cargando…",
-    "offline": "Sin conexión. Lo que hagas se enviará al volver.",
     "no": "No"
   },
   "board": {
@@ -33,8 +31,6 @@
     "filterAll": "Todo",
     "filterHeading": "Filtrar las propuestas",
     "filterPendingMine": "Me toca votar",
-    "filterTag": "Etiqueta {{tag}}",
-    "clearFilters": "Quitar filtros",
     "archived": "Archivadas ({{count}})",
     "archivedExplain": "Hechas, rechazadas y cerradas. Siguen aquí, solo no estorban.",
     "back": "Volver al tablón",
@@ -52,9 +48,6 @@
     "closed": "Cerrada"
   },
   "quorum": {
-    "progress": "{{cast}} de {{total}} han votado",
-    "deadline": "Se cierra el {{date}}",
-    "noDeadline": "Sin fecha límite: sigue abierta hasta que vote todo el mundo.",
     "net": "Neto {{net}}"
   },
   "missing": {
@@ -116,7 +109,6 @@
     "back": "Volver a la lista",
     "nameRequired": "Escribe tu nombre.",
     "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
-    "notMe": "¿No eres tú? Vuelve a elegir quién eres.",
     "switch": "Cambiar de persona"
   },
   "create": {
@@ -137,6 +129,18 @@
     "version": "Versión {{version}}",
     "privacy": "Privacidad",
     "back": "Volver a Agora"
+  },
+  "settings": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeSystem": "Automático",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "locale": {
+      "es": "Castellano",
+      "en": "English",
+      "eu": "Euskara"
+    }
   },
   "home": {
     "yourAgoras": "Tus ágoras",
@@ -188,7 +192,6 @@
     "deviationOver": "{{amount}} más de lo previsto",
     "deviationUnder": "{{amount}} menos de lo previsto",
     "deviationNone": "Salió por lo previsto",
-    "sharesHeading": "Reparto",
     "nobodyIn": "Todavía nadie entra a pagar.",
     "total": "Total {{amount}}",
     "paid": "puesto",
