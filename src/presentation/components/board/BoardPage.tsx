@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
@@ -113,6 +113,35 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   const beingEdited = route.kind === 'edit' ? byRouteId(route.proposalId) : undefined
   const open = route.kind === 'proposal' ? byRouteId(route.proposalId) : undefined
 
+  // Whether the open proposal is a panel rather than a sheet. Everything downstream — the column
+  // count, where the focus goes — follows from this one answer.
+  const panelled = wide && open !== undefined
+
+  const panel = useRef<HTMLElement | null>(null)
+
+  // The panel is not modal, so nothing moves focus for us — and clicking a card would otherwise
+  // leave the reader twenty-odd tab stops short of the thing they just asked to read. Moving focus
+  // to content the user explicitly requested is allowed; trapping it there is not.
+  // preventScroll: the panel is sticky and already beside the card that opened it, so scrolling it
+  // into view only shoves the header off the top of a page that was fine where it was.
+  useEffect(() => {
+    if (panelled) panel.current?.focus({ preventScroll: true })
+  }, [panelled, open?.id])
+
+  // Leaving the panel puts focus back on the card it came from, the way the sheet already does for
+  // its opener. Landing on <body> loses a keyboard reader their place in a fifteen-card list.
+  const leavePanel = () => {
+    if (open) {
+      const href = proposalHref(board.group.slug, open.id)
+      document.querySelector<HTMLElement>(`a[href="${href}"]`)?.focus()
+    }
+    closeSheet()
+  }
+
+  // One column beside the panel, two when the board has the width to itself: reserving an empty
+  // 28rem track for a panel that is not open leaves the commonest desktop state half blank.
+  const columns = panelled ? '' : ' lg:grid-cols-2'
+
   const card = (proposal: Proposal) => (
     <li key={proposal.id} className="min-w-0">
       <ProposalCard
@@ -125,10 +154,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     </li>
   )
 
-  // The panel column is there whether or not anything is open: a board that reflowed every time a
-  // proposal opened would move the card you just clicked out from under your eyes.
   return (
-    <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
+    <div
+      className={`grid min-w-0 gap-8${panelled ? ' lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]' : ''}`}
+    >
       <section className="grid min-w-0 gap-4" aria-label={board.group.name}>
         {error && (
           <p role="alert" style={{ color: 'var(--danger)' }}>
@@ -175,7 +204,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
           type="button"
           onClick={() => openCompose(board.group.slug)}
           className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('proposal.new')}
         </button>
@@ -191,7 +220,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         {live.length === 0 && archived.length === 0 ? (
           <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>
         ) : (
-          <ul className="grid gap-4">{live.map(card)}</ul>
+          <ul className={`grid gap-4${columns}`}>{live.map(card)}</ul>
         )}
 
         {archived.length > 0 && (
@@ -206,23 +235,25 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
               <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                 {t('board.archivedExplain')}
               </p>
-              <ul className="grid gap-4">{archived.map(card)}</ul>
+              <ul className={`grid gap-4${columns}`}>{archived.map(card)}</ul>
             </div>
           </details>
         )}
       </section>
 
-      {/* Not a dialog: the board beside it stays live, so nothing here may go `inert`, trap Tab or
-          steal focus. It scrolls on its own so a long debate never runs off the bottom. */}
-      {open && wide && (
+      {/* Not a dialog: the board beside it stays live, so nothing here may go `inert` or trap Tab.
+          It scrolls on its own so a long debate never runs off the bottom. */}
+      {panelled && open && (
         <aside
-          className="sticky top-8 grid max-h-[calc(100dvh-4rem)] min-w-0 gap-4 self-start overflow-y-auto overscroll-contain rounded-[--radius] border p-4"
+          ref={panel}
+          tabIndex={-1}
+          className="sticky top-8 grid max-h-[calc(100dvh-4rem)] min-w-0 gap-4 self-start overflow-y-auto overscroll-contain rounded-[--radius] border p-4 outline-none"
           style={{ borderColor: 'var(--border)' }}
           aria-label={open.title}
         >
           <button
             type="button"
-            onClick={closeSheet}
+            onClick={leavePanel}
             className="min-h-11 justify-self-start rounded-[--radius] border px-4"
             style={{ borderColor: 'var(--border-control)' }}
           >

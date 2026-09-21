@@ -39,7 +39,7 @@ export function CommentForm({ label, onSend }: { label: string; onSend: (body: s
       <button
         type="submit"
         className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-        style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+        style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
       >
         {t('threads.send')}
       </button>

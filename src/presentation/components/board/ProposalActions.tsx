@@ -57,7 +57,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
               type="button"
               onClick={() => onComplete(null)}
               className="min-h-11 rounded-[--radius] px-4 font-medium"
-              style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+              style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
             >
               {t('actions.completeConfirm')}
             </button>
@@ -110,7 +110,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
               onComplete(cents)
             }}
             className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('actions.complete')}
           </button>
@@ -122,7 +122,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
           type="button"
           onClick={() => setReopening(true)}
           className="min-h-11 rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('actions.reopen')}
         </button>
@@ -134,7 +134,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             type="button"
             onClick={onReopen}
             className="min-h-11 rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('actions.reopenConfirm')}
           </button>

@@ -18,5 +18,5 @@ function subscribe(onChange: () => void): () => void {
  * two comment forms in the accessibility tree, one of them invisible. One hook, one node.
  */
 export function useWideViewport(): boolean {
-  return useSyncExternalStore(subscribe, isWide, () => false)
+  return useSyncExternalStore(subscribe, isWide)
 }

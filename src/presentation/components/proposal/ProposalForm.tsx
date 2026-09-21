@@ -280,7 +280,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
         <button
           type="submit"
           className="min-h-11 rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {editing ? t('proposal.save') : t('proposal.submit')}
         </button>

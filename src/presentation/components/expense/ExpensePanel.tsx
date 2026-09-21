@@ -264,7 +264,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
           <button
             type="submit"
             className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('expense.save')}
           </button>
