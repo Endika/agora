@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest'
 import { readdirSync, readFileSync } from 'node:fs'
+import { LANDING_MS } from '@/presentation/components/vote/PsephoiRow'
+
+const ROW_SOURCE = 'src/presentation/components/vote/PsephoiRow.tsx'
+
+/** The first `<n>ms` in a declaration, as a number. */
+function duration(declaration: string): number {
+  const match = declaration.match(/(\d+(?:\.\d+)?)ms/)
+  if (!match) throw new Error(`no duration in ${JSON.stringify(declaration)}`)
+  return Number(match[1])
+}
+
+/**
+ * Anything that *sets* the attribute, in either form it can be written in: `'data-motion': 'x'`
+ * inside an object spread, or a bare `data-motion="x"` on a JSX tag. Matching only the first is
+ * how the second would have walked past the check below.
+ */
+const SETS_DATA_MOTION = /["']data-motion["']\s*:|\bdata-motion\s*=/
+
+/** Every literal value either form assigns. An expression value matches `SETS_DATA_MOTION` only. */
+function motionValues(source: string): string[] {
+  const pattern = /(?:["']data-motion["']\s*:|\bdata-motion\s*=)\s*["']([a-z-]+)["']/g
+  return [...source.matchAll(pattern)].map((match) => match[1]!)
+}
 
 /** WCAG 2.x relative luminance and contrast ratio, straight from the spec. */
 function luminance(hex: string): number {
@@ -227,6 +250,21 @@ describe('motion under prefers-reduced-motion', () => {
     expect(row).toContain('row-reveal-still')
   })
 
+  it('el temporizador que retira la animación dura más que las dos formas del aterrizaje', () => {
+    // LANDING_MS exists only to outlast the landing, and nothing tied the two together. Pushing
+    // either keyframe past it would cut the animation off mid-flight in a real browser and no
+    // test would notice, because jsdom never animates anything.
+    const moving = duration(readFileSync(ROW_SOURCE, 'utf8').match(/pebble-land \d+ms/)![0])
+    const still = duration(ruleBody(reduce, "[data-motion='pebble-land']"))
+    // 260 ms is `row-reveal-still`, on a different element, and never gates this timer.
+    expect(duration(ruleBody(reduce, "[data-motion='row-reveal']"))).not.toBe(still)
+
+    expect(moving).toBeGreaterThan(0)
+    expect(still).toBeGreaterThan(0)
+    expect(LANDING_MS).toBeGreaterThan(moving)
+    expect(LANDING_MS).toBeGreaterThan(still)
+  })
+
   it('the still forms move nothing: opacity only, no transform', () => {
     for (const name of ['pebble-land-still', 'row-reveal-still']) {
       const frames = ruleBody(css, `@keyframes ${name}`)
@@ -251,13 +289,24 @@ describe('the reduced-motion escape hatch stays small', () => {
     // `*:not([data-motion])` is a hole in the blanket that flattens motion. It is meant for the
     // two moments that carry information; anything else reaching for it is reaching for an
     // exemption from somebody's stated preference, and should have to argue for it here first.
-    const users = sources('src').filter((file) =>
-      readFileSync(file, 'utf8').includes("'data-motion'"),
-    )
-    expect(users).toEqual(['src/presentation/components/vote/PsephoiRow.tsx'])
+    const users = sources('src').filter((file) => SETS_DATA_MOTION.test(readFileSync(file, 'utf8')))
+    expect(users).toEqual([ROW_SOURCE])
 
-    const row = readFileSync(users[0]!, 'utf8')
-    const values = [...row.matchAll(/'data-motion': '([a-z-]+)'/g)].map((match) => match[1])
+    const values = motionValues(readFileSync(users[0]!, 'utf8'))
     expect(new Set(values)).toEqual(new Set(['pebble-land', 'row-reveal']))
+  })
+
+  it('el guardia ve también el atributo suelto, no solo el de la propagación', () => {
+    // The row writes it as `{...{ 'data-motion': 'row-reveal' }}`, and the guard used to match
+    // that quoted spelling literally — so a plain `data-motion="…"` on any other tag in `src`
+    // would have claimed the exemption without ever being counted here.
+    expect(SETS_DATA_MOTION.test(`<span data-motion="row-reveal" />`)).toBe(true)
+    expect(SETS_DATA_MOTION.test(`{...{ 'data-motion': 'pebble-land' }}`)).toBe(true)
+    expect(SETS_DATA_MOTION.test(`{...{ "data-motion": "pebble-land" }}`)).toBe(true)
+    // Reading the attribute, or naming something after it, is not claiming the exemption.
+    expect(SETS_DATA_MOTION.test(`<span className="data-motion-ish" />`)).toBe(false)
+
+    expect(motionValues(`<span data-motion="row-reveal" />`)).toEqual(['row-reveal'])
+    expect(motionValues(`{...{ 'data-motion': 'pebble-land' }}`)).toEqual(['pebble-land'])
   })
 })

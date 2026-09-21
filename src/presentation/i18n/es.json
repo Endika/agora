@@ -13,12 +13,13 @@
   "psephoi": {
     "progress": "Han votado {{cast}} de {{total}}",
     "progressMine": "Han votado {{cast}} de {{total}}, tu voto incluido",
-    "secret": "Los votos se ven al alcanzar el quórum",
+    "secret": "Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.",
     "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
     "abstain": "En blanco",
     "abstainCounts": "En blanco también cuenta para el quórum",
+    "roll": "Quién votó qué",
     "voted": {
       "up": "Has votado a favor",
       "down": "Has votado en contra",

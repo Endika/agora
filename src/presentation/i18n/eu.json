@@ -13,12 +13,13 @@
   "psephoi": {
     "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
     "progressMine": "{{total}}(e)tik {{cast}}(e)k bozkatu dute, zurea barne",
-    "secret": "Botoak quoruma lortzean ikusten dira",
+    "secret": "Inork ez du zure botoa ikusten quoruma lortu arte. Ordutik aurrera talde osoak ikusiko du, zure izenarekin.",
     "choose": "Zure botoa",
     "up": "Alde",
     "down": "Aurka",
     "abstain": "Zuri",
     "abstainCounts": "Zuriak ere quorumerako balio du",
+    "roll": "Nork zer bozkatu duen",
     "voted": {
       "up": "Alde bozkatu duzu",
       "down": "Aurka bozkatu duzu",
