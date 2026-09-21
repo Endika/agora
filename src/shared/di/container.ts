@@ -31,6 +31,12 @@ export function buildApp(): Wiring | { error: string } {
     // Created once, awaited by whoever needs it: the module downloads a single time, and the cached
     // board paints without waiting for it.
     const client = createAgoraClient()
+    // Nothing awaits the client this tick, so a failed download would otherwise be an
+    // unhandledrejection the ErrorBoundary never sees. The promise still rejects for whoever does
+    // await it, which is how the failure reaches the screen someone is looking at.
+    client.catch((cause: unknown) =>
+      console.error('Agora could not load its database client:', cause),
+    )
     const queue = new IdbActionQueue()
     const network = BrowserOnlineDetector
 

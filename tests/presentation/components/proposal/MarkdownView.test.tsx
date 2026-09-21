@@ -15,4 +15,17 @@ describe('MarkdownView', () => {
     expect(container.querySelector('strong')?.textContent).toBe('hoy')
     expect(container.textContent).not.toContain('## Plan')
   })
+
+  it('keeps the last html on screen while the next one is produced', async () => {
+    const { container, rerender } = render(<MarkdownView markdown="## Uno" />)
+    await waitFor(() => expect(container.querySelector('h2')?.textContent).toBe('Uno'))
+
+    // The live preview re-renders on every keystroke. Falling back to raw text between them would
+    // flicker once per character, so the previous html stays until the next one is ready.
+    rerender(<MarkdownView markdown="## Dos" />)
+    expect(container.querySelector('h2')).not.toBeNull()
+    expect(container.textContent).not.toContain('## Dos')
+
+    await waitFor(() => expect(container.querySelector('h2')?.textContent).toBe('Dos'))
+  })
 })

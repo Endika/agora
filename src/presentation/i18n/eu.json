@@ -158,7 +158,8 @@
     "listItem": "lehen puntua",
     "headingText": "Goiburu bat",
     "toolbar": "Testuaren formatua",
-    "image": "Irudia"
+    "image": "Irudia",
+    "plainFallback": "Formatua ezin izan da kargatu; testua dagoen bezala irakurtzen da."
   },
   "images": {
     "add": "Gehitu irudia",

@@ -29,23 +29,31 @@ const ALLOWED_TAGS = [
   'td',
 ]
 
+interface Engine {
+  parse: (markdown: string) => string
+  sanitize: (html: string, config: Record<string, unknown>) => string
+}
+
 /**
  * The parser and the sanitiser are some 40 KB that only a proposal description needs, so they are
  * fetched on demand and then kept: the second description renders without a second download.
+ *
+ * A failed fetch is *not* kept. Latching a rejected promise here would turn one lost packet into a
+ * whole session with no formatting anywhere, so the slot is cleared and the next caller retries.
  */
-let pending: Promise<{
-  parse: (markdown: string) => string
-  sanitize: (html: string, config: Record<string, unknown>) => string
-}> | null = null
+let pending: Promise<Engine> | null = null
 
-function markdownEngine() {
-  pending ??= Promise.all([import('marked'), import('dompurify')]).then(
-    ([{ marked }, { default: DOMPurify }]) => ({
+function markdownEngine(): Promise<Engine> {
+  pending ??= Promise.all([import('marked'), import('dompurify')])
+    .then(([{ marked }, { default: DOMPurify }]) => ({
       parse: (markdown: string) =>
         marked.parse(markdown, { async: false, gfm: true, breaks: true }),
       sanitize: (html: string, config: Record<string, unknown>) => DOMPurify.sanitize(html, config),
-    }),
-  )
+    }))
+    .catch((cause: unknown) => {
+      pending = null
+      throw cause
+    })
   return pending
 }
 

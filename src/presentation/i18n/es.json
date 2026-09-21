@@ -158,7 +158,8 @@
     "listItem": "primer punto",
     "headingText": "Un encabezado",
     "toolbar": "Formato del texto",
-    "image": "Imagen"
+    "image": "Imagen",
+    "plainFallback": "El formato no se pudo cargar; el texto se lee tal cual."
   },
   "images": {
     "add": "Añadir imagen",
