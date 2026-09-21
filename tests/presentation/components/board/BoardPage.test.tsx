@@ -1517,3 +1517,71 @@ describe('BoardPage, un solo tiempo verbal por ruta', () => {
     expect(screen.queryByText(SECRET_PAST)).toBeNull()
   })
 })
+describe('BoardPage, el foco al cerrar el panel siempre aterriza en algo', () => {
+  async function boardWithArchived() {
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'])
+    const rejected = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    await repo.createProposal({ slug, title: 'Pintar el pasillo', tags: ['casa'] })
+    for (const name of ['Ekin', 'Amaia', 'Iker']) {
+      as(name)
+      await repo.castVote({ proposalId: rejected, round: 1, value: 'down' })
+    }
+    as('Ekin')
+    const board = await repo.getBoard(slug)
+    expect(board.proposals.find((proposal) => proposal.id === rejected)!.status).toBe('rejected')
+    return { repo, slug, rejected, board }
+  }
+
+  it('si la tarjeta está dentro de «Archivadas» cerrado, el foco va a la propia sección', async () => {
+    // Measured in Chromium: the anchor is in the document and cannot take focus inside a closed
+    // <details>, so focus fell to <body> — the exact loss this function exists to prevent, in the
+    // one case where the list behind it is longest.
+    const { repo, slug, rejected, board } = await boardWithArchived()
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: rejected }} />,
+      { repo, slug },
+    )
+
+    const disclosure = screen.getByText('Archivadas (1)')
+    expect(disclosure.closest('details')!.open).toBe(false)
+
+    const panel = screen.getByRole('complementary', { name: 'Alquilar una furgoneta' })
+    await userEvent.click(within(panel).getByRole('button', { name: 'Volver al tablón' }))
+
+    expect(disclosure).toHaveFocus()
+    expect(document.body).not.toHaveFocus()
+  })
+
+  it('y si un filtro ha quitado la tarjeta de la lista, al principio del tablón', async () => {
+    const { repo, slug, rejected, board } = await boardWithArchived()
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: rejected }} />,
+      { repo, slug },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: '#casa' }))
+    expect(screen.queryByText('Archivadas (1)')).toBeNull()
+
+    const panel = screen.getByRole('complementary', { name: 'Alquilar una furgoneta' })
+    await userEvent.click(within(panel).getByRole('button', { name: 'Volver al tablón' }))
+
+    expect(screen.getByRole('button', { name: 'Nueva propuesta' })).toHaveFocus()
+  })
+
+  it('con la tarjeta a la vista sigue siendo la tarjeta la que recibe el foco', async () => {
+    const { repo, slug, board } = await boardWithArchived()
+    const live = board.proposals.find((proposal) => proposal.status === 'open')!
+    matchMediaMatches(true)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: live.id }} />,
+      { repo, slug },
+    )
+
+    const panel = screen.getByRole('complementary', { name: 'Pintar el pasillo' })
+    await userEvent.click(within(panel).getByRole('button', { name: 'Volver al tablón' }))
+
+    expect(screen.getByRole('link', { name: 'Pintar el pasillo' })).toHaveFocus()
+  })
+})
