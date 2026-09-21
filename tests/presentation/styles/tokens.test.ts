@@ -196,3 +196,42 @@ describe('css parsing helpers', () => {
     )
   })
 })
+
+describe('motion under prefers-reduced-motion', () => {
+  const reduce = ruleBody(css, '@media (prefers-reduced-motion: reduce)')
+
+  it('the two animations that carry meaning define both a moving and a still form', () => {
+    for (const name of ['pebble-land', 'row-reveal']) {
+      expect(css).toContain(`@keyframes ${name} {`)
+      expect(css).toContain(`@keyframes ${name}-still {`)
+    }
+  })
+
+  it('the blanket that flattens motion lets anything marked data-motion through', () => {
+    // The whole point: `*, *::before, *::after { animation-duration: 0.01ms !important }` would
+    // reach inside the pebble row and delete the only feedback casting a vote has.
+    expect(reduce).toContain('*:not([data-motion])')
+    expect(stripComments(reduce)).not.toMatch(/(^|[\s,])\*\s*(,|\{)/)
+  })
+
+  it('and replaces the movement with a fade instead of with nothing', () => {
+    const land = ruleBody(reduce, "[data-motion='pebble-land']")
+    const row = ruleBody(reduce, "[data-motion='row-reveal']")
+    // Not `animation: none`: the state change still has to be seen happening.
+    for (const body of [land, row]) {
+      expect(body).not.toContain('none')
+      expect(body).toContain('!important')
+      expect(body).toMatch(/\d+ms/)
+    }
+    expect(land).toContain('pebble-land-still')
+    expect(row).toContain('row-reveal-still')
+  })
+
+  it('the still forms move nothing: opacity only, no transform', () => {
+    for (const name of ['pebble-land-still', 'row-reveal-still']) {
+      const frames = ruleBody(css, `@keyframes ${name}`)
+      expect(frames).toContain('opacity')
+      expect(frames).not.toContain('transform')
+    }
+  })
+})

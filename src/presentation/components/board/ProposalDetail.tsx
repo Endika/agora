@@ -26,6 +26,10 @@ interface Props {
    * a board that is still on screen it must not — 300 px apart, twice, is noise.
    */
   explainSecret: boolean
+  /** A vote cast from this panel is still in the air. */
+  votePending?: boolean
+  /** What the reader just voted, once it landed. */
+  voteDone?: string | null
 }
 
 /** Everything about one proposal: the full text, the images, the money and the conversation. */
@@ -39,6 +43,8 @@ export function ProposalDetail({
   onComplete,
   onChanged,
   explainSecret,
+  votePending = false,
+  voteDone = null,
 }: Props) {
   const { t } = useTranslation()
   const titleOf = (id: string) => board.proposals.find((other) => other.id === id)?.title
@@ -96,10 +102,16 @@ export function ProposalDetail({
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
           explainSecret={explainSecret}
+          mine={proposal.myVote !== null}
         />
         {proposal.status === 'open' && (
           <>
-            <VoteControls proposal={proposal} onVote={onVote} />
+            <VoteControls
+              proposal={proposal}
+              onVote={onVote}
+              pending={votePending}
+              done={voteDone}
+            />
             <MissingVoters pending={proposal.pending} participants={board.participants} />
           </>
         )}

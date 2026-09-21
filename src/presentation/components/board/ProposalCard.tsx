@@ -15,6 +15,10 @@ interface Props {
   threads: Thread[]
   slug: string
   onVote: (value: VoteValue) => void
+  /** A vote cast from this card is still in the air. */
+  votePending?: boolean
+  /** What this card's reader just voted, once it landed. */
+  voteDone?: string | null
 }
 
 const STATUS_COLOR: Record<Proposal['status'], string> = {
@@ -33,7 +37,15 @@ const STATUS_COLOR: Record<Proposal['status'], string> = {
  * because voting from the list is the thing people do most. Comments, images, the expense breakdown and the
  * actions live in the proposal itself, one tap away.
  */
-export function ProposalCard({ proposal, participants, threads, slug, onVote }: Props) {
+export function ProposalCard({
+  proposal,
+  participants,
+  threads,
+  slug,
+  onVote,
+  votePending = false,
+  voteDone = null,
+}: Props) {
   const { t, i18n } = useTranslation()
   const comments = threads.reduce((total, thread) => total + thread.commentCount, 0)
   const preview = excerpt(proposal.description)
@@ -80,6 +92,7 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
           explainSecret={false}
+          mine={proposal.myVote !== null}
         />
         {proposal.votesRevealed && (
           <p
@@ -93,7 +106,7 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
 
       {proposal.status === 'open' && (
         <>
-          <VoteControls proposal={proposal} onVote={onVote} />
+          <VoteControls proposal={proposal} onVote={onVote} pending={votePending} done={voteDone} />
           <MissingVoters pending={proposal.pending} participants={participants} compact />
         </>
       )}

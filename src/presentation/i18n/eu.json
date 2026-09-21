@@ -12,12 +12,18 @@
   },
   "psephoi": {
     "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
+    "progressMine": "{{total}}(e)tik {{cast}}(e)k bozkatu dute, zurea barne",
     "secret": "Botoak quoruma lortzean ikusten dira",
     "choose": "Zure botoa",
     "up": "Alde",
     "down": "Aurka",
     "abstain": "Zuri",
-    "abstainCounts": "Zuriak ere quorumerako balio du"
+    "abstainCounts": "Zuriak ere quorumerako balio du",
+    "voted": {
+      "up": "Alde bozkatu duzu",
+      "down": "Aurka bozkatu duzu",
+      "abstain": "Zuri bozkatu duzu"
+    }
   },
   "common": {
     "cancel": "Utzi",
