@@ -137,6 +137,7 @@ describe('el invariante: en un ágora secreta ningún nombre aparece junto a un 
       status: (status: string) => status,
       tally: (t: { up: number; down: number; abstain: number }) =>
         `${t.up} / ${t.down} / ${t.abstain}`,
+      castOnly: (cast: number) => `${cast} votos emitidos`,
     }
 
     const json = JSON.parse(exportBoard(board, 'json', labels, history)) as BoardSnapshot

@@ -263,7 +263,9 @@
     "heading": "Take the board with you",
     "explain": "The board is yours: Markdown to read it, JSON to reuse it.",
     "markdown": "Download Markdown",
-    "json": "Download JSON"
+    "json": "Download JSON",
+    "castOnly_one": "{{count}} vote cast",
+    "castOnly_other": "{{count}} votes cast"
   },
   "install": {
     "title": "Install Agora on your phone and open it like an app.",

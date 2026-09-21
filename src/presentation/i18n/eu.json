@@ -263,7 +263,9 @@
     "heading": "Eraman taula zurekin",
     "explain": "Taula zurea da: Markdown irakurtzeko, JSON berrerabiltzeko.",
     "markdown": "Deskargatu Markdown",
-    "json": "Deskargatu JSON"
+    "json": "Deskargatu JSON",
+    "castOnly_one": "boto {{count}} emanda",
+    "castOnly_other": "{{count}} boto emanda"
   },
   "install": {
     "title": "Instalatu Agora mugikorrean eta ireki app bat bezala.",
