@@ -167,6 +167,64 @@ describe('BoardPage', () => {
     expect(screen.getByRole('button', { name: 'Cerrar la propuesta' })).toBeEnabled()
   })
 
+  it('cerrar con motivo se puede cancelar, y no escribe nada', async () => {
+    // Armed, this one replaces its own trigger with a label, a textarea and a red button. Its two
+    // siblings have had a "No" since an earlier round; this one left the browser's back button as
+    // the only way out of a destructive confirmation.
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'down' })
+    as('alice')
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Cerrar con motivo' }))
+    await userEvent.type(dialog.getByLabelText('Motivo'), 'lo hablamos en persona y sobra')
+    await userEvent.click(dialog.getByRole('button', { name: 'No' }))
+
+    expect(repo.calls).not.toContain('closeProposal')
+    expect(dialog.queryByLabelText('Motivo')).toBeNull()
+    expect(dialog.getByRole('button', { name: 'Cerrar con motivo' })).toBeInTheDocument()
+  })
+
+  it('marcar como hecha con coste estimado también se puede cancelar', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({
+      slug,
+      title: 'Alquilar la furgoneta',
+      estimatedCents: 40000,
+    })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Marcar como hecha' }))
+    await userEvent.type(dialog.getByLabelText('¿Cuánto costó al final? (opcional)'), '412,90')
+    await userEvent.click(dialog.getByRole('button', { name: 'No' }))
+
+    expect(repo.calls).not.toContain('completeProposal')
+    // The prompt is gone and the trigger is back where it was.
+    expect(dialog.queryByLabelText('¿Cuánto costó al final? (opcional)')).toBeNull()
+    expect(dialog.getByRole('button', { name: 'Marcar como hecha' })).toBeInTheDocument()
+  })
+
   it('marcar como hecha sin coste estimado pide confirmación y avisa de que el gasto se congela', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Alquilar la furgoneta' })
