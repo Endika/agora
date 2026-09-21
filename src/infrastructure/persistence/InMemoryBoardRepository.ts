@@ -508,8 +508,16 @@ export class InMemoryBoardRepository implements BoardRepository {
           myVote: roundVotes.find((v) => v.participantId === this.me)?.value ?? null,
           votesRevealed: revealed,
           // Before quorum the sentiment is simply absent, not filtered later on — and a secret
-          // agora drops the voter here, as get_board does, so no test above this class can pass
-          // on attribution the real server never sends.
+          // agora drops the voter here, the shape `get_board` sends, so no test above this class
+          // can pass on attribution the real server never publishes.
+          //
+          // The order is deliberately *not* mirrored. The server sorts a secret reveal by `v.id`,
+          // a v4 uuid, so that reading the board twice during the round and crossing the reveal
+          // with the public `pending` list cannot reconstruct who voted what; this returns them in
+          // cast order. Making it shuffle would only invite a client test to assert a reveal
+          // order, and no screen up here has any business having an opinion about one. The
+          // invariant is tested where it lives, in `tests/sql/0003_ballot_mode.sql:124-155`, with
+          // a guard that fails if the fixture's two orders happen to agree and prove nothing.
           votes: revealed
             ? roundVotes.map((v) =>
                 agora.ballotOpen

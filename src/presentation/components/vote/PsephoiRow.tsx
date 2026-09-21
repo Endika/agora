@@ -2,26 +2,43 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CastVote, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
+import { ballotSentenceKey } from './ballotSentence'
 
-interface Props {
+interface Pebbles {
   /** Everyone entitled to vote: the row's length, and the names the roll is written from. */
   participants: Participant[]
   cast: number
   /** Null while the vote is open. Once resolved, every vote in the round, with its voter. */
   revealed: CastVote[] | null
   /**
-   * Whether this row is allowed to explain the ballot rule in text. The row itself cannot tell
-   * whether it is the one copy of that sentence on the page, so the caller says so explicitly —
-   * the board says it once above the list, the detail repeats it because it can be opened on its
-   * own, and the list card never does, to avoid saying it once per open proposal.
-   */
-  explainSecret: boolean
-  /**
    * Whether one of these pebbles is the reader's own. Presence, never direction: the ring says
    * "yours is in", and which way it went stays secret until the whole row turns.
    */
   mine?: boolean
 }
+
+/**
+ * Whether this row is allowed to explain the ballot rule in text, and — when it is — which rule.
+ * The row itself cannot tell whether it is the one copy of that sentence on the page, so the
+ * caller says so explicitly: the board says it once above the list, the detail repeats it because
+ * it can be opened on its own, and the list card never does, to avoid saying it once per open
+ * proposal.
+ *
+ * The two travel together on purpose. The mode is a fact about the agora that the row has no way
+ * of deriving — in a secret agora `revealed` is a list of votes with no voter, which looks exactly
+ * like a bug from in here — and a separate optional prop could be forgotten at the one call site
+ * that matters. Tied to the permission, the type will not let anybody explain a rule without
+ * saying which of the two it is, and the card that stays quiet is not handed a fact it must not use.
+ */
+type Explaining =
+  | { explainSecret: false }
+  | {
+      explainSecret: true
+      /** From `board.group.ballotOpen`: true if the ballot opens at quorum, false if never. */
+      ballotOpen: boolean
+    }
+
+type Props = Pebbles & Explaining
 
 /** A long row should not take a second to finish arriving, so the stagger stops counting at eight. */
 const STAGGER_CAP = 8
@@ -43,9 +60,9 @@ const ROLL_ORDER: VoteValue[] = ['up', 'abstain', 'down']
  *
  * The row *is* the rule: an empty slot is somebody who has not voted, a stone pebble is a vote cast
  * but not revealed, and colour only ever appears once the vote is over. What the row cannot say is
- * the half of the rule that changes how people vote — that the ballot is secret only until quorum,
- * and carries your name afterwards — so the same fact is said in text where the caller asks for it,
- * before anybody taps anything.
+ * the half of the rule that changes how people vote — whether the ballot stays secret after quorum
+ * or turns and carries your name, which each agora chose when it was created — so the same fact is
+ * said in text where the caller asks for it, before anybody taps anything.
  *
  * Once it resolves the row keeps being the summary and the roll underneath is the detail: who voted
  * what, grouped by sense. The roll is the *only* place the attribution is published, and that is on
@@ -61,7 +78,8 @@ const ROLL_ORDER: VoteValue[] = ['up', 'abstain', 'down']
  * `data-motion` is the only way past that rule, so it stays inside this file: two values, two
  * animations, both about the vote. A test counts them.
  */
-export function PsephoiRow({ participants, cast, revealed, explainSecret, mine = false }: Props) {
+export function PsephoiRow(props: Props) {
+  const { participants, cast, revealed, mine = false } = props
   const { t } = useTranslation()
   const total = participants.length
   const filled = revealed ? revealed.length : Math.min(cast, total)
@@ -172,14 +190,19 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           />
         ))}
       </div>
-      {explainSecret && (
-        // One paragraph, two tenses, and the branch is mutually exclusive — which is how "exactly
+      {props.explainSecret && (
+        // One paragraph, one sentence out of four, and the choice is total — which is how "exactly
         // once on screen" survives by construction rather than by a caller remembering. The past
         // tense matters as much as the future one: somebody arriving on a resolved proposal
-        // through a shared link finds their own name against a sense and is owed the rule that
-        // put it there, even though there is nothing left to promise them.
+        // through a shared link finds a roll of names, or pointedly does not, and is owed the rule
+        // that decided it, even though there is nothing left to promise them.
+        //
+        // `revealed` alone cannot choose: it says the round is over, never what that publishes. A
+        // secret agora resolves with its voters stripped, so reading it alone lands on "now the
+        // whole group sees them, with the name of whoever cast them" over a roll that will never
+        // exist. That was the lie; the mode is here so it cannot be told.
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-          {t(revealed ? 'psephoi.secretPast' : 'psephoi.secret')}
+          {t(ballotSentenceKey(props.ballotOpen, revealed !== null))}
         </p>
       )}
       {roll.length > 0 && (

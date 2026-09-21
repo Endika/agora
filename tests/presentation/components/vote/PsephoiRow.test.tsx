@@ -8,6 +8,11 @@ const SECRET =
   'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
 const SECRET_PAST =
   'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
+/** The same two, in an agora whose ballot never opens: no name is promised in either tense. */
+const FOREVER =
+  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
+const FOREVER_PAST =
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y nadie sabe quién puso cada uno.'
 
 /** Named people, in the order their votes are handed to the row. */
 function people(...names: string[]): Participant[] {
@@ -22,6 +27,11 @@ function crowd(count: number): Participant[] {
 /** The i-th value belongs to the i-th participant, which is also the order the pebbles sit in. */
 function ballots(voters: Participant[], ...values: VoteValue[]): CastVote[] {
   return values.map((value, index) => ({ participantId: voters[index]!.id, value }))
+}
+
+/** A secret agora's reveal: the senses arrive, and there is nobody to pin them on. */
+function unsigned(...values: VoteValue[]): CastVote[] {
+  return values.map((value) => ({ value }))
 }
 
 describe('PsephoiRow', () => {
@@ -39,7 +49,7 @@ describe('PsephoiRow', () => {
   })
 
   it('dice en pantalla la regla entera de la papeleta cuando el llamador lo pide, sin duplicarla por voz', () => {
-    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret />)
+    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret ballotOpen />)
     expect(screen.getByText(SECRET)).toBeInTheDocument()
     expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
   })
@@ -47,7 +57,7 @@ describe('PsephoiRow', () => {
   it('avisa de que el voto acaba llevando tu nombre, no solo de que se verá', () => {
     // The whole point of the sentence: a row of anonymous grey pebbles reads as a secret ballot,
     // and somebody who only learns at quorum that their "En contra" is signed learned it too late.
-    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret />)
+    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret ballotOpen />)
     const line = screen.getByText(SECRET).textContent ?? ''
     expect(line).toContain('Nadie ve tu voto')
     expect(line).toContain('con tu nombre')
@@ -66,6 +76,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={ballots(voters, 'up', 'down')}
         explainSecret
+        ballotOpen
       />,
     )
     // Somebody who arrives here through a shared link sees their own name against a sense and has
@@ -79,7 +90,9 @@ describe('PsephoiRow', () => {
     const voters = people('Amaia', 'Iker')
     const both = () => [...screen.queryAllByText(SECRET), ...screen.queryAllByText(SECRET_PAST)]
 
-    const open = render(<PsephoiRow participants={voters} cast={1} revealed={null} explainSecret />)
+    const open = render(
+      <PsephoiRow participants={voters} cast={1} revealed={null} explainSecret ballotOpen />,
+    )
     expect(both()).toHaveLength(1)
     open.unmount()
 
@@ -89,6 +102,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={ballots(voters, 'up', 'down')}
         explainSecret
+        ballotOpen
       />,
     )
     expect(both()).toHaveLength(1)
@@ -97,11 +111,100 @@ describe('PsephoiRow', () => {
   it('el pasado también nombra el precio: el grupo y el nombre', () => {
     const voters = people('Amaia')
     render(
-      <PsephoiRow participants={voters} cast={1} revealed={ballots(voters, 'up')} explainSecret />,
+      <PsephoiRow
+        participants={voters}
+        cast={1}
+        revealed={ballots(voters, 'up')}
+        explainSecret
+        ballotOpen
+      />,
     )
     const line = screen.getByText(SECRET_PAST).textContent ?? ''
     expect(line).toContain('Nadie vio estos votos')
     expect(line).toContain('con el nombre de quien los puso')
+  })
+
+  it('en un ágora secreta la promesa no nombra a nadie, y no se cumple de más', () => {
+    render(
+      <PsephoiRow
+        participants={crowd(5)}
+        cast={2}
+        revealed={null}
+        explainSecret
+        ballotOpen={false}
+      />,
+    )
+
+    const line = screen.getByText(FOREVER).textContent ?? ''
+    expect(line).toContain('nunca lleva tu nombre')
+    // The open agora's promise is the one that costs a name, and it must not leak into an agora
+    // that never publishes one.
+    expect(screen.queryByText(SECRET)).toBeNull()
+  })
+
+  it('resuelta y secreta, sigue sin prometer nombres en vez de caer en el pasado del otro modo', () => {
+    // The lie this whole prop exists to stop. `revealed` alone cannot tell the two agoras apart,
+    // and a row that only reads it lands on «con el nombre de quien los puso» over a roll that
+    // will never exist.
+    render(
+      <PsephoiRow
+        participants={people('Amaia', 'Iker')}
+        cast={2}
+        revealed={unsigned('up', 'down')}
+        explainSecret
+        ballotOpen={false}
+      />,
+    )
+
+    expect(screen.getByText(FOREVER_PAST)).toBeInTheDocument()
+    expect(screen.queryByText(SECRET_PAST)).toBeNull()
+    expect(screen.queryByText(FOREVER)).toBeNull()
+  })
+
+  it('las cuatro variantes son una sola frase: una por modo y tiempo, nunca dos', () => {
+    const voters = people('Amaia', 'Iker')
+    const said = () =>
+      [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST].flatMap((line) => screen.queryAllByText(line))
+
+    for (const ballotOpen of [true, false]) {
+      for (const [revealed, expected] of [
+        [null, ballotOpen ? SECRET : FOREVER],
+        [
+          ballotOpen ? ballots(voters, 'up', 'down') : unsigned('up', 'down'),
+          ballotOpen ? SECRET_PAST : FOREVER_PAST,
+        ],
+      ] as const) {
+        const view = render(
+          <PsephoiRow
+            participants={voters}
+            cast={2}
+            revealed={revealed}
+            explainSecret
+            ballotOpen={ballotOpen}
+          />,
+        )
+        expect(said().map((node) => node.textContent)).toEqual([expected])
+        view.unmount()
+      }
+    }
+  })
+
+  it('un ágora secreta no pinta rollo, porque sus votos no traen a quién', () => {
+    const voters = people('Amaia', 'Iker')
+    const { container } = render(
+      <PsephoiRow
+        participants={voters}
+        cast={2}
+        revealed={unsigned('up', 'down')}
+        explainSecret
+        ballotOpen={false}
+      />,
+    )
+
+    // The colours arrive — the count is public — and the attribution has nowhere to come from.
+    expect(container.querySelectorAll('[data-vote]')).toHaveLength(2)
+    expect(screen.queryByTestId('vote-roll')).toBeNull()
+    for (const person of voters) expect(container.textContent ?? '').not.toContain(person.name)
   })
 
   it('reveals every pebble once the proposal resolved', () => {
@@ -253,7 +356,7 @@ describe('PsephoiRow', () => {
   it('MIENTRAS SIGUE ABIERTA no hay ni un nombre junto a un sentido', () => {
     const voters = people('Ekin', 'Amaia', 'Iker')
     const { container } = render(
-      <PsephoiRow participants={voters} cast={3} revealed={null} explainSecret />,
+      <PsephoiRow participants={voters} cast={3} revealed={null} explainSecret ballotOpen />,
     )
 
     // No roll and no colours. Secrecy during the round is the whole premise.

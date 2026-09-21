@@ -4,6 +4,7 @@ import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
+import { ballotSentenceKey } from '@/presentation/components/vote/ballotSentence'
 import { useBoard } from '@/presentation/context/boardContext'
 import { clearDraft, draftKey } from '@/presentation/drafts'
 import {
@@ -59,13 +60,14 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     return true
   })
 
-  // How the ballot works is a property of the agora, not of any one proposal, so it is said once
-  // here rather than once per open card — and it has to be read *before* the first vote button,
-  // because "open at quorum, with your name on it" changes how somebody votes.
+  // How the ballot works is a property of the agora, not of any one proposal — it is chosen once,
+  // when the agora is created, and never changes — so it is said once here rather than once per
+  // open card, and it has to be read *before* the first vote button, because "open at quorum, with
+  // your name on it" and "secret, always" change how somebody votes in opposite directions.
   //
   // Which tense, not whether. A list with nothing left open has nothing still to promise, but its
   // cards are covered in names against senses, and going silent there left the rule nowhere on
-  // screen at any width. Same paragraph, one ternary: exactly once, by construction.
+  // screen at any width. Same paragraph, one table: exactly once, by construction.
   //
   // Both questions are asked of `visible`, not of the whole board: this paragraph sits directly
   // above that list and describes it. Asking the board instead put the rule over "no hay propuestas
@@ -261,10 +263,12 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
             proposal is actually in. Two predicates were deciding the tense of one route: the board
             asked "is anything open?" and the detail asked "is this one resolved?", so a resolved
             proposal on a mixed board read in the past tense at 390 px and was still being promised
-            secrecy at 1280 px, 143 px from its own published roll of names. */}
+            secrecy at 1280 px, 143 px from its own published roll of names. The mode is the second
+            half of the same question, and it is asked through `ballotSentenceKey` so that this
+            paragraph and the detail's cannot answer it differently either. */}
         {anyProposal && open === undefined && (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {t(anyOpen ? 'psephoi.secret' : 'psephoi.secretPast')}
+            {t(ballotSentenceKey(board.group.ballotOpen, !anyOpen))}
           </p>
         )}
 
