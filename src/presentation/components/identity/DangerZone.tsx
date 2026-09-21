@@ -27,9 +27,6 @@ export function DangerZone({
 
   return (
     <form onSubmit={(event) => void submit(event)} className="grid gap-2" noValidate>
-      <h3 className="font-semibold" style={{ color: 'var(--danger)' }}>
-        {t('danger.heading')}
-      </h3>
       <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
         {t('danger.explain')}
       </p>
