@@ -4,6 +4,17 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Sheet } from '@/presentation/components/Sheet'
 
+// Mirrors BoardPage.tsx's call sites: a fresh inline `onClose` on every render, so a parent
+// re-render while the sheet is open (e.g. after an action resolves) must not disturb focus.
+function ReRenderingHost({ tick }: { tick: number }) {
+  return (
+    <Sheet label="Nueva propuesta" onClose={() => {}}>
+      <input aria-label="Campo" />
+      <span>{tick}</span>
+    </Sheet>
+  )
+}
+
 function Host({ onClose }: { onClose: () => void }) {
   return (
     <>
@@ -53,7 +64,28 @@ describe('Sheet', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Nueva propuesta' }))
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
     expect(document.querySelector('main')).not.toBeNull()
-    expect(document.querySelector('main')).not.toHaveAttribute('inert')
+    expect(document.querySelector('main')?.closest('[inert]')).toBeNull()
+  })
+
+  it('el tabulador no sale del panel', async () => {
+    render(<Host onClose={vi.fn()} />)
+    const visited: string[] = []
+    for (let i = 0; i < 8; i++) {
+      await userEvent.tab()
+      visited.push(document.activeElement?.textContent ?? '')
+    }
+    expect(new Set(visited)).toEqual(new Set(['Cerrar', 'Dentro']))
+    expect(visited).not.toContain('Detrás')
+    expect(visited).not.toContain('Privacidad')
+  })
+
+  it('bloquea el scroll del fondo mientras está abierta y lo restaura al cerrar', async () => {
+    const previous = document.body.style.overflow
+    render(<Opener />)
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva propuesta' }))
+    expect(document.body.style.overflow).toBe('hidden')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(document.body.style.overflow).toBe(previous)
   })
 
   it('devuelve el foco al control que la abrió', async () => {
@@ -74,5 +106,16 @@ describe('Sheet', () => {
   it('el panel recibe el foco al abrirse', () => {
     render(<Host onClose={vi.fn()} />)
     expect(document.activeElement).toBe(screen.getByRole('dialog'))
+  })
+
+  it('no pierde el foco cuando el padre se re-renderiza', () => {
+    const { rerender } = render(<ReRenderingHost tick={0} />)
+    const field = screen.getByLabelText('Campo')
+    field.focus()
+    expect(document.activeElement).toBe(field)
+
+    rerender(<ReRenderingHost tick={1} />)
+
+    expect(document.activeElement).toBe(field)
   })
 })
