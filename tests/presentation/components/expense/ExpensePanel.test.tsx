@@ -243,4 +243,19 @@ describe('ExpensePanel', () => {
     expect(screen.getByRole('button', { name: 'Apuntar lo que he puesto' })).toBeInTheDocument()
     expect(screen.getByText(/200,00\s€ más de lo previsto/)).toBeInTheDocument()
   })
+
+  it('the opt-in button carries no leftover checkmark glyph while it is pressed', () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal()}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+    )
+    // alice is opted in by the fixture, so this is the pressed ("✓ ") state.
+    const button = screen.getByRole('button', { name: 'Entro a pagar' })
+    expect(button.textContent).toBe('Entro a pagar')
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+  })
 })

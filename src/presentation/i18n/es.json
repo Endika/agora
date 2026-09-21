@@ -14,6 +14,7 @@
   "psephoi": {
     "progress": "Han votado {{cast}} de {{total}}",
     "secret": "Los votos se ven al alcanzar el quórum",
+    "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
     "abstain": "En blanco"
@@ -56,7 +57,9 @@
   },
   "missing": {
     "heading": "Faltan por votar",
-    "none": "Han votado todas las personas."
+    "none": "Han votado todas las personas.",
+    "compactOne": "Falta {{name}}",
+    "compactMany": "Faltan {{name}} y {{count}} más"
   },
   "actions": {
     "reopen": "Reabrir la votación",
@@ -242,7 +245,7 @@
   "install": {
     "title": "Instala Agora en el móvil y ábrela como una app.",
     "button": "Instalar",
-    "iosHint": "Para instalarla: Compartir → Añadir a pantalla de inicio.",
+    "iosHint": "Para instalarla: toca Compartir y luego Añadir a pantalla de inicio.",
     "dismiss": "No, gracias"
   },
   "sync": {
