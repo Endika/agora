@@ -52,22 +52,27 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     (proposal) => proposal.status === 'open' && proposal.myVote === null,
   ).length
 
-  // How the ballot works is a property of the agora, not of any one proposal, so it is said once
-  // here rather than once per open card — and it has to be read *before* the first vote button,
-  // because "open at quorum, with your name on it" changes how somebody votes.
-  //
-  // Which tense, not whether. A board with nothing left open has nothing still to keep, but its
-  // cards are covered in names against senses, and going silent there left the rule nowhere on
-  // screen at any width. Same paragraph, one ternary: exactly once, by construction.
-  const anyProposal = board.proposals.length > 0
-  const anyOpen = board.proposals.some((proposal) => proposal.status === 'open')
-
   const visible = board.proposals.filter((proposal) => {
     if (filter.kind === 'pending-mine')
       return proposal.status === 'open' && proposal.myVote === null
     if (filter.kind === 'tag') return proposal.tags.includes(filter.tag)
     return true
   })
+
+  // How the ballot works is a property of the agora, not of any one proposal, so it is said once
+  // here rather than once per open card — and it has to be read *before* the first vote button,
+  // because "open at quorum, with your name on it" changes how somebody votes.
+  //
+  // Which tense, not whether. A list with nothing left open has nothing still to promise, but its
+  // cards are covered in names against senses, and going silent there left the rule nowhere on
+  // screen at any width. Same paragraph, one ternary: exactly once, by construction.
+  //
+  // Both questions are asked of `visible`, not of the whole board: this paragraph sits directly
+  // above that list and describes it. Asking the board instead put the rule over "no hay propuestas
+  // todavía" whenever a filter came up empty, and left a tag whose proposals are all resolved being
+  // promised something in the future tense.
+  const anyProposal = visible.length > 0
+  const anyOpen = visible.some((proposal) => proposal.status === 'open')
 
   const act = (action: () => Promise<unknown>) => run(action, reload)
 
@@ -218,13 +223,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         {/* Opening a proposal is a route, so the phone's back button closes it. */}
         {open && !wide && (
           <Sheet label={open.title} onClose={closeSheet}>
-            {/* The sheet covers the board, so the board's copy of the ballot-rule line is not on
-                screen and this one has to say it. */}
             <ProposalDetail
               proposal={open}
               board={board}
               onChanged={reload}
-              explainSecret
               votePending={voteBusy(open.id)}
               voteDone={doneFor(voteKey(open.id, 'detail'))}
               {...actionsFor(open, 'detail')}
@@ -243,7 +245,13 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
         <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
 
-        {anyProposal && (
+        {/* Only when the list is the whole screen. With a proposal open — sheet or panel — the
+            detail is what the reader is reading, and it says the rule itself, in the tense that
+            proposal is actually in. Two predicates were deciding the tense of one route: the board
+            asked "is anything open?" and the detail asked "is this one resolved?", so a resolved
+            proposal on a mixed board read in the past tense at 390 px and was still being promised
+            secrecy at 1280 px, 143 px from its own published roll of names. */}
+        {anyProposal && open === undefined && (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
             {t(anyOpen ? 'psephoi.secret' : 'psephoi.secretPast')}
           </p>
@@ -291,12 +299,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
           >
             {t('board.back')}
           </button>
-          {/* The board is still on screen beside this, and it already says it once. */}
           <ProposalDetail
             proposal={open}
             board={board}
             onChanged={reload}
-            explainSecret={false}
             votePending={voteBusy(open.id)}
             voteDone={doneFor(voteKey(open.id, 'detail'))}
             {...actionsFor(open, 'detail')}
