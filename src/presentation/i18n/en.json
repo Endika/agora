@@ -6,7 +6,6 @@
   "share": {
     "heading": "Share the agora",
     "explain": "Whoever opens this link joins the agora and can vote.",
-    "agoraLink": "Agora link",
     "qrAlt": "QR code for the agora link",
     "copy": "Copy the link",
     "copied": "Link copied"
@@ -24,7 +23,6 @@
     "cancel": "Cancel",
     "close": "Close",
     "loading": "Loading…",
-    "offline": "Offline. What you do now is sent when you are back.",
     "no": "No"
   },
   "board": {
@@ -33,8 +31,6 @@
     "filterAll": "Everything",
     "filterHeading": "Filter the proposals",
     "filterPendingMine": "Waiting on me",
-    "filterTag": "Tag {{tag}}",
-    "clearFilters": "Clear filters",
     "archived": "Archived ({{count}})",
     "archivedExplain": "Done, rejected and closed. Still here, just out of the way.",
     "back": "Back to the board",
@@ -52,9 +48,6 @@
     "closed": "Closed"
   },
   "quorum": {
-    "progress": "{{cast}} of {{total}} have voted",
-    "deadline": "Closes on {{date}}",
-    "noDeadline": "No deadline: it stays open until everyone votes.",
     "net": "Net {{net}}"
   },
   "missing": {
@@ -116,7 +109,6 @@
     "back": "Back to the list",
     "nameRequired": "Type your name.",
     "nameTaken": "That name is already in the agora. Pick it from the list.",
-    "notMe": "Not you? Pick who you are again.",
     "switch": "Switch person"
   },
   "create": {
@@ -137,6 +129,18 @@
     "version": "Version {{version}}",
     "privacy": "Privacy",
     "back": "Back to Agora"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "themeSystem": "Automatic",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "locale": {
+      "es": "Castellano",
+      "en": "English",
+      "eu": "Euskara"
+    }
   },
   "home": {
     "yourAgoras": "Your agoras",
@@ -188,7 +192,6 @@
     "deviationOver": "{{amount}} over the estimate",
     "deviationUnder": "{{amount}} under the estimate",
     "deviationNone": "It came out at the estimate",
-    "sharesHeading": "Split",
     "nobodyIn": "Nobody is paying in yet.",
     "total": "Total {{amount}}",
     "paid": "in",

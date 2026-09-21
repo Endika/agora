@@ -11,6 +11,8 @@ import { HistoryPanel } from '@/presentation/components/history/HistoryPanel'
 import type { OnlineDetector } from '@/domain/ports/OnlineDetector'
 import { InstallPrompt } from '@/presentation/components/pwa/InstallPrompt'
 import { SyncStatus } from '@/presentation/components/pwa/SyncStatus'
+import { LanguagePicker } from '@/presentation/components/settings/LanguagePicker'
+import { ThemePicker } from '@/presentation/components/settings/ThemePicker'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora, type Route } from '@/presentation/routing'
@@ -161,13 +163,15 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
       </main>
 
       <footer
-        className="mx-auto flex w-full max-w-2xl flex-wrap items-center gap-x-4 px-4 py-6 text-sm"
+        className="mx-auto flex w-full max-w-2xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-6 text-sm"
         style={{ color: 'var(--ink-muted)' }}
       >
         <span>{t('footer.version', { version: __APP_VERSION__ })}</span>
         <a href="#/privacy" className="min-h-11 content-center underline">
           {t('footer.privacy')}
         </a>
+        <LanguagePicker />
+        <ThemePicker />
       </footer>
     </div>
   )

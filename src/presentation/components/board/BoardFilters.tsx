@@ -49,7 +49,11 @@ export function BoardFilters({
         >
           {t('board.filterPendingMine')}
           {pendingMine > 0 && (
-            <span data-testid="pending-mine-badge" style={{ fontFamily: 'var(--font-data)' }}>
+            <span
+              data-testid="pending-mine-badge"
+              aria-label={t('board.countPendingMine', { count: pendingMine })}
+              style={{ fontFamily: 'var(--font-data)' }}
+            >
               {' '}
               {pendingMine}
             </span>
