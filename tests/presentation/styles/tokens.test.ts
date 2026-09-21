@@ -27,28 +27,38 @@ function token(name: string, block: 'light' | 'dark'): string {
 }
 
 /**
- * Extracts the declaration body of the rule/at-rule that opens at `marker`, matching braces so
- * nested rules (like the `@media` inside `:root:not([data-theme='light'])`) don't spill out.
+ * Strips CSS block comments so a brace, or a stale declaration left in a hand-sync note such as
+ * "was --danger: #e9594c;", can never be read as live CSS.
+ */
+function stripComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\//g, '')
+}
+
+/**
+ * Extracts the declaration body of the rule/at-rule that opens at `marker`, matching braces over
+ * comment-stripped text — so a brace inside a comment can't end the body early — so nested rules
+ * (like the `@media` inside `:root:not([data-theme='light'])`) don't spill out either.
  */
 function ruleBody(source: string, marker: string): string {
-  const markerIndex = source.indexOf(marker)
+  const stripped = stripComments(source)
+  const markerIndex = stripped.indexOf(marker)
   if (markerIndex === -1) throw new Error(`marker ${JSON.stringify(marker)} not found`)
-  const openIndex = source.indexOf('{', markerIndex)
+  const openIndex = stripped.indexOf('{', markerIndex)
   let depth = 0
-  for (let i = openIndex; i < source.length; i++) {
-    if (source[i] === '{') depth++
-    else if (source[i] === '}') {
+  for (let i = openIndex; i < stripped.length; i++) {
+    if (stripped[i] === '{') depth++
+    else if (stripped[i] === '}') {
       depth--
-      if (depth === 0) return source.slice(openIndex + 1, i)
+      if (depth === 0) return stripped.slice(openIndex + 1, i)
     }
   }
   throw new Error(`unbalanced braces after ${JSON.stringify(marker)}`)
 }
 
-/** Parses every `--token: value;` declaration in a rule body into a name → value map. */
+/** Parses every `--token: value;` declaration in a rule body into a name → value map, comments stripped first. */
 function declarations(body: string): Map<string, string> {
   const map = new Map<string, string>()
-  for (const match of body.matchAll(/--([a-z0-9-]+):\s*([^;]+);/gi)) {
+  for (const match of stripComments(body).matchAll(/--([a-z0-9-]+):\s*([^;]+);/gi)) {
     map.set(match[1]!, match[2]!.trim())
   }
   return map
@@ -141,5 +151,38 @@ describe('design tokens', () => {
     for (const [name, value] of mediaBlock) {
       expect(explicitBlock.get(name)).toBe(value)
     }
+  })
+})
+
+describe('css parsing helpers', () => {
+  it('a hand-sync note in a comment cannot mask a real value change', () => {
+    const map = declarations('--danger: #ff0000; /* was --danger: #e9594c; before the fix */')
+    expect(map.get('danger')).toBe('#ff0000')
+  })
+
+  it('a commented-out declaration is not read as a live token', () => {
+    const map = declarations('--pos: #2b7255; /* --ghost: #ff00ff; retired */')
+    expect(map.has('ghost')).toBe(false)
+    expect(map.get('pos')).toBe('#2b7255')
+  })
+
+  it('a brace inside a comment cannot truncate the rule body', () => {
+    const body = ruleBody(':root { /* mismatched } brace */ --a: #111111; --b: #222222; }', ':root')
+    expect(declarations(body)).toEqual(
+      new Map([
+        ['a', '#111111'],
+        ['b', '#222222'],
+      ]),
+    )
+  })
+
+  it('parses a normal balanced rule cleanly', () => {
+    const body = ruleBody(':root { --a: #111111; --b: #222222; }', ':root')
+    expect(declarations(body)).toEqual(
+      new Map([
+        ['a', '#111111'],
+        ['b', '#222222'],
+      ]),
+    )
   })
 })
