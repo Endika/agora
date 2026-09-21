@@ -3,7 +3,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BoardPage } from '@/presentation/components/board/BoardPage'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
-import { draftKey } from '@/presentation/drafts'
+import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
 
 beforeEach(() => {
@@ -341,5 +341,149 @@ describe('BoardPage, redactar es una ruta y el borrador se queda', () => {
 
     renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
     expect(dialog().getByLabelText('Título')).toHaveValue('')
+  })
+})
+
+describe('BoardPage, salir de una hoja', () => {
+  const dialog = () => within(screen.getByRole('dialog'))
+
+  async function withProposal() {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    return { repo, slug, id, board }
+  }
+
+  it('cerrar la hoja de editar devuelve a la propuesta, no a la lista', async () => {
+    const { repo, slug, id, board } = await withProposal()
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.click(dialog().getByRole('button', { name: 'Cerrar' }))
+
+    // You opened this sheet from the proposal you were reading; that is where leaving it puts you.
+    expect(window.location.hash).toBe(`#/g/${slug}/p/${id}`)
+  })
+
+  it('cancelar la edición también devuelve a la propuesta', async () => {
+    const { repo, slug, id, board } = await withProposal()
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.click(dialog().getByRole('button', { name: 'Cancelar' }))
+
+    expect(window.location.hash).toBe(`#/g/${slug}/p/${id}`)
+  })
+
+  it('guardar la edición devuelve a la propuesta y borra su borrador', async () => {
+    const { repo, slug, id, board } = await withProposal()
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.type(dialog().getByLabelText('Título'), ' grande')
+    await userEvent.click(dialog().getByRole('button', { name: 'Guardar los cambios' }))
+
+    expect(window.location.hash).toBe(`#/g/${slug}/p/${id}`)
+    await waitFor(() => expect(readDraft(draftKey(slug, id))).toBeNull())
+  })
+
+  it('abrir una hoja añade un paso atrás y cerrarla no añade otro', async () => {
+    const { repo, slug, board } = await withProposal()
+    const list = renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, {
+      repo,
+      slug,
+    })
+
+    const beforeOpening = history.length
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva propuesta' }))
+    expect(history.length).toBe(beforeOpening + 1)
+    list.unmount()
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+    const beforeClosing = history.length
+    await userEvent.click(dialog().getByRole('button', { name: 'Cerrar' }))
+
+    // Closing replaces the address. Pushing it would leave a step that walks straight back in.
+    expect(window.location.hash).toBe(`#/g/${slug}`)
+    expect(history.length).toBe(beforeClosing)
+  })
+})
+
+describe('BoardPage, el borrador y la escritura que puede fallar', () => {
+  const dialog = () => within(screen.getByRole('dialog'))
+
+  it('publicar bien deja el borrador borrado', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.click(dialog().getByRole('button', { name: 'Publicar la propuesta' }))
+
+    await waitFor(() => expect(repo.calls).toContain('createProposal'))
+    await waitFor(() => expect(readDraft(draftKey(slug))).toBeNull())
+  })
+
+  it('si la publicación falla, lo escrito sigue en el aparato', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    // A real failure through the public port: the agora is gone by the time the write goes out.
+    await repo.deleteAgora({ slug, confirmName: 'Cuadrilla' })
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, { repo, slug })
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.click(dialog().getByRole('button', { name: 'Publicar la propuesta' }))
+
+    await waitFor(() => expect(repo.calls).toContain('createProposal'))
+    // The sheet closed before the write resolved: throwing the words away here loses them for good.
+    expect(readDraft(draftKey(slug))?.title).toBe('Un sofá nuevo')
+  })
+
+  it('si guardar falla, el borrador de la edición sigue ahí', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    await repo.deleteAgora({ slug, confirmName: 'Cuadrilla' })
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.type(dialog().getByLabelText('Título'), ' grande')
+    await userEvent.click(dialog().getByRole('button', { name: 'Guardar los cambios' }))
+
+    await waitFor(() => expect(repo.calls).toContain('updateProposal'))
+    expect(readDraft(draftKey(slug, id))?.title).toBe('Rent a van grande')
+  })
+
+  it('al editar, el borrador interrumpido gana a lo que hay publicado', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    writeDraft(draftKey(slug, id), {
+      title: 'Rent two vans',
+      description: 'La grande no cabe',
+      tags: [],
+      deadline: '',
+      cost: '',
+    })
+
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+    })
+
+    // What you were in the middle of writing, not what is published: the published text is one
+    // click away in the proposal, the half-written edit exists nowhere else.
+    expect(dialog().getByLabelText('Título')).toHaveValue('Rent two vans')
+    expect(dialog().getByLabelText('Descripción')).toHaveValue('La grande no cabe')
   })
 })

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { draftKey, readDraft, writeDraft, clearDraft } from '@/presentation/drafts'
 
 const KEY = draftKey('demoag01')
@@ -40,6 +40,26 @@ describe('borradores', () => {
   it('sobrevive a un localStorage roto', () => {
     localStorage.setItem(KEY, '{no es json')
     expect(readDraft(KEY)).toBeNull()
+  })
+
+  it('no revienta cuando el almacén no deja escribir ni borrar', () => {
+    // Safari in private mode and a full store both throw from setItem, and the form calls this on
+    // every keystroke: an exception here would take the whole sheet down mid-sentence.
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError')
+    })
+    const removeItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('SecurityError')
+    })
+    try {
+      expect(() =>
+        writeDraft(KEY, { title: 'X', description: '', tags: [], deadline: '', cost: '' }),
+      ).not.toThrow()
+      expect(() => clearDraft(KEY)).not.toThrow()
+    } finally {
+      setItem.mockRestore()
+      removeItem.mockRestore()
+    }
   })
 
   it('no devuelve medio borrador cuando lo guardado no tiene forma de borrador', () => {

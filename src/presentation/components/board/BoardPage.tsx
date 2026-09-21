@@ -5,8 +5,15 @@ import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
 import { useBoard } from '@/presentation/context/boardContext'
-import { draftKey } from '@/presentation/drafts'
-import { openAgora, openCompose, openEdit, type Route } from '@/presentation/routing'
+import { clearDraft, draftKey } from '@/presentation/drafts'
+import {
+  boardHref,
+  closeTo,
+  openCompose,
+  openEdit,
+  proposalHref,
+  type Route,
+} from '@/presentation/routing'
 import { useAction } from '@/presentation/useAction'
 import { BoardFilters, type Filter } from './BoardFilters'
 import { ProposalCard } from './ProposalCard'
@@ -22,7 +29,14 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   // Writing and editing are routes, so the sheet that is open is a fact about the address bar and
   // never something this component has to remember.
   const composing = route.kind === 'compose'
-  const closeSheet = () => openAgora(board.group.slug)
+
+  // Where a sheet goes when it is left. The edit sheet was opened from the proposal you were
+  // reading, so cancelling or saving has to put that proposal back, not the list behind it.
+  const closeHref =
+    route.kind === 'edit'
+      ? proposalHref(board.group.slug, route.proposalId)
+      : boardHref(board.group.slug)
+  const closeSheet = () => closeTo(closeHref)
 
   const tags = useMemo(
     () => [...new Set(board.proposals.flatMap((proposal) => proposal.tags))].sort(),
@@ -50,18 +64,24 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   }
 
   // Closing first is deliberate: the sheet goes away at once and the write finishes behind it.
+  // Which is exactly why the draft is only dropped once the text is somewhere safer than the
+  // device — a write that fails must leave the words where the author can still reach them.
   const publish = ({ images: picked, ...draft }: ProposalDraft) => {
+    const key = draftKey(board.group.slug)
     closeSheet()
     act(async () => {
       const proposalId = await repo.createProposal({ slug: board.group.slug, ...draft })
+      clearDraft(key)
       await attachAll(proposalId, { ...draft, images: picked })
     })
   }
 
   const save = (proposalId: string, { images: picked, ...draft }: ProposalDraft) => {
+    const key = draftKey(board.group.slug, proposalId)
     closeSheet()
     act(async () => {
       await repo.updateProposal({ proposalId, ...draft })
+      clearDraft(key)
       await attachAll(proposalId, { ...draft, images: picked })
     })
   }

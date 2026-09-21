@@ -100,7 +100,8 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
       }
     }
 
-    clearDraft(draftKey)
+    // The draft is not dropped here: the caller closes this sheet before its write resolves, so
+    // only the caller knows whether the text ever landed anywhere else.
     onSubmit({
       images,
       title: title.trim(),
