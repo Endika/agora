@@ -161,6 +161,29 @@ describe('BoardPage', () => {
     await waitFor(() => expect(repo.calls).toContain('completeProposal'))
   })
 
+  it('marcar como hecha sin coste se puede cancelar sin ejecutarse', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Alquilar la furgoneta' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    as('alice')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Marcar como hecha' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'No' }))
+
+    expect(repo.calls).not.toContain('completeProposal')
+    expect(dialog.getByRole('button', { name: 'Marcar como hecha' })).toBeInTheDocument()
+  })
+
   it('reabrir pide confirmación', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Pintar el salón' })
@@ -182,6 +205,29 @@ describe('BoardPage', () => {
 
     await userEvent.click(dialog.getByRole('button', { name: 'Sí, reabrir' }))
     await waitFor(() => expect(repo.calls).toContain('reopenProposal'))
+  })
+
+  it('reabrir se puede cancelar sin ejecutarse', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Pintar el salón' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId: id, round: 1, value: 'down' })
+    as('alice')
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    const dialog = within(screen.getByRole('dialog'))
+
+    await userEvent.click(dialog.getByRole('button', { name: 'Reabrir la votación' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'No' }))
+
+    expect(repo.calls).not.toContain('reopenProposal')
+    expect(dialog.getByRole('button', { name: 'Reabrir la votación' })).toBeInTheDocument()
   })
 
   it('badges and filters what is waiting on my vote', async () => {

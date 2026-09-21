@@ -52,14 +52,24 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
             {t('actions.completeFreezes')}
           </p>
-          <button
-            type="button"
-            onClick={() => onComplete(null)}
-            className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
-          >
-            {t('actions.completeConfirm')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onComplete(null)}
+              className="min-h-11 rounded-[--radius] px-4 font-medium"
+              style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+            >
+              {t('actions.completeConfirm')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCompleting(false)}
+              className="min-h-11 rounded-[--radius] border px-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              {t('common.no')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -119,14 +129,24 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
       )}
 
       {canReopen(proposal, meId) && reopening && (
-        <button
-          type="button"
-          onClick={onReopen}
-          className="min-h-11 rounded-[--radius] px-4 font-medium"
-          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
-        >
-          {t('actions.reopenConfirm')}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onReopen}
+            className="min-h-11 rounded-[--radius] px-4 font-medium"
+            style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+          >
+            {t('actions.reopenConfirm')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setReopening(false)}
+            className="min-h-11 rounded-[--radius] border px-4"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            {t('common.no')}
+          </button>
+        </div>
       )}
 
       {canClose(proposal, meId) && !closing && (
