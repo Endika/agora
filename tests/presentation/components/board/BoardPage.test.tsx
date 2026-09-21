@@ -261,9 +261,16 @@ describe('BoardPage', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
-    expect(screen.getByTestId('pending-mine-badge')).toHaveTextContent('1')
-    expect(screen.getByTestId('pending-mine-badge')).toHaveAccessibleName('Te toca votar 1')
-    await userEvent.click(screen.getByRole('button', { name: /Me toca votar/ }))
+    // The label lives on the button, not the badge: a span-level aria-label would run together
+    // with the button's own text ("Me toca votarTe toca votar 1") in the computed accessible name.
+    const pendingButton = screen.getByRole('button', { name: 'Te toca votar 1' })
+    expect(pendingButton).not.toHaveAccessibleName(/Me toca votar.+Te toca votar/)
+    const badge = screen.getByTestId('pending-mine-badge')
+    expect(badge).toHaveTextContent('1')
+    // Hidden from the accessibility tree: it is a visual duplicate of a number the button's own
+    // label already says, not a second thing to announce.
+    expect(badge).toHaveAttribute('aria-hidden', 'true')
+    await userEvent.click(pendingButton)
 
     const titles = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)
     expect(titles).toEqual(['Rent a van'])
