@@ -12,7 +12,9 @@ const SECRET_PAST =
 const FOREVER =
   'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
 const FOREVER_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y nadie sabe quién puso cada uno.'
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
+/** Counted together wherever the question is "how many of these are on screen". */
+const ALL = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST]
 
 /** Named people, in the order their votes are handed to the row. */
 function people(...names: string[]): Participant[] {
@@ -88,7 +90,7 @@ describe('PsephoiRow', () => {
 
   it('la regla se dice una sola vez en cualquiera de los dos tiempos, nunca las dos', () => {
     const voters = people('Amaia', 'Iker')
-    const both = () => [...screen.queryAllByText(SECRET), ...screen.queryAllByText(SECRET_PAST)]
+    const both = () => ALL.flatMap((sentence) => screen.queryAllByText(sentence))
 
     const open = render(
       <PsephoiRow participants={voters} cast={1} revealed={null} explainSecret ballotOpen />,
@@ -159,12 +161,15 @@ describe('PsephoiRow', () => {
     expect(screen.getByText(FOREVER_PAST)).toBeInTheDocument()
     expect(screen.queryByText(SECRET_PAST)).toBeNull()
     expect(screen.queryByText(FOREVER)).toBeNull()
+    // And what it promises is a property of the record, which the app can keep: the votes carry no
+    // name. Not that nobody can work it out — in a flat of two, a 1-1 tells each voter the other's
+    // vote, and a sentence claiming otherwise would be the same kind of lie in the other direction.
+    expect(screen.getByText(FOREVER_PAST).textContent ?? '').toContain('ninguno lleva un nombre')
   })
 
   it('las cuatro variantes son una sola frase: una por modo y tiempo, nunca dos', () => {
     const voters = people('Amaia', 'Iker')
-    const said = () =>
-      [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST].flatMap((line) => screen.queryAllByText(line))
+    const said = () => ALL.flatMap((line) => screen.queryAllByText(line))
 
     for (const ballotOpen of [true, false]) {
       for (const [revealed, expected] of [
