@@ -18,7 +18,7 @@ const SECRET_PAST =
 const FOREVER =
   'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
 const FOREVER_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y nadie sabe quién puso cada uno.'
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** All four, counted together: which one is on screen is a second question to the same paragraph. */
 const SENTENCES = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST]
 
@@ -538,10 +538,9 @@ describe('BoardPage', () => {
         <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
         { repo, slug },
       )
-      const visible = [
-        ...screen.queryAllByText(SECRET),
-        ...screen.queryAllByText(SECRET_PAST),
-      ].filter((node) => !node.closest('[inert]'))
+      const visible = SENTENCES.flatMap((sentence) => screen.queryAllByText(sentence)).filter(
+        (node) => !node.closest('[inert]'),
+      )
       expect(visible).toHaveLength(1)
       expect(visible[0]).toHaveTextContent(SECRET_PAST)
       view.unmount()
@@ -1565,10 +1564,9 @@ describe('BoardPage, un solo tiempo verbal por ruta', () => {
         { repo, slug },
       )
 
-      const onScreen = [
-        ...screen.queryAllByText(SECRET),
-        ...screen.queryAllByText(SECRET_PAST),
-      ].filter((node) => !node.closest('[inert]'))
+      const onScreen = SENTENCES.flatMap((sentence) => screen.queryAllByText(sentence)).filter(
+        (node) => !node.closest('[inert]'),
+      )
       expect(onScreen).toHaveLength(1)
       expect(onScreen[0]).toHaveTextContent(SECRET_PAST)
       view.unmount()
@@ -1585,10 +1583,9 @@ describe('BoardPage, un solo tiempo verbal por ruta', () => {
         { repo, slug },
       )
 
-      const onScreen = [
-        ...screen.queryAllByText(SECRET),
-        ...screen.queryAllByText(SECRET_PAST),
-      ].filter((node) => !node.closest('[inert]'))
+      const onScreen = SENTENCES.flatMap((sentence) => screen.queryAllByText(sentence)).filter(
+        (node) => !node.closest('[inert]'),
+      )
       expect(onScreen).toHaveLength(1)
       expect(onScreen[0]).toHaveTextContent(SECRET)
       view.unmount()
