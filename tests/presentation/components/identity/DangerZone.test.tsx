@@ -6,7 +6,7 @@ import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBo
 import { renderWithBoard } from '../../support/renderWithBoard'
 
 describe('DangerZone', () => {
-  it('keeps the delete button disabled until the agora name matches exactly', async () => {
+  it('keeps the delete button disabled for a wrong name, but a case difference still enables it', async () => {
     const repo = new InMemoryBoardRepository()
     const { slug } = await repo.createAgora({ name: 'Casa de la playa', creatorName: 'Endika' })
     let deleted = false
@@ -18,20 +18,17 @@ describe('DangerZone', () => {
     const submit = screen.getByRole('button', { name: 'Borrar para siempre' })
     expect(submit).toBeDisabled()
 
-    // A partial match never enables it, and clicking it while disabled reaches nothing.
+    // A genuinely wrong name never enables it, and clicking it while disabled reaches nothing.
     await userEvent.type(screen.getByLabelText(/Escribe el nombre/), 'Casa de la play')
     expect(submit).toBeDisabled()
     await userEvent.click(submit)
     expect(repo.calls).not.toContain('deleteAgora')
     expect(deleted).toBe(false)
 
-    // The match is case-sensitive: the repository itself is lenient on case, but the button is not.
+    // A case difference alone still enables it: it mirrors deleteAgora's own case-insensitive
+    // check, and mobile keyboards auto-capitalise the first letter of a fresh field by default.
     await userEvent.clear(screen.getByLabelText(/Escribe el nombre/))
     await userEvent.type(screen.getByLabelText(/Escribe el nombre/), 'casa de la playa')
-    expect(submit).toBeDisabled()
-
-    await userEvent.clear(screen.getByLabelText(/Escribe el nombre/))
-    await userEvent.type(screen.getByLabelText(/Escribe el nombre/), 'Casa de la playa')
     expect(submit).toBeEnabled()
 
     await userEvent.click(submit)
