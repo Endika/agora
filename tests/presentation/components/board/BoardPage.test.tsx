@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BoardPage } from '@/presentation/components/board/BoardPage'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
+import { matchMediaMatches } from '../../../support/matchMedia'
 
 beforeEach(() => {
   localStorage.clear()
@@ -718,5 +719,114 @@ describe('BoardPage, el borrador y la escritura que puede fallar', () => {
     // click away in the proposal, the half-written edit exists nowhere else.
     expect(dialog().getByLabelText('Título')).toHaveValue('Rent two vans')
     expect(dialog().getByLabelText('Descripción')).toHaveValue('La grande no cabe')
+  })
+})
+
+describe('BoardPage, la lectura a dos columnas del escritorio', () => {
+  async function openProposal(wide: boolean) {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({
+      slug,
+      title: 'Cambiar el sofá del salón',
+      estimatedCents: 40000,
+    })
+    const board = await repo.getBoard(slug)
+    matchMediaMatches(wide)
+    const view = renderWithBoard(
+      <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+      { repo, slug },
+    )
+    return { ...view, slug, id }
+  }
+
+  it('a partir de 1024 px la propuesta abierta es un panel lateral y no un diálogo', async () => {
+    await openProposal(true)
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    const panel = screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+    expect(within(panel).getByRole('heading', { name: 'Cambiar el sofá del salón' })).toBeVisible()
+  })
+
+  it('por debajo de 1024 px sigue siendo la hoja de hoy', async () => {
+    await openProposal(false)
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByRole('complementary')).toBeNull()
+  })
+
+  it('la propuesta abierta está una sola vez, no una por cada forma', async () => {
+    await openProposal(true)
+
+    // The CSS-only version of this renders both trees and hides one, which reads the title, the
+    // vote and the comment form twice to a screen reader. Level 2 is the detail's own heading;
+    // the board card behind it keeps its level 3.
+    expect(
+      screen.getAllByRole('heading', { level: 2, name: 'Cambiar el sofá del salón' }),
+    ).toHaveLength(1)
+  })
+
+  it('el panel deja el tablón manejable detrás, cosa que la hoja no hace', async () => {
+    await openProposal(true)
+
+    // A side panel is not a modal: the board beside it stays reachable, which is exactly what the
+    // sheet's `inert` takes away.
+    expect(screen.getByRole('region', { name: 'Cuadrilla' }).closest('[inert]')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Nueva propuesta' })).toBeEnabled()
+  })
+
+  it('ensanchar la ventana con una propuesta abierta la pasa de hoja a panel', async () => {
+    await openProposal(false)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+    // The window grows under the open proposal. If the hook read the query once and never
+    // listened, this stays a dialog for as long as the page lives.
+    act(() => matchMediaMatches(true))
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(
+      screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' }),
+    ).toBeInTheDocument()
+  })
+
+  it('la tira de filtros deja de pedir scroll en cuanto hay sitio', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Pintar el pasillo', tags: ['obras', 'salón'] })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    // jsdom lays nothing out, so this is the one assertion available: from `sm` up the strip stops
+    // forcing its own max-content width and wraps instead. The seven widths were measured in a
+    // real browser; what this guards is that the rule is still there to measure.
+    const strip = screen.getByRole('group', { name: 'Filtrar las propuestas' })
+    expect(strip).toHaveClass('sm:min-w-0', 'sm:flex-wrap')
+  })
+
+  it('«Volver al tablón» cierra el panel sin apilar un paso atrás', async () => {
+    const { slug } = await openProposal(true)
+
+    const panel = screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+    const before = history.length
+    await userEvent.click(within(panel).getByRole('button', { name: 'Volver al tablón' }))
+
+    expect(window.location.hash).toBe(`#/g/${slug}`)
+    expect(history.length).toBe(before)
+  })
+
+  it('el hilo se lee junto al voto y el dinero después, en el panel y en la hoja', async () => {
+    for (const wide of [true, false]) {
+      const view = await openProposal(wide)
+
+      const shell = wide
+        ? screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
+        : screen.getByRole('dialog')
+      const threads = within(shell).getByRole('region', { name: 'Comentarios' })
+      const expense = within(shell).getByRole('region', { name: 'Gasto' })
+
+      // DOCUMENT_POSITION_FOLLOWING: the money comes after the debate, never before it.
+      expect(
+        threads.compareDocumentPosition(expense) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
+      view.unmount()
+    }
   })
 })

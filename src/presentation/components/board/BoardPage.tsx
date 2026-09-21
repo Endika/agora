@@ -15,6 +15,7 @@ import {
   type Route,
 } from '@/presentation/routing'
 import { useAction } from '@/presentation/useAction'
+import { useWideViewport } from '@/presentation/useWideViewport'
 import { BoardFilters, type Filter } from './BoardFilters'
 import { ProposalCard } from './ProposalCard'
 import { ProposalDetail } from './ProposalDetail'
@@ -25,6 +26,10 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   const { repo, reload, images: pipeline } = useBoard()
   const { run, error } = useAction()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
+
+  // From `lg` up there is room to read a proposal without covering the board it came from, so the
+  // same route renders as a side panel instead of a sheet. Same address, same node, different shape.
+  const wide = useWideViewport()
 
   // Writing and editing are routes, so the sheet that is open is a fact about the address bar and
   // never something this component has to remember.
@@ -120,80 +125,112 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
     </li>
   )
 
+  // The panel column is there whether or not anything is open: a board that reflowed every time a
+  // proposal opened would move the card you just clicked out from under your eyes.
   return (
-    <section className="grid min-w-0 gap-4" aria-label={board.group.name}>
-      {error && (
-        <p role="alert" style={{ color: 'var(--danger)' }}>
-          {error}
-        </p>
-      )}
+    <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,28rem)]">
+      <section className="grid min-w-0 gap-4" aria-label={board.group.name}>
+        {error && (
+          <p role="alert" style={{ color: 'var(--danger)' }}>
+            {error}
+          </p>
+        )}
 
-      {composing && (
-        <Sheet label={t('proposal.new')} onClose={closeSheet}>
-          <ProposalForm
-            others={board.proposals}
-            draftKey={draftKey(board.group.slug)}
-            onSubmit={publish}
-            onCancel={closeSheet}
-          />
-        </Sheet>
-      )}
+        {composing && (
+          <Sheet label={t('proposal.new')} onClose={closeSheet}>
+            <ProposalForm
+              others={board.proposals}
+              draftKey={draftKey(board.group.slug)}
+              onSubmit={publish}
+              onCancel={closeSheet}
+            />
+          </Sheet>
+        )}
 
-      {beingEdited && (
-        <Sheet label={t('proposal.editHeading')} onClose={closeSheet}>
-          <ProposalForm
-            others={board.proposals.filter((other) => other.id !== beingEdited.id)}
-            initial={beingEdited}
-            draftKey={draftKey(board.group.slug, beingEdited.id)}
-            onSubmit={(draft) => save(beingEdited.id, draft)}
-            onCancel={closeSheet}
-          />
-        </Sheet>
-      )}
+        {beingEdited && (
+          <Sheet label={t('proposal.editHeading')} onClose={closeSheet}>
+            <ProposalForm
+              others={board.proposals.filter((other) => other.id !== beingEdited.id)}
+              initial={beingEdited}
+              draftKey={draftKey(board.group.slug, beingEdited.id)}
+              onSubmit={(draft) => save(beingEdited.id, draft)}
+              onCancel={closeSheet}
+            />
+          </Sheet>
+        )}
 
-      {/* Opening a proposal is a route, so the phone's back button closes it. */}
-      {open && (
-        <Sheet label={open.title} onClose={closeSheet}>
+        {/* Opening a proposal is a route, so the phone's back button closes it. */}
+        {open && !wide && (
+          <Sheet label={open.title} onClose={closeSheet}>
+            <ProposalDetail
+              proposal={open}
+              board={board}
+              onChanged={reload}
+              {...actionsFor(open)}
+            />
+          </Sheet>
+        )}
+
+        <button
+          type="button"
+          onClick={() => openCompose(board.group.slug)}
+          className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+          style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
+        >
+          {t('proposal.new')}
+        </button>
+
+        <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
+
+        {hasSecretVote && (
+          <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+            {t('psephoi.secret')}
+          </p>
+        )}
+
+        {live.length === 0 && archived.length === 0 ? (
+          <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>
+        ) : (
+          <ul className="grid gap-4">{live.map(card)}</ul>
+        )}
+
+        {archived.length > 0 && (
+          <details
+            className="rounded-[--radius] border p-4"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            <summary className="min-h-11 cursor-pointer font-medium">
+              {t('board.archived', { count: archived.length })}
+            </summary>
+            <div className="grid gap-3 pt-4">
+              <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                {t('board.archivedExplain')}
+              </p>
+              <ul className="grid gap-4">{archived.map(card)}</ul>
+            </div>
+          </details>
+        )}
+      </section>
+
+      {/* Not a dialog: the board beside it stays live, so nothing here may go `inert`, trap Tab or
+          steal focus. It scrolls on its own so a long debate never runs off the bottom. */}
+      {open && wide && (
+        <aside
+          className="sticky top-8 grid max-h-[calc(100dvh-4rem)] min-w-0 gap-4 self-start overflow-y-auto overscroll-contain rounded-[--radius] border p-4"
+          style={{ borderColor: 'var(--border)' }}
+          aria-label={open.title}
+        >
+          <button
+            type="button"
+            onClick={closeSheet}
+            className="min-h-11 justify-self-start rounded-[--radius] border px-4"
+            style={{ borderColor: 'var(--border-control)' }}
+          >
+            {t('board.back')}
+          </button>
           <ProposalDetail proposal={open} board={board} onChanged={reload} {...actionsFor(open)} />
-        </Sheet>
+        </aside>
       )}
-
-      <button
-        type="button"
-        onClick={() => openCompose(board.group.slug)}
-        className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
-        style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
-      >
-        {t('proposal.new')}
-      </button>
-
-      <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
-
-      {hasSecretVote && (
-        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-          {t('psephoi.secret')}
-        </p>
-      )}
-
-      {live.length === 0 && archived.length === 0 ? (
-        <p style={{ color: 'var(--ink-muted)' }}>{t('board.empty')}</p>
-      ) : (
-        <ul className="grid gap-4">{live.map(card)}</ul>
-      )}
-
-      {archived.length > 0 && (
-        <details className="rounded-[--radius] border p-4" style={{ borderColor: 'var(--border)' }}>
-          <summary className="min-h-11 cursor-pointer font-medium">
-            {t('board.archived', { count: archived.length })}
-          </summary>
-          <div className="grid gap-3 pt-4">
-            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-              {t('board.archivedExplain')}
-            </p>
-            <ul className="grid gap-4">{archived.map(card)}</ul>
-          </div>
-        </details>
-      )}
-    </section>
+    </div>
   )
 }

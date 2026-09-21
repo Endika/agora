@@ -98,13 +98,8 @@ export function ProposalDetail({
         )}
       </div>
 
-      <ExpensePanel
-        proposal={proposal}
-        participants={board.participants}
-        meId={board.me.id}
-        onChanged={onChanged}
-      />
-
+      {/* The debate sits with the vote, the money after it: what people said is what decides the
+          vote, and the split only matters once something has been decided. */}
       <ThreadList
         proposalId={proposal.id}
         proposalAuthorId={proposal.createdBy}
@@ -112,6 +107,13 @@ export function ProposalDetail({
         participants={board.participants}
         meId={board.me.id}
         slug={board.group.slug}
+        onChanged={onChanged}
+      />
+
+      <ExpensePanel
+        proposal={proposal}
+        participants={board.participants}
+        meId={board.me.id}
         onChanged={onChanged}
       />
     </article>
