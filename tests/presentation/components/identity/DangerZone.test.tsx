@@ -40,7 +40,9 @@ describe('DangerZone', () => {
     const repo = new InMemoryBoardRepository()
     const { slug } = await repo.createAgora({ name: 'Piso Viejo', creatorName: 'Endika' })
     renderWithBoard(
-      // The prop lags the real name, so the confirm text matches it but not what the repo holds.
+      // Nothing in the app can make agoraName disagree with the repo's stored name — it is always
+      // read live from board.group.name — so this exercises deleteAgora's mismatch branch directly,
+      // as a defensive check with no reachable UI path, rather than a live bug.
       <DangerZone slug={slug} agoraName="Piso de Gros" onDeleted={() => {}} />,
       { repo, slug },
     )

@@ -15,7 +15,12 @@ export function QuorumBar({
 
   return (
     <div className="grid gap-2">
-      <PsephoiRow participants={participants} cast={proposal.tally.cast} revealed={revealed} />
+      <PsephoiRow
+        participants={participants}
+        cast={proposal.tally.cast}
+        revealed={revealed}
+        explainSecret={false}
+      />
       <p className="text-sm" style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}>
         {t('quorum.progress', { cast: proposal.tally.cast, total: participants })}
         {proposal.votesRevealed ? ` · ${t('quorum.net', { net: proposal.tally.net })}` : ''}
