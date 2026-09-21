@@ -23,3 +23,6 @@ npm-debug.log*
 Thumbs.db
 
 *.local
+
+# Impeccable critique snapshots: tooling artifacts, not repo documentation.
+.impeccable/
