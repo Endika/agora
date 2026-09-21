@@ -79,9 +79,15 @@ export class InMemoryBoardRepository implements BoardRepository {
     return new Date(Date.UTC(2026, 0, 1) + this.ticks * 1000).toISOString()
   }
 
+  /**
+   * Shaped like what the database hands out: a uuid, and an eight-character slug. Ids that could
+   * never appear in the address bar are how a broken link gets to look fine in a test — the router
+   * would refuse `slug-1`, so nothing above this class could be tested through a real one.
+   */
   private id(prefix: string): string {
     this.seq += 1
-    return `${prefix}-${this.seq}`
+    const n = String(this.seq).padStart(4, '0')
+    return prefix === 'slug' ? `ag00${n}` : `018f4b2c-0000-7000-8000-00000000${n}`
   }
 
   private agora(slug: string): Agora {

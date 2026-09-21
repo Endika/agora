@@ -18,7 +18,6 @@ const COMPOSE = /^#\/g\/([a-z0-9]{8})\/nueva$/
 const PROPOSAL = /^#\/g\/([a-z0-9]{8})\/p\/([0-9a-f-]{36})$/
 const EDIT = /^#\/g\/([a-z0-9]{8})\/p\/([0-9a-f-]{36})\/editar$/
 
-/** Longest first: an edit address also matches the start of a proposal one. */
 export function parseRoute(hash: string): Route {
   if (hash === '#/privacy') return { kind: 'privacy' }
   const edit = EDIT.exec(hash)
@@ -58,6 +57,15 @@ export function openCompose(slug: string): void {
 
 export function openEdit(slug: string, proposalId: string): void {
   window.location.hash = editHref(slug, proposalId)
+}
+
+/**
+ * Leaving a sheet replaces the address instead of pushing one. Opening the sheet is the step the
+ * back button undoes; closing it must not add a second step that walks straight back in.
+ * `history.replaceState` would not do: it fires no `hashchange`, so the view would never hear it.
+ */
+export function closeTo(href: string): void {
+  window.location.replace(href)
 }
 
 /** Keeps the view in step with the address bar without pulling in a router. */

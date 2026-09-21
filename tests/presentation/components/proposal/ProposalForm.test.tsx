@@ -139,15 +139,37 @@ describe('ProposalForm, el borrador', () => {
     expect(screen.queryByAltText('Imagen 1 de la propuesta')).not.toBeInTheDocument()
   })
 
-  it('publicar deja el borrador borrado, no colgando para la siguiente propuesta', async () => {
+  it('al publicar deja el borrador en pie: borrarlo es cosa de quien escribe', async () => {
+    const onSubmit = vi.fn()
     renderWithBoard(
-      <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+      <ProposalForm others={[]} draftKey={KEY} onSubmit={onSubmit} onCancel={() => {}} />,
     )
 
     await userEvent.type(screen.getByLabelText('Título'), 'Un sofá nuevo')
     await userEvent.click(screen.getByRole('button', { name: 'Publicar la propuesta' }))
 
-    expect(readDraft(KEY)).toBeNull()
+    // The sheet closes before the write resolves, so only the caller knows whether it landed.
+    expect(onSubmit).toHaveBeenCalled()
+    expect(readDraft(KEY)?.title).toBe('Un sofá nuevo')
+  })
+
+  it('un almacén que revienta no tumba el formulario', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError')
+    })
+    try {
+      renderWithBoard(
+        <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+      )
+
+      // Safari in private mode, or a full store: this throws on every keystroke.
+      await userEvent.type(screen.getByLabelText('Título'), 'Un sofá nuevo')
+
+      expect(screen.getByLabelText('Título')).toHaveValue('Un sofá nuevo')
+      expect(setItem).toHaveBeenCalled()
+    } finally {
+      setItem.mockRestore()
+    }
   })
 
   it('seguir escribiendo desarma la confirmación de descartar', async () => {
