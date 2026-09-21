@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, afterAll, beforeAll } from 'vitest'
 import { build } from 'vite'
 import { mkdtempSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -11,11 +11,18 @@ const ROOT = resolve(import.meta.dirname, '../..')
  * Markdown parser and its sanitiser, and the QR encoder.
  *
  * This asserts the built output rather than the source, because the property is a property of the
- * bundle. A source grep misses it in half a dozen ways — a Prettier-wrapped multi-line import,
- * `export … from`, a bare `import 'pkg'`, a subpath like `dompurify/dist/purify.es.mjs`, a
- * top-level `await import()` in an eagerly evaluated module — and it also fails on an
- * `import type`, which costs no bytes at all. What the browser downloads is the only thing worth
- * asserting.
+ * bundle. A source grep misses it in several ways — a Prettier-wrapped multi-line import,
+ * `export … from`, a bare `import 'pkg'`, a subpath like `dompurify/purify.js` — and it also fails
+ * on an `import type`, which costs no bytes at all. What the browser downloads is the only thing
+ * worth asserting.
+ *
+ * **What this does not catch:** a top-level `await import('pkg')` in an eagerly evaluated module.
+ * Rolldown leaves that as a dynamic import in the output, so the chunk gets no `modulepreload` and
+ * no static reference and never enters the `eager` set below — yet the browser still has to fetch
+ * and await it before the app can paint. Recognising that shape in already-transformed output is
+ * fragile, and a detector that works only sometimes is how a guard like this rots, so the gap is
+ * written down here instead of half-covered. If you are adding a top-level `await import()`, this
+ * test will not stop you and nothing else will either.
  */
 const DEFERRED = ['@supabase/supabase-js', 'marked', 'dompurify', 'qrcode']
 
@@ -27,12 +34,17 @@ interface Bundle {
 }
 
 let bundle: Bundle
+let previousEnv: Record<string, string | undefined> = {}
 
 beforeAll(async () => {
   const outDir = mkdtempSync(join(tmpdir(), 'agora-entry-chunk-'))
   // Without these, `import.meta.env.VITE_SUPABASE_URL` folds to undefined, `agoraConfig` throws
   // unconditionally and rolldown shakes the whole Supabase client out of the build — which would
   // make this test pass for the wrong reason.
+  previousEnv = {
+    VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+  }
   process.env.VITE_SUPABASE_URL = 'https://guard.supabase.co'
   process.env.VITE_SUPABASE_ANON_KEY = 'guard-anon-key'
 
@@ -104,5 +116,15 @@ describe('the entry chunk', () => {
       const lazy = [...bundle.all].filter((chunk) => bundle.packagesIn(chunk).has(pkg))
       expect(lazy.length, `${pkg} is not in the build at all`).toBeGreaterThan(0)
     })
+  }
+})
+
+// Restored rather than left set: today every test file gets its own worker, but the suite is
+// already being nudged towards `isolate: false`, and on that day a leaked VITE_* here would quietly
+// configure every other file in the worker.
+afterAll(() => {
+  for (const [key, value] of Object.entries(previousEnv)) {
+    if (value === undefined) delete process.env[key]
+    else process.env[key] = value
   }
 })
