@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, onTestFinished, vi } from 'vitest'
+import { act, render, screen } from '@testing-library/react'
 import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 
 describe('PsephoiRow', () => {
@@ -107,13 +107,16 @@ describe('PsephoiRow', () => {
     for (const word of ['favor', 'contra', 'blanco']) expect(label).not.toContain(word)
   })
 
-  it('tu piedra aterriza, y la fila revelada entra escalonada', () => {
-    const { unmount } = render(
-      <PsephoiRow participants={3} cast={1} revealed={null} explainSecret={false} mine />,
+  it('tu piedra aterriza cuando llega, y la fila revelada entra escalonada', () => {
+    const { rerender, unmount } = render(
+      <PsephoiRow participants={3} cast={0} revealed={null} explainSecret={false} />,
     )
+    rerender(<PsephoiRow participants={3} cast={1} revealed={null} explainSecret={false} mine />)
+
     const own = screen.getByTestId('pebble-mine')
     expect(own).toHaveAttribute('data-motion', 'pebble-land')
-    expect(own.style.animation).toContain('pebble-land')
+    // Pinned: 180 ms is a landing, 4 s is a distraction nobody asked for.
+    expect(own.style.animation).toBe('pebble-land 180ms ease-out both')
     unmount()
 
     render(
@@ -132,6 +135,61 @@ describe('PsephoiRow', () => {
     // Staggered, so the row reads as one thing arriving rather than three separate blinks.
     expect(pebbles[0]!.style.animationDelay).toBe('0ms')
     expect(pebbles[2]!.style.animationDelay).toBe('80ms')
+  })
+
+  it('tu piedra es siempre la primera, y no se mueve cuando votan las demás personas', () => {
+    const { rerender } = render(
+      <PsephoiRow participants={5} cast={1} revealed={null} explainSecret={false} mine />,
+    )
+    const row = screen.getByRole('img')
+    const position = () =>
+      [...row.children].findIndex((el) => el.matches('[data-testid="pebble-mine"]'))
+    expect(position()).toBe(0)
+
+    // Three more people vote. The ring stays where it is: there is no person-to-pebble mapping,
+    // and a marker that migrates while you watch invents one.
+    for (const cast of [2, 3, 4]) {
+      rerender(
+        <PsephoiRow participants={5} cast={cast} revealed={null} explainSecret={false} mine />,
+      )
+      expect(position()).toBe(0)
+    }
+  })
+
+  it('la ceremonia es de tu voto: no se repite porque vote otra persona', () => {
+    vi.useFakeTimers()
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
+
+    const { rerender } = render(
+      <PsephoiRow participants={5} cast={0} revealed={null} explainSecret={false} />,
+    )
+    rerender(<PsephoiRow participants={5} cast={1} revealed={null} explainSecret={false} mine />)
+    expect(screen.getByTestId('pebble-mine')).toHaveAttribute('data-motion', 'pebble-land')
+
+    const settled = screen.getByTestId('pebble-mine')
+    act(() => vi.advanceTimersByTime(500))
+    expect(settled).not.toHaveAttribute('data-motion')
+
+    // Somebody else votes. Nothing of yours happened, so nothing of yours animates.
+    rerender(<PsephoiRow participants={5} cast={2} revealed={null} explainSecret={false} mine />)
+    rerender(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} mine />)
+    const own = screen.getByTestId('pebble-mine')
+    // The very same node, too: a remount would restart the animation on its own.
+    expect(own).toBe(settled)
+    expect(own).not.toHaveAttribute('data-motion')
+    expect(own.style.animation).toBe('')
+    // The ring itself stays on, of course. It is the movement that is over, not the fact.
+    expect(own.style.outline).toContain('var(--ink)')
+  })
+
+  it('un voto que ya estaba puesto no vuelve a aterrizar al abrir el tablón', () => {
+    render(<PsephoiRow participants={5} cast={3} revealed={null} explainSecret={false} mine />)
+    const own = screen.getByTestId('pebble-mine')
+    expect(own).not.toHaveAttribute('data-motion')
+    expect(own.style.animation).toBe('')
+    expect(own.style.outline).toContain('var(--ink)')
   })
 
   it('las piedras se remontan al revelarse, para que la animación llegue a correr', () => {

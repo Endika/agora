@@ -1041,8 +1041,12 @@ describe('BoardPage, el momento de votar', () => {
     const cards = screen.getAllByRole('article')
     await userEvent.click(within(cards[0]!).getByRole('button', { name: 'A favor' }))
 
-    expect(await within(cards[0]!).findByRole('status')).toHaveTextContent('Has votado a favor')
-    expect(within(cards[1]!).queryByRole('status')).toBeNull()
+    await waitFor(() =>
+      expect(within(cards[0]!).getByRole('status')).toHaveTextContent('Has votado a favor'),
+    )
+    // The other card keeps its live region — every card has one, always — and says nothing in it.
+    // Asserting the region is absent would lock in the very defect this shape exists to avoid.
+    expect(within(cards[1]!).getByRole('status')).toHaveTextContent('')
   })
 
   it('se anuncia una sola vez aunque la propuesta esté en la lista y en el panel a la vez', async () => {
@@ -1058,10 +1062,36 @@ describe('BoardPage, el momento de votar', () => {
     const panel = screen.getByRole('complementary', { name: 'Cambiar el sofá del salón' })
     await userEvent.click(within(panel).getByRole('button', { name: 'A favor' }))
 
-    // Two copies of the same live region say the same sentence twice into a screen reader.
-    const spoken = await screen.findAllByRole('status')
+    // Two copies saying the same sentence read it twice into a screen reader. Both regions are
+    // there — the card's and the panel's — and only one of them is allowed to have anything in it.
+    await waitFor(() =>
+      expect(within(panel).getByRole('status')).toHaveTextContent('Has votado a favor'),
+    )
+    const spoken = screen
+      .getAllByRole('status')
+      .filter((region) => (region.textContent ?? '').trim().length > 0)
     expect(spoken).toHaveLength(1)
-    expect(within(panel).getByRole('status')).toHaveTextContent('Has votado a favor')
+  })
+
+  it('la región que anuncia el voto ya está en la página antes de votar, y vacía', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    // A live region inserted together with its text is frequently never announced: screen readers
+    // watch these nodes for changes, and a node that arrives already full has not changed. The
+    // one announcement that would be lost is the first vote, which is the whole point.
+    const live = screen.getByRole('status')
+    expect(live).toHaveTextContent('')
+    // And it stands there at its full height, so the confirmation does not shove the rest of the
+    // card down the instant it arrives. The board's own tests measure the rest.
+    expect(live).toHaveClass('min-h-5')
+
+    await userEvent.click(screen.getByRole('button', { name: 'A favor' }))
+    // The same node, now with something in it: a change, which is what gets read out.
+    await waitFor(() => expect(live).toHaveTextContent('Has votado a favor'))
+    expect(screen.getByRole('status')).toBe(live)
   })
 
   it('la tarjeta marca tu piedra en cuanto has votado, y no dice hacia dónde', async () => {
