@@ -39,7 +39,7 @@ export function VoteControls({
             className="min-h-11 min-w-0 rounded-[--radius] border px-2 font-medium disabled:opacity-50"
             style={{
               background: chosen ? `var(--vote-${value})` : 'var(--surface)',
-              color: chosen ? '#ffffff' : 'var(--ink)',
+              color: chosen ? 'var(--on-fill)' : 'var(--ink)',
               borderColor: chosen ? `var(--vote-${value})` : 'var(--border)',
             }}
           >

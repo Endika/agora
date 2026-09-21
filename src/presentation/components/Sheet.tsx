@@ -96,7 +96,7 @@ export function Sheet({
           type="button"
           onClick={onClose}
           className="min-h-11 justify-self-end rounded-[--radius] border px-4"
-          style={{ borderColor: 'var(--border-control, var(--border))' }}
+          style={{ borderColor: 'var(--border-control)' }}
         >
           {t('common.close')}
         </button>

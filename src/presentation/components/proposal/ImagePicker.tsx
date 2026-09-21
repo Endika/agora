@@ -88,7 +88,7 @@ export function ImagePicker({
                 onClick={() => onChange(images.filter((other) => other !== image))}
                 aria-label={t('images.remove', { n: index + 1 })}
                 className="absolute -right-2 -top-2 size-7 rounded-full text-sm"
-                style={{ background: 'var(--danger)', color: '#ffffff' }}
+                style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
               >
                 ×
               </button>

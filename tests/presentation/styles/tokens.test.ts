@@ -56,4 +56,52 @@ describe('design tokens', () => {
       expect(token(vote, 'light')).not.toBe(danger)
     }
   })
+
+  const SMALL_TEXT = [
+    ['warn', 'surface'],
+    ['warn', 'surface-sunken'],
+    ['warn', 'ground'],
+    ['pos', 'surface'],
+    ['pos', 'surface-sunken'],
+    ['pos', 'ground'],
+    ['danger', 'surface'],
+    ['danger', 'surface-sunken'],
+    ['danger', 'ground'],
+  ] as const
+
+  it('los colores de estado pasan AA como texto pequeño sobre las tres superficies', () => {
+    for (const block of ['light', 'dark'] as const) {
+      for (const [ink, bg] of SMALL_TEXT) {
+        expect(contrast(token(ink, block), token(bg, block))).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+  })
+
+  const FILLS = ['brand-strong', 'danger', 'pos', 'vote-up', 'vote-down', 'vote-abstain'] as const
+
+  it('todo relleno de color lleva encima un texto que pasa AA', () => {
+    for (const block of ['light', 'dark'] as const) {
+      for (const fill of FILLS) {
+        expect(contrast(token('on-fill', block), token(fill, block))).toBeGreaterThanOrEqual(4.5)
+      }
+    }
+  })
+
+  it('los delimitadores de control y las piedras vacías pasan 3:1', () => {
+    for (const block of ['light', 'dark'] as const) {
+      for (const bg of ['surface', 'ground'] as const) {
+        expect(contrast(token('border-control', block), token(bg, block))).toBeGreaterThanOrEqual(3)
+      }
+      expect(
+        contrast(token('pebble-empty', block), token('surface', block)),
+      ).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  // Light only: --pos changed for AA and no longer coincides with --vote-up. In dark both are
+  // "sin cambio" in the Task 4 brief and stay byte-identical (#4fa37c), pre-existing since before
+  // this task — a plan defect flagged in the Task 4 report, not silently fixed with an invented hue.
+  it('el voto a favor no es el mismo color que el saldo positivo (claro)', () => {
+    expect(token('vote-up', 'light')).not.toBe(token('pos', 'light'))
+  })
 })

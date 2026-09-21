@@ -306,7 +306,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
             type="button"
             onClick={discard}
             className="min-h-11 rounded-[--radius] px-4 font-medium"
-            style={{ background: 'var(--danger)', color: '#ffffff' }}
+            style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
           >
             {t('proposal.discardConfirm')}
           </button>
