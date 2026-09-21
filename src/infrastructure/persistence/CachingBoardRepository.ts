@@ -90,7 +90,11 @@ export class CachingBoardRepository implements BoardRepository {
     if (slug) await this.refresh(slug)
   }
 
-  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
+  async createAgora(input: {
+    name: string
+    creatorName: string
+    ballotOpen: boolean
+  }): Promise<Identity> {
     return this.remote.createAgora(input)
   }
 

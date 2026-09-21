@@ -10,7 +10,11 @@ const bytes = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)
 describe('egress budget', () => {
   it('keeps a cold board under 60 KB for 8 people and 20 proposals with images', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'p0' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'p0',
+      ballotOpen: true,
+    })
     for (let person = 1; person < 8; person++) {
       await repo.addParticipant({ slug, name: `p${person}` })
     }
@@ -51,7 +55,11 @@ describe('egress budget', () => {
 
   it('keeps the delta after one vote under 2 KB', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     await repo.addParticipant({ slug, name: 'bob' })
     repo.actAs(repo.participantId(slug, 'alice'))
     const proposalId = await repo.createProposal({ slug, title: 'Trip to the coast' })

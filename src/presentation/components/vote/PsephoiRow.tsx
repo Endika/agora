@@ -71,10 +71,10 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
   // and calling it yours would hand a shoulder-surfer the answer for free.
   const marked = mine && !revealed && filled > 0
 
-  // A vote whose voter is gone has no name to print. Erasure cascades onto votes, so this is
-  // defensive rather than expected — but a missing name must drop out of the roll, never render
-  // as "undefined" next to a sense.
-  const nameOf = (participantId: string) =>
+  // A vote may have no name to print: erasure cascades onto votes, and a secret agora never sends
+  // the voter at all. Either way it drops out of the roll, and never renders as "undefined" next
+  // to a sense.
+  const nameOf = (participantId: string | undefined) =>
     participants.find((person) => person.id === participantId)?.name
 
   // Built only from `revealed`, which is the server's own "the round is over" signal. While the

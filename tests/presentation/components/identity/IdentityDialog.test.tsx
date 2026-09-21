@@ -7,7 +7,11 @@ import { renderWithBoard } from '../../support/renderWithBoard'
 
 async function agora(names: string[]) {
   const repo = new InMemoryBoardRepository()
-  const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: names[0]! })
+  const { slug } = await repo.createAgora({
+    name: 'Cuadrilla',
+    creatorName: names[0]!,
+    ballotOpen: true,
+  })
   for (const name of names.slice(1)) await repo.addParticipant({ slug, name })
   return { repo, slug }
 }

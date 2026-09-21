@@ -76,7 +76,11 @@ export class QueuingBoardRepository implements BoardRepository {
   }
 
   // Everything else goes straight through.
-  createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
+  createAgora(input: {
+    name: string
+    creatorName: string
+    ballotOpen: boolean
+  }): Promise<Identity> {
     return this.inner.createAgora(input)
   }
   preview(slug: string): Promise<AgoraPreview> {

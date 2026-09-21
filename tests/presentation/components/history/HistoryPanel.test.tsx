@@ -22,6 +22,7 @@ async function panelWith(entries: HistoryEntry[]) {
   const { slug, participantId } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: 'Endika',
+    ballotOpen: true,
   })
   repo.seedHistory(
     slug,
@@ -33,7 +34,7 @@ async function panelWith(entries: HistoryEntry[]) {
 
   const board: BoardSnapshot = {
     version: '2026-09-01T10:00:00.000Z',
-    group: { id: 'g', slug, name: 'Cuadrilla' },
+    group: { id: 'g', slug, name: 'Cuadrilla', ballotOpen: true },
     me: { id: participantId, name: 'Endika' },
     participants: [{ id: participantId, name: 'Endika' }],
     proposals: [makeProposal({ id: 'pr1', title: 'Viaje a la costa' })],

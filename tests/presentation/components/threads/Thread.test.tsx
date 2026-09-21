@@ -7,7 +7,11 @@ import { renderWithBoard } from '../../support/renderWithBoard'
 
 async function threadOn(comments: string[]) {
   const repo = new InMemoryBoardRepository()
-  const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+  const { slug } = await repo.createAgora({
+    name: 'Cuadrilla',
+    creatorName: 'alice',
+    ballotOpen: true,
+  })
   await repo.addParticipant({ slug, name: 'bob' })
   const alice = repo.participantId(slug, 'alice')
   const bob = repo.participantId(slug, 'bob')
@@ -113,7 +117,11 @@ describe('Thread', () => {
 
   it('opens a thread and replies in one, both with client-made ids', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     const alice = repo.participantId(slug, 'alice')
     const proposalId = await repo.createProposal({ slug, title: 'Paint the hallway' })
 
@@ -140,7 +148,11 @@ describe('Thread', () => {
 
   it('refuses to send an empty comment', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     const alice = repo.participantId(slug, 'alice')
     const proposalId = await repo.createProposal({ slug, title: 'Paint the hallway' })
 

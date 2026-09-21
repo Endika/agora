@@ -8,7 +8,11 @@ import { renderWithBoard } from '../../support/renderWithBoard'
 describe('DangerZone', () => {
   it('keeps the delete button disabled for a wrong name, but a case difference still enables it', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Casa de la playa', creatorName: 'Endika' })
+    const { slug } = await repo.createAgora({
+      name: 'Casa de la playa',
+      creatorName: 'Endika',
+      ballotOpen: true,
+    })
     let deleted = false
     renderWithBoard(
       <DangerZone slug={slug} agoraName="Casa de la playa" onDeleted={() => (deleted = true)} />,
@@ -38,7 +42,11 @@ describe('DangerZone', () => {
 
   it('no monta ninguna región de alerta hasta que hay un error, y la muestra cuando lo hay', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Piso Viejo', creatorName: 'Endika' })
+    const { slug } = await repo.createAgora({
+      name: 'Piso Viejo',
+      creatorName: 'Endika',
+      ballotOpen: true,
+    })
     renderWithBoard(
       // Nothing in the app can make agoraName disagree with the repo's stored name — it is always
       // read live from board.group.name — so this exercises deleteAgora's mismatch branch directly,
@@ -59,7 +67,11 @@ describe('DangerZone', () => {
 
   it('el botón de borrar solo se habilita cuando el nombre coincide', async () => {
     const repo = new InMemoryBoardRepository()
-    const { slug } = await repo.createAgora({ name: 'Piso de Gros', creatorName: 'Endika' })
+    const { slug } = await repo.createAgora({
+      name: 'Piso de Gros',
+      creatorName: 'Endika',
+      ballotOpen: true,
+    })
     renderWithBoard(<DangerZone slug={slug} agoraName="Piso de Gros" onDeleted={() => {}} />, {
       repo,
       slug,

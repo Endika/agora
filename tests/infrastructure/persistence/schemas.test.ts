@@ -3,7 +3,7 @@ import { parseBoard } from '@/infrastructure/persistence/schemas'
 
 const board = {
   version: '2026-09-01T10:00:00.000Z',
-  group: { id: 'g', slug: 'abcd1234', name: 'Cuadrilla' },
+  group: { id: 'g', slug: 'abcd1234', name: 'Cuadrilla', ballotOpen: true },
   me: { id: 'p1', name: 'alice' },
   participants: [{ id: 'p1', name: 'alice' }],
   proposals: [
@@ -63,6 +63,49 @@ describe('parseBoard', () => {
   it('rejects a cent amount that is not a whole number', () => {
     const fraction = { ...board, proposals: [{ ...board.proposals[0], estimatedCents: 10.5 }] }
     expect(() => parseBoard(fraction)).toThrow()
+  })
+
+  it('carries the agora ballot mode, which the board reads to decide what it promises', () => {
+    expect(parseBoard(board).group.ballotOpen).toBe(true)
+    const secret = { ...board, group: { ...board.group, ballotOpen: false } }
+    expect(parseBoard(secret).group.ballotOpen).toBe(false)
+  })
+
+  // A secret agora's resolved proposal ships senses with no voter attached. Required here, the
+  // whole board would fail to parse and the app would show nothing at all.
+  it('accepts a resolved vote with no participant, the shape a secret agora sends', () => {
+    const resolved = {
+      ...board,
+      group: { ...board.group, ballotOpen: false },
+      proposals: [
+        {
+          ...board.proposals[0],
+          status: 'approved',
+          votesRevealed: true,
+          votes: [{ value: 'up' }, { value: 'abstain' }],
+          pending: [],
+        },
+      ],
+    }
+    const votes = parseBoard(resolved).proposals[0]!.votes!
+    expect(votes.map((vote) => vote.value)).toEqual(['up', 'abstain'])
+    expect(votes.every((vote) => vote.participantId === undefined)).toBe(true)
+  })
+
+  it('still carries the voter when the agora is open', () => {
+    const resolved = {
+      ...board,
+      proposals: [
+        {
+          ...board.proposals[0],
+          status: 'approved',
+          votesRevealed: true,
+          votes: [{ participantId: 'p1', value: 'up' }],
+          pending: [],
+        },
+      ],
+    }
+    expect(parseBoard(resolved).proposals[0]!.votes![0]!.participantId).toBe('p1')
   })
 
   it('takes null where the contract allows it, and nothing else', () => {

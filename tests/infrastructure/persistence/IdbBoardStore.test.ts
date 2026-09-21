@@ -6,7 +6,7 @@ import { makeProposal } from '../../domain/support/makeProposal'
 
 const board = (): BoardSnapshot => ({
   version: '2026-09-01T10:00:00.000Z',
-  group: { id: 'g', slug: 'abcd1234', name: 'Cuadrilla' },
+  group: { id: 'g', slug: 'abcd1234', name: 'Cuadrilla', ballotOpen: true },
   me: { id: 'p1', name: 'Endika' },
   participants: [{ id: 'p1', name: 'Endika' }],
   proposals: [makeProposal({ id: 'pr1' })],

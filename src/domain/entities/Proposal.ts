@@ -39,7 +39,8 @@ export interface ProposalLink {
 }
 
 export interface CastVote {
-  participantId: string
+  /** Absent in a secret agora: the server never sends the voter, not even once the round is over. */
+  participantId?: string
   value: VoteValue
 }
 

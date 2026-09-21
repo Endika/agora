@@ -52,6 +52,7 @@ interface Agora {
   id: string
   slug: string
   name: string
+  ballotOpen: boolean
   participants: Participant[]
   proposals: Row[]
   votes: Vote[]
@@ -121,7 +122,11 @@ export class InMemoryBoardRepository implements BoardRepository {
     return found.id
   }
 
-  async createAgora(input: { name: string; creatorName: string }): Promise<Identity> {
+  async createAgora(input: {
+    name: string
+    creatorName: string
+    ballotOpen: boolean
+  }): Promise<Identity> {
     this.calls.push('createAgora')
     const slug = this.id('slug')
     const meId = this.id('participant')
@@ -129,6 +134,7 @@ export class InMemoryBoardRepository implements BoardRepository {
       id: this.id('agora'),
       slug,
       name: input.name,
+      ballotOpen: input.ballotOpen,
       participants: [{ id: meId, name: input.creatorName }],
       proposals: [],
       votes: [],
@@ -501,9 +507,15 @@ export class InMemoryBoardRepository implements BoardRepository {
           tally: tally(roundVotes),
           myVote: roundVotes.find((v) => v.participantId === this.me)?.value ?? null,
           votesRevealed: revealed,
-          // Before quorum the sentiment is simply absent, not filtered later on.
+          // Before quorum the sentiment is simply absent, not filtered later on — and a secret
+          // agora drops the voter here, as get_board does, so no test above this class can pass
+          // on attribution the real server never sends.
           votes: revealed
-            ? roundVotes.map((v) => ({ participantId: v.participantId, value: v.value }))
+            ? roundVotes.map((v) =>
+                agora.ballotOpen
+                  ? { participantId: v.participantId, value: v.value }
+                  : { value: v.value },
+              )
             : null,
           pending: agora.participants
             .filter((p) => !roundVotes.some((v) => v.participantId === p.id))
@@ -520,7 +532,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     const me = agora.participants.find((p) => p.id === this.me) ?? agora.participants[0]
     return {
       version: this.version(agora),
-      group: { id: agora.id, slug: agora.slug, name: agora.name },
+      group: { id: agora.id, slug: agora.slug, name: agora.name, ballotOpen: agora.ballotOpen },
       me: me ?? { id: '', name: '' },
       participants: agora.participants,
       proposals: sortProposals(proposals),

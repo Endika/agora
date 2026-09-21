@@ -9,7 +9,11 @@ import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBo
 
 async function agora() {
   const remote = new InMemoryBoardRepository()
-  const { slug } = await remote.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+  const { slug } = await remote.createAgora({
+    name: 'Cuadrilla',
+    creatorName: 'alice',
+    ballotOpen: true,
+  })
   await remote.addParticipant({ slug, name: 'bob' })
   remote.actAs(remote.participantId(slug, 'alice'))
   const proposalId = await remote.createProposal({ slug, title: 'Trip to the coast' })
@@ -93,7 +97,11 @@ describe('voting offline', () => {
 describe('reading offline', () => {
   it('opens the board from the device when the network is gone', async () => {
     const remote = new InMemoryBoardRepository()
-    const { slug } = await remote.createAgora({ name: 'Cuadrilla', creatorName: 'alice' })
+    const { slug } = await remote.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
     await remote.createProposal({ slug, title: 'Trip to the coast' })
 
     const store = new InMemoryBoardStore()
