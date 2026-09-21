@@ -17,6 +17,7 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
       {
         status: (status) => t(`status.${status}`),
         tally: (tally) => `${tally.up} / ${tally.down} / ${tally.abstain}`,
+        castOnly: (cast) => t('export.castOnly', { count: cast }),
       },
       history,
     )

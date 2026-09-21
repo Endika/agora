@@ -263,7 +263,9 @@
     "heading": "Llévate el tablón",
     "explain": "El tablón es tuyo: descárgalo en Markdown para leerlo o en JSON para reutilizarlo.",
     "markdown": "Descargar Markdown",
-    "json": "Descargar JSON"
+    "json": "Descargar JSON",
+    "castOnly_one": "{{count}} voto emitido",
+    "castOnly_other": "{{count}} votos emitidos"
   },
   "install": {
     "title": "Instala Agora en el móvil y ábrela como una app.",

@@ -50,6 +50,8 @@ const board: BoardSnapshot = {
 const labels = {
   status: (status: string) => ({ approved: 'Aprobada', open: 'En votación' })[status] ?? status,
   tally: (t: { up: number; down: number; abstain: number }) => `${t.up} / ${t.down} / ${t.abstain}`,
+  // The bundle's `export.castOnly`, spelled out: a count of people, never a sense.
+  castOnly: (cast: number) => `${cast} ${cast === 1 ? 'voto emitido' : 'votos emitidos'}`,
 }
 
 describe('exportBoard', () => {
@@ -116,10 +118,28 @@ describe('exportBoard y el modo de voto del ágora', () => {
     return { repo, slug, board, history, names }
   }
 
+  /** The same agora with the round still running: one of three has voted, so nothing has resolved. */
+  async function openRoundAgora(ballotOpen: boolean) {
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({ name: 'Cuadrilla', creatorName: 'alice', ballotOpen })
+    for (const name of ['bob', 'carol']) await repo.addParticipant({ slug, name })
+
+    repo.actAs(repo.participantId(slug, 'alice'))
+    const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    repo.actAs(repo.participantId(slug, 'bob'))
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+
+    repo.actAs(repo.participantId(slug, 'alice'))
+    const board = await repo.getBoard(slug)
+    if (board.proposals[0]!.status !== 'open') throw new Error('the fixture resolved too early')
+    return { repo, slug, board, history: await repo.history({ slug }) }
+  }
+
   /** What the screen passes in: the same labels `ExportButtons` reads out of the bundle. */
   const spanish = {
     status: (status: string) => ({ debating: 'En debate' })[status] ?? status,
     tally: labels.tally,
+    castOnly: labels.castOnly,
   }
 
   const castVotes = (snapshot: BoardSnapshot) =>
@@ -164,6 +184,55 @@ describe('exportBoard y el modo de voto del ágora', () => {
     expect(parsed.proposals[0]!.myVote).toBe('up')
     expect((parsed.history as HistoryEntry[]).map((entry) => entry.participantId)).toContain(alice)
     expect(exportBoard(board, 'json', spanish, history)).toContain(alice)
+  })
+
+  it('no inventa un desglose que el servidor no ha mandado, y no lo hace con ceros', async () => {
+    // The export is the one artefact somebody keeps, so "0 / 0 / 0" while two people have voted is
+    // a false statement in a document, not a display quirk. It is false *because* of the redaction:
+    // a secret agora sends no breakdown while the round is open, and the three senses arrive as
+    // zeros. The count is the true part of that payload, so the count is what is printed.
+    const { board, history } = await openRoundAgora(false)
+    const md = exportBoard(board, 'md', spanish, history)
+
+    expect(md).toContain('**open** · 1 voto emitido')
+    // And not the zeroes in any arrangement a reader could take for senses.
+    expect(md).not.toContain('0 / 0 / 0')
+    expect(md).not.toMatch(/\b0 \/ 0\b/)
+    // The line says how many voted and stops there; it must not name a sense in any language.
+    const summary = md.split('\n').find((line) => line.startsWith('**open**'))!
+    for (const sense of [
+      /a favor/i,
+      /en contra/i,
+      /en blanco/i,
+      /\bup\b/,
+      /\bdown\b/,
+      /\babstain\b/,
+    ])
+      expect(summary).not.toMatch(sense)
+  })
+
+  it('pero en cuanto la propuesta se resuelve publica el desglose real, también en secreto', async () => {
+    // The redaction lasts exactly as long as the round: at resolution the senses are public in
+    // both modes, so the export goes back to the breakdown and the count line disappears.
+    const { board, history } = await resolvedAgora(false)
+    const md = exportBoard(board, 'md', spanish, history)
+
+    expect(md).toContain('**En debate** · 1 / 1 / 0')
+    expect(md).not.toContain('votos emitidos')
+  })
+
+  it('y en un ágora abierta el desglose se imprime siempre, con la ronda abierta o cerrada', async () => {
+    // The control, on both states. An open ballot publishes the names at resolution anyway, so its
+    // running breakdown is the feature — and the redaction must not reach it from either side.
+    const during = await openRoundAgora(true)
+    expect(exportBoard(during.board, 'md', spanish, during.history)).toContain(
+      '**open** · 1 / 0 / 0',
+    )
+
+    const after = await resolvedAgora(true)
+    const md = exportBoard(after.board, 'md', spanish, after.history)
+    expect(md).toContain('**En debate** · 1 / 1 / 0')
+    expect(md).not.toContain('votos emitidos')
   })
 
   it('el Markdown no lleva ni un voto, en ninguno de los dos modos', async () => {

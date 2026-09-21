@@ -6,6 +6,8 @@ export type ExportFormat = 'md' | 'json'
 interface Labels {
   status: (status: string) => string
   tally: (tally: { up: number; down: number; abstain: number }) => string
+  /** For the one case where there is no breakdown to print: how many people have voted, and no sense. */
+  castOnly: (cast: number) => string
 }
 
 /**
@@ -29,7 +31,13 @@ export function exportBoard(
 
   for (const proposal of sortProposals(board.proposals)) {
     lines.push(`## ${proposal.title}`, '')
-    lines.push(`**${labels.status(proposal.status)}** · ${labels.tally(proposal.tally)}`, '')
+    // A secret agora sends no breakdown while the round is open — `pending` names who has not voted,
+    // so a live count by sense would name the voter too. The three senses arrive as zeros, and
+    // printing them would put "0 / 0 / 0" in a document somebody keeps while two people have voted.
+    // The count is the true part of that payload, so the count is what gets printed.
+    const redacted = !board.group.ballotOpen && !proposal.votesRevealed
+    const summary = redacted ? labels.castOnly(proposal.tally.cast) : labels.tally(proposal.tally)
+    lines.push(`**${labels.status(proposal.status)}** · ${summary}`, '')
     if (proposal.tags.length > 0) lines.push(proposal.tags.map((tag) => `#${tag}`).join(' '), '')
     if (proposal.description.trim().length > 0) lines.push(proposal.description.trim(), '')
     if (proposal.closedReason) lines.push(`> ${proposal.closedReason}`, '')
