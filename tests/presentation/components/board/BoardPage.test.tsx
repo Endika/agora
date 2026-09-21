@@ -851,6 +851,33 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     expect(screen.getAllByRole('list')[0]).not.toHaveClass('lg:grid-cols-2')
   })
 
+  it('la frase del voto secreto se dice una sola vez en pantalla, sea cual sea la forma', async () => {
+    const SECRET = 'Los votos se ven al alcanzar el quórum'
+
+    // Counted across the whole document on purpose, minus whatever sits under `inert` — the sheet
+    // marks the board inert, so the board's copy is neither seen nor announced while it is up.
+    // The board says it once above the list and the detail says it when it covers the board; each
+    // copy is right on its own, and it took a screenshot to notice that the side panel put both on
+    // screen 300 px apart. A count scoped to one component cannot see that, which is how it got
+    // through.
+    const onScreen = () => screen.getAllByText(SECRET).filter((node) => !node.closest('[inert]'))
+
+    const panel = await openProposal(true)
+    expect(onScreen()).toHaveLength(1)
+    panel.unmount()
+
+    const sheet = await openProposal(false)
+    expect(onScreen()).toHaveLength(1)
+    sheet.unmount()
+
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    const board = await repo.getBoard(slug)
+    matchMediaMatches(true)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+    expect(onScreen()).toHaveLength(1)
+  })
+
   it('el hilo se lee junto al voto y el dinero después, en el panel y en la hoja', async () => {
     for (const wide of [true, false]) {
       const view = await openProposal(wide)

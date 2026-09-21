@@ -20,6 +20,12 @@ interface Props {
   onClose: (reason: string) => void
   onComplete: (actualCents: number | null) => void
   onChanged: () => void
+  /**
+   * Whether this copy has to carry the secret-ballot sentence. The board says it once, above the
+   * list; in a sheet that covers the board the detail has to say it again, in a side panel beside
+   * a board that is still on screen it must not — 300 px apart, twice, is noise.
+   */
+  explainSecret: boolean
 }
 
 /** Everything about one proposal: the full text, the images, the money and the conversation. */
@@ -32,6 +38,7 @@ export function ProposalDetail({
   onClose,
   onComplete,
   onChanged,
+  explainSecret,
 }: Props) {
   const { t } = useTranslation()
   const titleOf = (id: string) => board.proposals.find((other) => other.id === id)?.title
@@ -88,7 +95,7 @@ export function ProposalDetail({
           participants={board.participants.length}
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
-          explainSecret
+          explainSecret={explainSecret}
         />
         {proposal.status === 'open' && (
           <>
