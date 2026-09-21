@@ -20,7 +20,6 @@ export interface Wiring {
 /** Every adapter is injected: this component knows nothing about Supabase, IndexedDB or the network. */
 export function App({ repo, visited, images, queue, network, replay }: Wiring) {
   const route = useRoute()
-  if (route.kind === 'privacy') return <PrivacyNotice />
   return (
     <BoardProvider
       repo={repo}
@@ -30,7 +29,10 @@ export function App({ repo, visited, images, queue, network, replay }: Wiring) {
       replay={replay}
       slug={'slug' in route ? route.slug : null}
     >
-      <AgoraApp network={network} route={route} />
+      {/* The notice is inside the provider so that, read from inside an agora, it can say which of
+          the two ballot modes the reader is under instead of describing both and naming neither.
+          Read from the home screen the slug is null, the provider stays idle, and it describes both. */}
+      {route.kind === 'privacy' ? <PrivacyNotice /> : <AgoraApp network={network} route={route} />}
     </BoardProvider>
   )
 }
