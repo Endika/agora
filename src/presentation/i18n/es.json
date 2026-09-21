@@ -19,6 +19,7 @@
     "down": "En contra",
     "abstain": "En blanco",
     "abstainCounts": "En blanco también cuenta para el quórum",
+    "secretPast": "Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.",
     "roll": "Quién votó qué",
     "voted": {
       "up": "Has votado a favor",

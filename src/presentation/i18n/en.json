@@ -19,6 +19,7 @@
     "down": "Against",
     "abstain": "Abstain",
     "abstainCounts": "Abstaining also counts towards quorum",
+    "secretPast": "Nobody saw these votes until quorum was reached. Now the whole group sees them, with the name of whoever cast them.",
     "roll": "Who voted what",
     "voted": {
       "up": "You voted in favour",

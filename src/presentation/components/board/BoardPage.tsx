@@ -59,9 +59,13 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
   // How the ballot works is a property of the agora, not of any one proposal, so it is said once
   // here rather than once per open card — and it has to be read *before* the first vote button,
-  // because "open at quorum, with your name on it" changes how somebody votes. A board with
-  // nothing left open has nothing still to keep.
-  const hasSecretVote = board.proposals.some((proposal) => proposal.status === 'open')
+  // because "open at quorum, with your name on it" changes how somebody votes.
+  //
+  // Which tense, not whether. A board with nothing left open has nothing still to keep, but its
+  // cards are covered in names against senses, and going silent there left the rule nowhere on
+  // screen at any width. Same paragraph, one ternary: exactly once, by construction.
+  const anyProposal = board.proposals.length > 0
+  const anyOpen = board.proposals.some((proposal) => proposal.status === 'open')
 
   const visible = board.proposals.filter((proposal) => {
     if (filter.kind === 'pending-mine')
@@ -239,9 +243,9 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
         <BoardFilters tags={tags} pendingMine={pendingMine} filter={filter} onChange={setFilter} />
 
-        {hasSecretVote && (
+        {anyProposal && (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {t('psephoi.secret')}
+            {t(anyOpen ? 'psephoi.secret' : 'psephoi.secretPast')}
           </p>
         )}
 

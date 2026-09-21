@@ -6,6 +6,8 @@ import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 
 const SECRET =
   'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
+const SECRET_PAST =
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 
 /** Named people, in the order their votes are handed to the row. */
 function people(...names: string[]): Participant[] {
@@ -56,7 +58,7 @@ describe('PsephoiRow', () => {
     expect(screen.queryByText(SECRET)).toBeNull()
   })
 
-  it('deja de decirlo una vez revelados, y no lo dice dos veces por voz', () => {
+  it('una vez revelados pasa al pasado en vez de callarse, y sigue sin decirlo por voz', () => {
     const voters = people('Amaia', 'Iker')
     render(
       <PsephoiRow
@@ -66,8 +68,40 @@ describe('PsephoiRow', () => {
         explainSecret
       />,
     )
+    // Somebody who arrives here through a shared link sees their own name against a sense and has
+    // never read the forward-looking promise. Going silent is what left them with no explanation.
     expect(screen.queryByText(SECRET)).toBeNull()
+    expect(screen.getByText(SECRET_PAST)).toBeInTheDocument()
     expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
+  })
+
+  it('la regla se dice una sola vez en cualquiera de los dos tiempos, nunca las dos', () => {
+    const voters = people('Amaia', 'Iker')
+    const both = () => [...screen.queryAllByText(SECRET), ...screen.queryAllByText(SECRET_PAST)]
+
+    const open = render(<PsephoiRow participants={voters} cast={1} revealed={null} explainSecret />)
+    expect(both()).toHaveLength(1)
+    open.unmount()
+
+    render(
+      <PsephoiRow
+        participants={voters}
+        cast={2}
+        revealed={ballots(voters, 'up', 'down')}
+        explainSecret
+      />,
+    )
+    expect(both()).toHaveLength(1)
+  })
+
+  it('el pasado también nombra el precio: el grupo y el nombre', () => {
+    const voters = people('Amaia')
+    render(
+      <PsephoiRow participants={voters} cast={1} revealed={ballots(voters, 'up')} explainSecret />,
+    )
+    const line = screen.getByText(SECRET_PAST).textContent ?? ''
+    expect(line).toContain('Nadie vio estos votos')
+    expect(line).toContain('con el nombre de quien los puso')
   })
 
   it('reveals every pebble once the proposal resolved', () => {
@@ -97,12 +131,29 @@ describe('PsephoiRow', () => {
       />,
     )
     const pebbles = screen.getAllByTestId('pebble-cast')
-    expect(pebbles[0]).toHaveAttribute('title', 'Ekin: A favor')
-    expect(pebbles[1]).toHaveAttribute('title', 'Iker: En contra')
-    expect(pebbles[2]).toHaveAttribute('title', 'Jon: En blanco')
+    expect(pebbles[0]).toHaveAttribute('data-vote', 'up')
+    expect(pebbles[1]).toHaveAttribute('data-vote', 'down')
+    expect(pebbles[2]).toHaveAttribute('data-vote', 'abstain')
     // The abstain pebble is a ring, so it can never be mistaken for an unrevealed stone.
     expect(pebbles[2]!.className).toContain('border')
     expect(pebbles[0]!.className).not.toContain('border')
+  })
+
+  it('ninguna piedra promete con un title una accesibilidad que no da', () => {
+    const voters = people('Ekin', 'Iker')
+    const { container } = render(
+      <PsephoiRow
+        participants={voters}
+        cast={2}
+        revealed={ballots(voters, 'up', 'down')}
+        explainSecret={false}
+      />,
+    )
+    // Under role="img" the pebbles are presentational: a title lands as a description on a
+    // nameless generic, reachable by a mouse and by nothing else. The roll below publishes the
+    // same attribution as real text, to everybody.
+    expect(container.querySelectorAll('[title]')).toHaveLength(0)
+    expect(screen.getByTestId('roll-up')).toHaveTextContent('A favor: Ekin')
   })
 
   it('dice quién votó qué, agrupado por sentido, una vez resuelta', () => {
@@ -143,6 +194,25 @@ describe('PsephoiRow', () => {
     expect(screen.queryByTestId('roll-abstain')).toBeNull()
   })
 
+  it('los nombres cuelgan bajo su etiqueta en vez de alinearse con la siguiente', () => {
+    const voters = people('Ekin', 'Iker')
+    render(
+      <PsephoiRow
+        participants={voters}
+        cast={2}
+        revealed={ballots(voters, 'up', 'down')}
+        explainSecret={false}
+      />,
+    )
+    // A continuation line flush with the next group's label leaves --ink against --ink-muted as
+    // the only thing separating them, which at 280 px is too little. jsdom computes no Tailwind,
+    // so the real check is the browser measurement in the report; this only stops the pair being
+    // deleted without anybody noticing.
+    const group = screen.getByTestId('roll-up')
+    expect(group.className).toContain('pl-4')
+    expect(group.className).toContain('-indent-4')
+  })
+
   it('la lista de nombres se presenta con su propio nombre accesible', () => {
     const voters = people('Ekin', 'Iker')
     render(
@@ -177,7 +247,7 @@ describe('PsephoiRow', () => {
     expect(screen.queryByTestId('roll-down')).toBeNull()
     // The pebble stays: the vote was cast and still counts, it just has nobody left to name.
     expect(screen.getAllByTestId('pebble-cast')).toHaveLength(2)
-    expect(screen.getAllByTestId('pebble-cast')[1]).toHaveAttribute('title', 'En contra')
+    expect(screen.getAllByTestId('pebble-cast')[1]).toHaveAttribute('data-vote', 'down')
   })
 
   it('MIENTRAS SIGUE ABIERTA no hay ni un nombre junto a un sentido', () => {
@@ -186,17 +256,19 @@ describe('PsephoiRow', () => {
       <PsephoiRow participants={voters} cast={3} revealed={null} explainSecret />,
     )
 
-    // No roll, no colours, and no pebble that can be hovered for an answer. Secrecy during the
-    // round is the whole premise: if any of these three go, the round is not secret any more.
+    // No roll and no colours. Secrecy during the round is the whole premise.
     expect(screen.queryByTestId('vote-roll')).toBeNull()
     expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
-    for (const pebble of screen.getAllByTestId('pebble-cast')) {
-      expect(pebble).not.toHaveAttribute('title')
-    }
 
-    // Belt and braces: no name is anywhere in this subtree at all while the vote is open.
-    const text = container.textContent ?? ''
-    for (const person of voters) expect(text).not.toContain(person.name)
+    // And no name reaches the page by any route: not as text, and not smuggled into an attribute
+    // such as title, aria-label or data-*, which is where it would go if somebody tried again.
+    const carriers = [container.textContent ?? '']
+    for (const node of container.querySelectorAll('*')) {
+      for (const attribute of node.attributes) carriers.push(attribute.value)
+    }
+    for (const person of voters) {
+      for (const carrier of carriers) expect(carrier).not.toContain(person.name)
+    }
   })
 
   it('marca tu piedra sin decir por dónde fue', () => {
