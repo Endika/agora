@@ -94,7 +94,10 @@
     "costInvalid": "El coste va en euros, con dos decimales como mucho.",
     "edit": "Editar",
     "save": "Guardar los cambios",
-    "editHeading": "Editar la propuesta"
+    "editHeading": "Editar la propuesta",
+    "discard": "Descartar el borrador",
+    "discardConfirm": "Descartar de verdad",
+    "draftRestored": "Hemos recuperado lo que estabas escribiendo. Las imágenes no se guardan: hay que volver a elegirlas."
   },
   "identity": {
     "who": "¿Quién eres?",

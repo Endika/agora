@@ -5,20 +5,24 @@ import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
 import { useBoard } from '@/presentation/context/boardContext'
-import { openAgora } from '@/presentation/routing'
+import { draftKey } from '@/presentation/drafts'
+import { openAgora, openCompose, openEdit, type Route } from '@/presentation/routing'
 import { useAction } from '@/presentation/useAction'
 import { BoardFilters, type Filter } from './BoardFilters'
 import { ProposalCard } from './ProposalCard'
 import { ProposalDetail } from './ProposalDetail'
 
 /** The list arrives already ordered by the repository; the spec's order is not the view's opinion. */
-export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: string | null }) {
+export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route }) {
   const { t } = useTranslation()
   const { repo, reload, images: pipeline } = useBoard()
   const { run, error } = useAction()
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
-  const [composing, setComposing] = useState(false)
-  const [editing, setEditing] = useState<string | null>(null)
+
+  // Writing and editing are routes, so the sheet that is open is a fact about the address bar and
+  // never something this component has to remember.
+  const composing = route.kind === 'compose'
+  const closeSheet = () => openAgora(board.group.slug)
 
   const tags = useMemo(
     () => [...new Set(board.proposals.flatMap((proposal) => proposal.tags))].sort(),
@@ -45,8 +49,9 @@ export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: str
     }
   }
 
+  // Closing first is deliberate: the sheet goes away at once and the write finishes behind it.
   const publish = ({ images: picked, ...draft }: ProposalDraft) => {
-    setComposing(false)
+    closeSheet()
     act(async () => {
       const proposalId = await repo.createProposal({ slug: board.group.slug, ...draft })
       await attachAll(proposalId, { ...draft, images: picked })
@@ -54,7 +59,7 @@ export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: str
   }
 
   const save = (proposalId: string, { images: picked, ...draft }: ProposalDraft) => {
-    setEditing(null)
+    closeSheet()
     act(async () => {
       await repo.updateProposal({ proposalId, ...draft })
       await attachAll(proposalId, { ...draft, images: picked })
@@ -64,7 +69,7 @@ export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: str
   const actionsFor = (proposal: Proposal) => ({
     onVote: (value: VoteValue) =>
       act(() => repo.castVote({ proposalId: proposal.id, round: proposal.round, value })),
-    onEdit: () => setEditing(proposal.id),
+    onEdit: () => openEdit(board.group.slug, proposal.id),
     onReopen: () => act(() => repo.reopenProposal(proposal.id)),
     onClose: (reason: string) => act(() => repo.closeProposal({ proposalId: proposal.id, reason })),
     onComplete: (actualCents: number | null) =>
@@ -75,8 +80,9 @@ export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: str
   const isArchived = (status: string) => ['completed', 'rejected', 'closed'].includes(status)
   const live = visible.filter((proposal) => !isArchived(proposal.status))
   const archived = visible.filter((proposal) => isArchived(proposal.status))
-  const beingEdited = board.proposals.find((proposal) => proposal.id === editing)
-  const open = board.proposals.find((proposal) => proposal.id === openId)
+  const byRouteId = (id: string) => board.proposals.find((proposal) => proposal.id === id)
+  const beingEdited = route.kind === 'edit' ? byRouteId(route.proposalId) : undefined
+  const open = route.kind === 'proposal' ? byRouteId(route.proposalId) : undefined
 
   const card = (proposal: Proposal) => (
     <li key={proposal.id} className="min-w-0">
@@ -99,36 +105,38 @@ export function BoardPage({ board, openId }: { board: BoardSnapshot; openId: str
       )}
 
       {composing && (
-        <Sheet label={t('proposal.new')} onClose={() => setComposing(false)}>
+        <Sheet label={t('proposal.new')} onClose={closeSheet}>
           <ProposalForm
             others={board.proposals}
+            draftKey={draftKey(board.group.slug)}
             onSubmit={publish}
-            onCancel={() => setComposing(false)}
+            onCancel={closeSheet}
           />
         </Sheet>
       )}
 
       {beingEdited && (
-        <Sheet label={t('proposal.editHeading')} onClose={() => setEditing(null)}>
+        <Sheet label={t('proposal.editHeading')} onClose={closeSheet}>
           <ProposalForm
             others={board.proposals.filter((other) => other.id !== beingEdited.id)}
             initial={beingEdited}
+            draftKey={draftKey(board.group.slug, beingEdited.id)}
             onSubmit={(draft) => save(beingEdited.id, draft)}
-            onCancel={() => setEditing(null)}
+            onCancel={closeSheet}
           />
         </Sheet>
       )}
 
       {/* Opening a proposal is a route, so the phone's back button closes it. */}
-      {open && !beingEdited && (
-        <Sheet label={open.title} onClose={() => openAgora(board.group.slug)}>
+      {open && (
+        <Sheet label={open.title} onClose={closeSheet}>
           <ProposalDetail proposal={open} board={board} onChanged={reload} {...actionsFor(open)} />
         </Sheet>
       )}
 
       <button
         type="button"
-        onClick={() => setComposing(true)}
+        onClick={() => openCompose(board.group.slug)}
         className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
         style={{ background: 'var(--brand)', color: 'var(--brand-ink)' }}
       >

@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Money } from '@/domain/value-objects/Money'
 import type { Proposal } from '@/domain/entities/Proposal'
 import type { PreparedUpload } from '@/domain/ports/ProposalImages'
+import { clearDraft, readDraft, writeDraft } from '@/presentation/drafts'
 import { ImagePicker } from './ImagePicker'
 import { MarkdownToolbar } from './MarkdownToolbar'
 import { MarkdownView } from './MarkdownView'
@@ -23,27 +24,62 @@ interface Props {
   others: Proposal[]
   /** Present when editing: the same form, filled in. */
   initial?: Proposal
+  /** Where an interrupted draft lives on this device. One key per new proposal and per edited one. */
+  draftKey: string
   onSubmit: (draft: ProposalDraft) => void
   onCancel: () => void
 }
 
-export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
+export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: Props) {
   const { t } = useTranslation()
   const editing = initial !== undefined
-  const description0 = initial?.description ?? ''
-  const [title, setTitle] = useState(initial?.title ?? '')
-  const [description, setDescription] = useState(description0)
-  const [tags, setTags] = useState<string[]>(initial?.tags ?? [])
-  const [deadline, setDeadline] = useState(initial?.deadline?.slice(0, 10) ?? '')
-  const [cost, setCost] = useState(
-    initial?.estimatedCents != null ? String(initial.estimatedCents / 100) : '',
-  )
+  // What the form would hold with nothing written yet: empty for a new proposal, the proposal
+  // itself when editing. A draft is only worth keeping while it differs from this.
+  const baseline = {
+    title: initial?.title ?? '',
+    description: initial?.description ?? '',
+    tags: initial?.tags ?? [],
+    deadline: initial?.deadline?.slice(0, 10) ?? '',
+    cost: initial?.estimatedCents != null ? String(initial.estimatedCents / 100) : '',
+  }
+  const baselineJson = JSON.stringify(baseline)
+  // Read once, at mount: after that the form itself is the truth.
+  const [restored] = useState(() => readDraft(draftKey))
+  const start = restored ?? baseline
+  const [title, setTitle] = useState(start.title)
+  const [description, setDescription] = useState(start.description)
+  const [tags, setTags] = useState<string[]>(start.tags)
+  const [deadline, setDeadline] = useState(start.deadline)
+  const [cost, setCost] = useState(start.cost)
   const descriptionField = useRef<HTMLTextAreaElement | null>(null)
   const [images, setImages] = useState<PreparedUpload[]>([])
   const [linkTo, setLinkTo] = useState('')
   const [linkKind, setLinkKind] = useState<'related' | 'supersedes'>('related')
   const [tab, setTab] = useState<'write' | 'preview'>('write')
   const [error, setError] = useState<string | null>(null)
+  // What the two-step discard was armed against, so that typing something else disarms it on its
+  // own: a destructive button left armed behind a change the user has since made is one click away
+  // from throwing away work they wanted.
+  const [armedFor, setArmedFor] = useState<string | null>(null)
+
+  const written = JSON.stringify({ title, description, tags, deadline, cost })
+  const changed = written !== baselineJson
+  const discarding = armedFor === written
+
+  // Kept on every keystroke rather than on close: a lock screen or a killed tab never announces
+  // itself. The picked images are left out on purpose — see drafts.ts.
+  useEffect(() => {
+    if (written === baselineJson) clearDraft(draftKey)
+    else writeDraft(draftKey, { title, description, tags, deadline, cost })
+  }, [draftKey, written, baselineJson, title, description, tags, deadline, cost])
+
+  // Cleared here and not by letting the effect notice: closing navigates, and the sheet can be
+  // unmounted before a passive effect gets to run.
+  const discard = () => {
+    clearDraft(draftKey)
+    setArmedFor(null)
+    onCancel()
+  }
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
@@ -64,6 +100,7 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
       }
     }
 
+    clearDraft(draftKey)
     onSubmit({
       images,
       title: title.trim(),
@@ -83,6 +120,12 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
       <h2 className="text-2xl font-semibold">
         {editing ? t('proposal.editHeading') : t('proposal.new')}
       </h2>
+
+      {restored && (
+        <p role="status" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+          {t('proposal.draftRestored')}
+        </p>
+      )}
 
       <div className="grid gap-1">
         <label htmlFor="proposal-title" className="font-medium">
@@ -246,6 +289,27 @@ export function ProposalForm({ others, initial, onSubmit, onCancel }: Props) {
         >
           {t('common.cancel')}
         </button>
+        {/* Closing keeps the draft; throwing it away is the one thing that has to be asked twice. */}
+        {changed && !discarding && (
+          <button
+            type="button"
+            onClick={() => setArmedFor(written)}
+            className="min-h-11 rounded-[--radius] border px-4"
+            style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
+          >
+            {t('proposal.discard')}
+          </button>
+        )}
+        {changed && discarding && (
+          <button
+            type="button"
+            onClick={discard}
+            className="min-h-11 rounded-[--radius] px-4 font-medium"
+            style={{ background: 'var(--danger)', color: '#ffffff' }}
+          >
+            {t('proposal.discardConfirm')}
+          </button>
+        )}
       </div>
     </form>
   )

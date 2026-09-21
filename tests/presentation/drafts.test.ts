@@ -1,0 +1,58 @@
+import { describe, it, expect, beforeEach } from 'vitest'
+import { draftKey, readDraft, writeDraft, clearDraft } from '@/presentation/drafts'
+
+const KEY = draftKey('demoag01')
+
+describe('borradores', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('no hay borrador al principio', () => {
+    expect(readDraft(KEY)).toBeNull()
+  })
+
+  it('guarda y devuelve lo guardado', () => {
+    writeDraft(KEY, {
+      title: 'Sofá',
+      description: 'El de ahora está hundido',
+      tags: ['salón'],
+      deadline: '',
+      cost: '749',
+    })
+    expect(readDraft(KEY)).toEqual({
+      title: 'Sofá',
+      description: 'El de ahora está hundido',
+      tags: ['salón'],
+      deadline: '',
+      cost: '749',
+    })
+  })
+
+  it('separa el borrador de cada propuesta editada', () => {
+    expect(draftKey('demoag01')).not.toBe(draftKey('demoag01', 'abc'))
+  })
+
+  it('descarta', () => {
+    writeDraft(KEY, { title: 'X', description: '', tags: [], deadline: '', cost: '' })
+    clearDraft(KEY)
+    expect(readDraft(KEY)).toBeNull()
+  })
+
+  it('sobrevive a un localStorage roto', () => {
+    localStorage.setItem(KEY, '{no es json')
+    expect(readDraft(KEY)).toBeNull()
+  })
+
+  it('no devuelve medio borrador cuando lo guardado no tiene forma de borrador', () => {
+    localStorage.setItem(KEY, JSON.stringify({ title: 7, description: 'algo' }))
+    expect(readDraft(KEY)).toBeNull()
+
+    localStorage.setItem(KEY, JSON.stringify({ title: 'Sofá', tags: 'salón' }))
+    expect(readDraft(KEY)).toEqual({
+      title: 'Sofá',
+      description: '',
+      tags: [],
+      deadline: '',
+      cost: '',
+    })
+  })
+})

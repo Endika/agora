@@ -94,7 +94,10 @@
     "costInvalid": "Kostua eurotan doa, gehienez bi hamartarrekin.",
     "edit": "Editatu",
     "save": "Gorde aldaketak",
-    "editHeading": "Editatu proposamena"
+    "editHeading": "Editatu proposamena",
+    "discard": "Baztertu zirriborroa",
+    "discardConfirm": "Bai, baztertu",
+    "draftRestored": "Idazten ari zinena berreskuratu dugu. Irudiak ez dira gordetzen: berriro aukeratu behar dituzu."
   },
   "identity": {
     "who": "Nor zara?",
