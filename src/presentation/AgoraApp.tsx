@@ -83,7 +83,16 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
                 style={{ color: 'var(--ink-muted)' }}
               >
                 <span>{t('home.youAre', { name: board.me.name })}</span>
-                <button type="button" onClick={() => setSwitching(true)} className="underline">
+                {/* 129x20 px, and the first tab stop on the page. Not a 2.5.8 failure — the
+                    nearest other target's centre is 316 px away, so Spacing applies, and it is
+                    inline text, so Inline applies too — but 2.5.5 AAA asks for 44, and the first
+                    thing a keyboard or a shaky hand lands on is the wrong place to spend the
+                    exception. Same pair the privacy link in the footer already carries. */}
+                <button
+                  type="button"
+                  onClick={() => setSwitching(true)}
+                  className="min-h-11 content-center underline"
+                >
                   {t('identity.switch')}
                 </button>
               </p>
