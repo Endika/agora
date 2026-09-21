@@ -55,7 +55,7 @@ export function ImagePicker({
         className="min-h-11 justify-self-start rounded-[--radius] border px-3 font-medium disabled:opacity-50"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
-        🖼 {t('images.add')}
+        {t('images.add')}
       </button>
 
       <input

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ProposalForm } from '@/presentation/components/proposal/ProposalForm'
 import { makeProposal } from '../../../domain/support/makeProposal'
@@ -265,5 +265,20 @@ describe('MarkdownToolbar', () => {
     )
     await userEvent.click(screen.getByRole('button', { name: 'Enlace' }))
     expect(screen.getByLabelText('Descripción')).toHaveValue('[texto del enlace](https://)')
+  })
+
+  it('draws every glyph as an SVG instead of a character that can fall through the self-hosted font', async () => {
+    renderWithBoard(
+      <ProposalForm others={[]} draftKey={KEY} onSubmit={() => {}} onCancel={() => {}} />,
+    )
+    const toolbar = screen.getByRole('group', { name: 'Formato del texto' })
+    const buttons = within(toolbar).getAllByRole('button')
+    expect(buttons).toHaveLength(6)
+    for (const button of buttons) {
+      // No text glyph left behind — '##', 'B', 'I', '•', '❝', '🔗' would all show up here.
+      expect(button.textContent).toBe('')
+      expect(button.querySelector('svg')).toBeInTheDocument()
+      expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    }
   })
 })

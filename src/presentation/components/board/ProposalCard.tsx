@@ -6,7 +6,6 @@ import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 import { excerpt } from '@/presentation/utils/excerpt'
 import { proposalHref } from '@/presentation/routing'
 import { DeadlineChip } from './DeadlineChip'
-import { MissingVoters } from './MissingVoters'
 import { VoteControls } from './VoteControls'
 
 interface Props {
@@ -46,7 +45,7 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
     >
       <header className="grid min-w-0 gap-1">
         <h3 id={`title-${proposal.id}`} className="break-words text-lg font-semibold">
-          <a href={proposalHref(slug, proposal.id)} className="hover:underline">
+          <a href={proposalHref(slug, proposal.id)} className="block py-1 hover:underline">
             {proposal.title}
           </a>
         </h3>
@@ -89,12 +88,7 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
         </p>
       </div>
 
-      {proposal.status === 'open' && (
-        <>
-          <VoteControls proposal={proposal} onVote={onVote} />
-          <MissingVoters pending={proposal.pending} participants={participants} />
-        </>
-      )}
+      {proposal.status === 'open' && <VoteControls proposal={proposal} onVote={onVote} />}
 
       <p className="flex flex-wrap gap-x-3 text-sm" style={{ color: 'var(--ink-muted)' }}>
         {comments > 0 && <span>{t('board.comments', { count: comments })}</span>}
@@ -107,13 +101,6 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
           </span>
         )}
       </p>
-
-      <a
-        href={proposalHref(slug, proposal.id)}
-        className="min-h-11 content-center justify-self-start underline"
-      >
-        {t('board.openProposal')}
-      </a>
     </article>
   )
 }
