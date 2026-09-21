@@ -44,6 +44,9 @@ export function BoardFilters({
           type="button"
           onClick={() => onChange({ kind: 'pending-mine' })}
           aria-pressed={filter.kind === 'pending-mine'}
+          aria-label={
+            pendingMine > 0 ? t('board.countPendingMine', { count: pendingMine }) : undefined
+          }
           className="min-h-11 whitespace-nowrap rounded-full border px-4"
           style={chip(filter.kind === 'pending-mine')}
         >
@@ -51,7 +54,7 @@ export function BoardFilters({
           {pendingMine > 0 && (
             <span
               data-testid="pending-mine-badge"
-              aria-label={t('board.countPendingMine', { count: pendingMine })}
+              aria-hidden="true"
               style={{ fontFamily: 'var(--font-data)' }}
             >
               {' '}
