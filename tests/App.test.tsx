@@ -143,6 +143,23 @@ describe('App, un enlace que entra directo', () => {
     expect(within(exportDetails).queryByText('Comparte el ágora')).toBeNull()
   })
 
+  it('cambiar de persona es un objetivo de 44 px, como el enlace de privacidad', async () => {
+    // 129x20 px, and the first tab stop on the page. Not a 2.5.8 failure — the nearest other
+    // target's centre is 316 px away and it is inline text, so both exceptions apply — but 2.5.5
+    // AAA asks for 44 and this is the first thing a keyboard lands on. The bar is read off the
+    // privacy link rather than written out here, so the two cannot drift apart.
+    const { repo, slug } = await agora()
+    window.location.hash = `#/g/${slug}`
+    render(<App {...wiring()} repo={repo} />)
+
+    const privacy = await screen.findByRole('link', { name: 'Privacidad' })
+    const target = privacy.className.split(/\s+/).filter((name) => name !== 'underline')
+    expect(target).toContain('min-h-11')
+
+    const switcher = screen.getByRole('button', { name: 'Cambiar de persona' })
+    expect(switcher).toHaveClass(...target)
+  })
+
   it('borrar el ágora se distingue visualmente, no es una cuarta caja gris igual', async () => {
     const { repo, slug } = await agora()
     window.location.hash = `#/g/${slug}`
