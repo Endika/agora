@@ -502,9 +502,19 @@ export class InMemoryBoardRepository implements BoardRepository {
           (v) => v.proposalId === row.id && v.round === row.round,
         )
         const revealed = row.status !== 'open'
+        // The count is public, the breakdown is not — while a secret round is open. `pending` names
+        // who has not voted yet, so a breakdown that moves between two reads names the voter and
+        // the sense together. `board_json` zeroes the three senses and `net` there, and the fake
+        // exists to enforce what the database enforces: a client test that passed on a breakdown
+        // the server never sends would be worth nothing. `resolveRow` above still uses the real
+        // tally, because resolution is the server's own arithmetic, not something it publishes.
+        const published = tally(roundVotes)
         return {
           ...row,
-          tally: tally(roundVotes),
+          tally:
+            agora.ballotOpen || revealed
+              ? published
+              : { up: 0, down: 0, abstain: 0, cast: published.cast, net: 0 },
           myVote: roundVotes.find((v) => v.participantId === this.me)?.value ?? null,
           votesRevealed: revealed,
           // Before quorum the sentiment is simply absent, not filtered later on — and a secret

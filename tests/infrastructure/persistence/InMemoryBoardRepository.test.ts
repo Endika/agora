@@ -102,6 +102,52 @@ describe('InMemoryBoardRepository', () => {
     )
   })
 
+  it('will not let an open secret round be differenced into who voted what', async () => {
+    // The attack the running tally made possible: `pending` names who has not voted, so a breakdown
+    // that moves between two reads names the voter and the sense together. The fake mirrors the
+    // redaction `board_json` does, because a screen test that passed on a breakdown the server never
+    // sends would prove nothing. The assertion is indistinguishability: an `up` and a `down` cast in
+    // two identical secret agoras have to look the same from outside.
+    const seen: string[] = []
+    for (const value of ['up', 'down', 'abstain'] as const) {
+      const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+      as('bob')
+      await repo.castVote({ proposalId, round: 1, value })
+      as('alice')
+      const proposal = (await repo.getBoard(slug)).proposals[0]!
+      expect(proposal.status).toBe('open')
+      // The count is public — it is what `pending` already implies — and it must survive the fix.
+      expect(proposal.tally.cast).toBe(1)
+      expect(proposal.pending).toHaveLength(2)
+      seen.push(JSON.stringify(proposal.tally))
+    }
+    expect(new Set(seen).size).toBe(1)
+  })
+
+  it('publishes the real breakdown in a secret agora once the round is over', async () => {
+    // The redaction lasts exactly as long as the round it protects.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+    for (const name of ['alice', 'bob', 'carol']) {
+      as(name)
+      await repo.castVote({ proposalId, round: 1, value: name === 'carol' ? 'down' : 'up' })
+    }
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+    expect(proposal.status).not.toBe('open')
+    expect(proposal.tally).toEqual({ up: 2, down: 1, abstain: 0, cast: 3, net: 1 })
+  })
+
+  it('still shows an open agora its round developing, sense by sense', async () => {
+    // The control. An open ballot publishes the names on resolution anyway, so watching the count
+    // move is the feature there, not a leak — and the redaction must not reach it.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], true)
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'down' })
+    as('alice')
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+    expect(proposal.status).toBe('open')
+    expect(proposal.tally).toEqual({ up: 0, down: 1, abstain: 0, cast: 1, net: -1 })
+  })
+
   it('carries the ballot mode on the agora, whichever it is', async () => {
     const open = await seedAgora(['alice', 'bob'])
     const secret = await seedAgora(['alice', 'bob'], false)

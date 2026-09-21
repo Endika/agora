@@ -47,7 +47,14 @@ describe('PrivacyNotice', () => {
     expect(screen.getByText('Última actualización: 22 de septiembre de 2026')).toBeInTheDocument()
   })
 
-  it('dice lo que no depende del modo: el enlace es la llave y la ronda abierta no filtra nada', async () => {
+  it('dice lo que no depende del modo, y ya no promete por los dos lo que solo cumple uno', async () => {
+    // This paragraph used to end "el sentido de los votos ajenos no sale del servidor: solo se ve
+    // cuántas personas han votado y quién falta por votar". It was shown in both modes and it was
+    // false in one of them: an open agora publishes the running count by sense while the round is
+    // open, and crossing that with `pending` names the voter. The enumeration is what a reviewer
+    // followed to find the leak, so what is left here is the half that holds in both modes — no
+    // vote carries a name while the round runs — and each mode paragraph now says what its own
+    // round shows. A privacy notice may say less than everything; it may not say more than it does.
     const { repo, slug } = await agoraIn(false)
     renderWithBoard(<PrivacyNotice />, { repo, slug })
 
@@ -55,12 +62,11 @@ describe('PrivacyNotice', () => {
     await screen.findByText(/Esta ágora tiene el voto secreto/)
     const visible = screen.getByText(/Cualquiera que tenga el enlace del ágora/)
     expect(visible).toHaveTextContent(
-      /Mientras una votación está abierta, el sentido de los votos ajenos no sale del servidor/,
+      /Mientras una votación está abierta, ningún voto se publica con el nombre de quien lo emitió/,
     )
-    // And it owns up to what the open round *does* show, which is the count and the missing names.
-    expect(visible).toHaveTextContent(
-      /solo se ve cuántas personas han votado y quién falta por votar/,
-    )
+    expect(visible).toHaveTextContent(/se ve cuántas personas han votado y quién falta por votar/)
+    // And it no longer claims that is *all* that shows, because in an open agora it is not.
+    expect(visible).not.toHaveTextContent(/el sentido de los votos ajenos no sale del servidor/)
   })
 
   it('dentro de un ágora abierta dice que el voto resuelto se publica con nombre y no se retira', async () => {
@@ -80,6 +86,11 @@ describe('PrivacyNotice', () => {
     expect(visible).toHaveTextContent(/no hay forma de volver a ocultarlo/)
     expect(visible).toHaveTextContent(
       /el modo de voto se elige al crear el ágora y no se puede cambiar/,
+    )
+    // And what this mode shows *during* the round, which is the half the shared paragraph stopped
+    // claiming for everybody: the count by sense is live here, and that is the point of it.
+    expect(visible).toHaveTextContent(
+      /se ve además cómo va el recuento a favor, en contra y en blanco, todavía sin nombres/,
     )
     // And it says it about *this* agora only: neither the other mode nor the "it depends"
     // paragraph is on screen, because a notice that lists two rules names none.
@@ -105,6 +116,11 @@ describe('PrivacyNotice', () => {
     // saying so is the difference between a privacy notice and a marketing claim.
     expect(visible).toHaveTextContent(
       /En la base de datos el voto sigue guardado junto a la persona, para que nadie pueda votar dos veces/,
+    )
+    // The guarantee that makes the secret mode secret *while* the round runs, and not only at the
+    // end: without it, three reads of the board reconstruct the whole ballot with names.
+    expect(visible).toHaveTextContent(
+      /el recuento a favor, en contra y en blanco no sale del servidor hasta que la propuesta se resuelve/,
     )
     expect(screen.queryByText(/Esta ágora tiene el voto abierto/)).toBeNull()
     expect(screen.queryByText(/Cada ágora elige al crearse/)).toBeNull()
