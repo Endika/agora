@@ -294,7 +294,7 @@
     "basisHeading": "Oinarri legala",
     "basis": "Interes legitimoa: taldeak eskatu duen taula eramatea. Pertsonek beren izenak aukeratzen dituzte, eta beste norbait gehitzen duenak etiketa bat baino ez du gordetzen, agoraren barruan identifikatzeko.",
     "visibleHeading": "Nork ikus dezake",
-    "visible": "Agoraren lotura duen edonor sartzen da bertan: zerrendako izenak, proposamenak, agerian dauden botoak, iruzkinak eta irudiak ikusten ditu. Lotura da giltza, beraz partekatu barruan egon behar duenarekin soilik. Bozketa irekita dagoen bitartean, besteen botoak ez dira zerbitzaritik ateratzen.",
+    "visible": "Agoraren lotura duen edonor sartzen da bertan: zerrendako izenak, proposamenak, iruzkinak eta irudiak ikusten ditu. Lotura da giltza, beraz partekatu barruan egon behar duenarekin soilik. Botoek bi une dituzte. Bozketa irekita dagoen bitartean, besteen botoen norabidea ez da zerbitzaritik ateratzen. Quoruma lortu eta proposamena ebazten den unean, nork zer bozkatu duen argitaratzen da: lotura duen edonork pertsona bakoitzaren izena ikusten du bere botoaren ondoan, eta hala geratzen da agorak dirauen bitartean. Ez dago berriro ezkutatzerik.",
     "processorsHeading": "Norekin partekatzen da",
     "supabase": "Supabase — datu-basea eta irudien biltegia. eu-west-2 eskualdea (Londres, Erresuma Batua), Europako Batzordearen egokitasun-erabakiak babestuta.",
     "github": "GitHub Pages — aplikazioa zerbitzatzen du. Edozein web zerbitzari bezala, deskargatzen duenaren IP helbidea erregistratzen du. GitHub Estatu Batuetan dago, Data Privacy Framework-ek babestutako transferentziarekin.",

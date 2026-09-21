@@ -294,7 +294,7 @@
     "basisHeading": "Base legal",
     "basis": "Interés legítimo: llevar el tablón que el grupo ha pedido. Los nombres los eligen las personas, y quien añade a alguien más solo guarda una etiqueta para identificarla dentro del ágora, nada más.",
     "visibleHeading": "Quién puede verlo",
-    "visible": "Cualquiera que tenga el enlace del ágora entra en ella: ve los nombres de la lista, las propuestas, los votos ya revelados, los comentarios y las imágenes. El enlace es la llave, así que compártelo solo con quien deba estar dentro. Mientras una votación está abierta, el sentido de los votos ajenos no sale del servidor.",
+    "visible": "Cualquiera que tenga el enlace del ágora entra en ella: ve los nombres de la lista, las propuestas, los comentarios y las imágenes. El enlace es la llave, así que compártelo solo con quien deba estar dentro. Con los votos hay dos momentos. Mientras una votación está abierta, el sentido de los votos ajenos no sale del servidor. En cuanto se alcanza el quórum y la propuesta se resuelve, se publica quién votó qué: cualquiera que tenga el enlace ve el nombre de cada persona junto a su voto, y así se queda mientras exista el ágora. No hay forma de volver a ocultarlo.",
     "processorsHeading": "Con quién se comparte",
     "supabase": "Supabase — base de datos y almacenamiento de imágenes. Región eu-west-2 (Londres, Reino Unido), cubierta por la decisión de adecuación de la Comisión Europea.",
     "github": "GitHub Pages — sirve la aplicación. Como cualquier servidor web, registra la dirección IP de quien la descarga. GitHub está en Estados Unidos, con transferencia amparada en el Data Privacy Framework.",
