@@ -52,4 +52,22 @@ describe('parseBoard', () => {
     const broken = { ...board, proposals: [{ ...board.proposals[0], votes: 'nope' }] }
     expect(() => parseBoard(broken)).toThrow()
   })
+
+  // The three constraints the zod/mini translation had to carry over by hand, and the three ways
+  // that translation could have quietly loosened the contract.
+  it('rejects a round that is not positive', () => {
+    const zero = { ...board, proposals: [{ ...board.proposals[0], round: 0 }] }
+    expect(() => parseBoard(zero)).toThrow()
+  })
+
+  it('rejects a cent amount that is not a whole number', () => {
+    const fraction = { ...board, proposals: [{ ...board.proposals[0], estimatedCents: 10.5 }] }
+    expect(() => parseBoard(fraction)).toThrow()
+  })
+
+  it('takes null where the contract allows it, and nothing else', () => {
+    expect(parseBoard(board).proposals[0]!.deadline).toBeNull()
+    const wrong = { ...board, proposals: [{ ...board.proposals[0], deadline: 5 }] }
+    expect(() => parseBoard(wrong)).toThrow()
+  })
 })
