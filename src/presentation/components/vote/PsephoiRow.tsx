@@ -48,8 +48,11 @@ const ROLL_ORDER: VoteValue[] = ['up', 'abstain', 'down']
  * before anybody taps anything.
  *
  * Once it resolves the row keeps being the summary and the roll underneath is the detail: who voted
- * what, grouped by sense. That is also the accessible copy of it — the row is a single `role="img"`,
- * so its pebbles are not reachable one by one, and a screen reader gets the attribution as text.
+ * what, grouped by sense. The roll is the *only* place the attribution is published, and that is on
+ * purpose: the row is a single `role="img"`, which makes its pebbles presentational, so a `title`
+ * naming the voter arrives as a description on a nameless generic — a mouse-hover tooltip, out of
+ * reach of a keyboard and of a touchscreen. It looked like an accessibility guarantee and was not
+ * one, so there is none, and the list two lines below says it properly to everybody.
  *
  * Two things are allowed to move. Your own pebble lands when you cast it, and the whole row fades
  * up when quorum turns it from stone to colour. Both are marked `data-motion` so the reduced-motion
@@ -126,10 +129,6 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           // people vote teaches a mapping that does not exist, on the one screen whose whole
           // premise is that it does not.
           const own = marked && i === 0
-          // The name only ever rides along once the round is over. Before that a pebble carries no
-          // title at all, so there is nothing to hover and nothing to read out.
-          const voter = vote ? nameOf(vote.participantId) : undefined
-          const label = value ? t(`psephoi.${value}`) : undefined
           return (
             <span
               // The key changes the moment the row is revealed, so every pebble remounts and the
@@ -140,7 +139,6 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
               {...(revealed ? { 'data-motion': 'row-reveal' } : {})}
               {...(own && landing ? { 'data-motion': 'pebble-land' } : {})}
               onAnimationEnd={own && landing ? () => setLanding(false) : undefined}
-              title={label && voter ? `${voter}: ${label}` : label}
               className={hollow ? 'size-3.5 rounded-full border-[3px]' : 'size-3.5 rounded-full'}
               style={{
                 ...(hollow
@@ -174,9 +172,14 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           />
         ))}
       </div>
-      {explainSecret && !revealed && (
+      {explainSecret && (
+        // One paragraph, two tenses, and the branch is mutually exclusive — which is how "exactly
+        // once on screen" survives by construction rather than by a caller remembering. The past
+        // tense matters as much as the future one: somebody arriving on a resolved proposal
+        // through a shared link finds their own name against a sense and is owed the rule that
+        // put it there, even though there is nothing left to promise them.
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-          {t('psephoi.secret')}
+          {t(revealed ? 'psephoi.secretPast' : 'psephoi.secret')}
         </p>
       )}
       {roll.length > 0 && (
@@ -185,8 +188,10 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
         // a separator — which is how the spec sketched it — puts the "·" at the start or the end
         // of a wrapped line as soon as the names are real, and one group's tail ends up sharing a
         // line with the next group's label. Aligned labels read faster and never do that.
-        // The label stays in --ink rather than its vote colour: --vote-up is 4.23:1 on --ground,
-        // a UI-component pass and a small-text fail. The colour is right above, in the pebbles.
+        // The label stays in --ink rather than its vote colour: --vote-up is 4.84:1 on --surface,
+        // where a card puts it, and 4.23:1 on --ground, where the sheet and the panel put it. The
+        // second is the binding one, a UI-component pass and a small-text fail. The colour is
+        // right above, in the pebbles.
         <ul
           data-testid="vote-roll"
           aria-label={t('psephoi.roll')}
@@ -196,7 +201,11 @@ export function PsephoiRow({ participants, cast, revealed, explainSecret, mine =
           {roll.map((group) => (
             <li
               key={group.value}
-              className="min-w-0 break-words"
+              // Hanging indent: at 280 px a group runs to four lines, and flush-left continuations
+              // start at the same x as the next group's label, leaving --ink against --ink-muted
+              // as the only thing telling them apart. Indented, the labels are the only text on
+              // that edge. Costs nothing at widths where nothing wraps.
+              className="-indent-4 min-w-0 break-words pl-4"
               data-testid={`roll-${group.value}`}
             >
               <span style={{ color: 'var(--ink)' }}>{t(`psephoi.${group.value}`)}</span>

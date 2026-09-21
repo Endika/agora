@@ -146,10 +146,10 @@ returns json language sql security definer set search_path = '' as $$
                -- Only once the vote is over. Before that this key is null, not filtered client-side.
                -- The ballot is secret while the round runs and open once it resolves, so the payload
                -- attributes each vote and the UI prints the names. Cast order is therefore deliberate,
-               -- not an oversight: it leaks nothing the same payload does not already publish, and it
-               -- lines the roll up with the pebbles. Do not "fix" it to `order by v.id` unless the
-               -- product decision changes back to an anonymous ballot — in which case `participantId`
-               -- has to come out of this json_build_object in the same commit.
+               -- not an oversight: it leaks nothing the same payload does not already publish. Do
+               -- not "fix" it to `order by v.id` unless the product decision changes back to an
+               -- anonymous ballot — in which case `participantId` has to come out of this
+               -- json_build_object in the same commit.
                'votes', case when pr.status <> 'open' then coalesce((
                           select json_agg(json_build_object('participantId', v.participant_id, 'value', v.value)
                                           order by v.created_at)

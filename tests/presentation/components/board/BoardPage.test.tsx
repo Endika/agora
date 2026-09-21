@@ -11,6 +11,9 @@ import { matchMediaMatches } from '../../../support/matchMedia'
 /** The one sentence that has to be on screen before anybody taps a vote button. */
 const SECRET =
   'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
+/** And the one that has to be there once it is too late to be warned. */
+const SECRET_PAST =
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 
 beforeEach(() => {
   localStorage.clear()
@@ -353,7 +356,7 @@ describe('BoardPage', () => {
     expect(screen.getAllByText(SECRET)).toHaveLength(1)
   })
 
-  it('no dice que el voto es secreto en el tablón si no queda nada abierto', async () => {
+  it('sin nada abierto el tablón no promete nada, pero sigue explicando la regla en pasado', async () => {
     const { repo, slug, as } = await agoraWith(['alice', 'bob'])
     const id = await repo.createProposal({ slug, title: 'Rent a van' })
     as('alice')
@@ -365,7 +368,19 @@ describe('BoardPage', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
+    // Nothing is open, so there is no promise left to make — but every card on this board now
+    // carries names against senses, and going silent left the rule nowhere on screen at all.
     expect(screen.queryByText(SECRET)).toBeNull()
+    expect(screen.getByText(SECRET_PAST)).toBeInTheDocument()
+  })
+
+  it('un tablón vacío no explica una regla que todavía no se aplica a nada', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.queryByText(SECRET)).toBeNull()
+    expect(screen.queryByText(SECRET_PAST)).toBeNull()
   })
 
   it('la tarjeta de la lista no lleva la frase del secreto, solo el tablón', async () => {
@@ -442,6 +457,27 @@ describe('BoardPage', () => {
       expect(within(shell).getByTestId('roll-down')).toHaveTextContent(
         'En contra: Iker Bengoetxea Mendizabal',
       )
+      view.unmount()
+    }
+  })
+
+  it('una propuesta resuelta abierta por enlace explica la regla, en hoja y en panel', async () => {
+    // The finding this fix exists for: arriving cold on a resolved proposal, seeing your own name
+    // against a sense, and being told nothing. At 390 px the sheet covers the board, so the
+    // board's copy is inert and the sheet is the only thing that can say it.
+    for (const wide of [false, true]) {
+      const { repo, slug, id, board } = await resolvedWithNames()
+      matchMediaMatches(wide)
+      const view = renderWithBoard(
+        <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+        { repo, slug },
+      )
+      const visible = [
+        ...screen.queryAllByText(SECRET),
+        ...screen.queryAllByText(SECRET_PAST),
+      ].filter((node) => !node.closest('[inert]'))
+      expect(visible).toHaveLength(1)
+      expect(visible[0]).toHaveTextContent(SECRET_PAST)
       view.unmount()
     }
   })
@@ -945,7 +981,13 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     // copy is right on its own, and it took a screenshot to notice that the side panel put both on
     // screen 300 px apart. A count scoped to one component cannot see that, which is how it got
     // through.
-    const onScreen = () => screen.getAllByText(SECRET).filter((node) => !node.closest('[inert]'))
+    // Counted across both tenses together: the rule is one thing said once, and a version of this
+    // check that only knew the future tense scored a resolved proposal in a sheet as "fine" while
+    // it was in fact explaining nothing at all.
+    const onScreen = () =>
+      [...screen.queryAllByText(SECRET), ...screen.queryAllByText(SECRET_PAST)].filter(
+        (node) => !node.closest('[inert]'),
+      )
 
     const panel = await openProposal(true)
     expect(onScreen()).toHaveLength(1)
