@@ -19,14 +19,7 @@ export function VoteControls({
   const open = canVote(proposal)
 
   return (
-    <div
-      className="flex flex-wrap gap-2"
-      role="group"
-      aria-label={t('psephoi.progress', {
-        cast: proposal.tally.cast,
-        total: proposal.tally.cast + proposal.pending.length,
-      })}
-    >
+    <div className="flex flex-wrap gap-2" role="group" aria-label={t('psephoi.choose')}>
       {OPTIONS.map((value) => {
         const chosen = proposal.myVote === value
         return (

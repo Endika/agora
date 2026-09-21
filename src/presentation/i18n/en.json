@@ -14,6 +14,7 @@
   "psephoi": {
     "progress": "{{cast}} of {{total}} have voted",
     "secret": "Votes are revealed at quorum",
+    "choose": "Your vote",
     "up": "In favour",
     "down": "Against",
     "abstain": "Abstain"
@@ -56,7 +57,9 @@
   },
   "missing": {
     "heading": "Still to vote",
-    "none": "Everyone has voted."
+    "none": "Everyone has voted.",
+    "compactOne": "{{name}} still to vote",
+    "compactMany": "{{name}} and {{count}} more still to vote"
   },
   "actions": {
     "reopen": "Reopen the vote",
@@ -242,7 +245,7 @@
   "install": {
     "title": "Install Agora on your phone and open it like an app.",
     "button": "Install",
-    "iosHint": "To install: Share → Add to Home Screen.",
+    "iosHint": "To install: tap Share, then Add to Home Screen.",
     "dismiss": "No thanks"
   },
   "sync": {

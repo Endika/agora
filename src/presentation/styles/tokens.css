@@ -39,7 +39,7 @@
   --surface: #fbfcfa;
   --surface-sunken: #e2e5dd;
   --border: #cdd2c7;
-  --border-control: #858981;
+  --border-control: #7e827b;
 
   /* Text */
   --ink: #1b211e;
@@ -76,7 +76,7 @@
     --surface: #1e2422;
     --surface-sunken: #101413;
     --border: #33403b;
-    --border-control: #5a7168;
+    --border-control: #698077;
     --ink: #e7eae5;
     --ink-muted: #a3ada5;
     --on-fill: #1b211e;
@@ -100,7 +100,7 @@
   --surface: #1e2422;
   --surface-sunken: #101413;
   --border: #33403b;
-  --border-control: #5a7168;
+  --border-control: #698077;
   --ink: #e7eae5;
   --ink-muted: #a3ada5;
   --on-fill: #1b211e;

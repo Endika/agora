@@ -6,6 +6,7 @@ import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 import { excerpt } from '@/presentation/utils/excerpt'
 import { proposalHref } from '@/presentation/routing'
 import { DeadlineChip } from './DeadlineChip'
+import { MissingVoters } from './MissingVoters'
 import { VoteControls } from './VoteControls'
 
 interface Props {
@@ -79,16 +80,22 @@ export function ProposalCard({ proposal, participants, threads, slug, onVote }: 
           cast={proposal.tally.cast}
           revealed={proposal.votes?.map((vote) => vote.value) ?? null}
         />
-        <p
-          className="text-sm"
-          style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}
-        >
-          {t('quorum.progress', { cast: proposal.tally.cast, total: participants.length })}
-          {proposal.votesRevealed ? ` · ${t('quorum.net', { net: proposal.tally.net })}` : ''}
-        </p>
+        {proposal.votesRevealed && (
+          <p
+            className="text-sm"
+            style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-data)' }}
+          >
+            {t('quorum.net', { net: proposal.tally.net })}
+          </p>
+        )}
       </div>
 
-      {proposal.status === 'open' && <VoteControls proposal={proposal} onVote={onVote} />}
+      {proposal.status === 'open' && (
+        <>
+          <VoteControls proposal={proposal} onVote={onVote} />
+          <MissingVoters pending={proposal.pending} participants={participants} compact />
+        </>
+      )}
 
       <p className="flex flex-wrap gap-x-3 text-sm" style={{ color: 'var(--ink-muted)' }}>
         {comments > 0 && <span>{t('board.comments', { count: comments })}</span>}

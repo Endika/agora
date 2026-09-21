@@ -14,6 +14,7 @@
   "psephoi": {
     "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
     "secret": "Botoak quoruma lortzean ikusten dira",
+    "choose": "Zure botoa",
     "up": "Alde",
     "down": "Aurka",
     "abstain": "Zuri"
@@ -56,7 +57,9 @@
   },
   "missing": {
     "heading": "Bozkatzeko falta",
-    "none": "Denek bozkatu dute."
+    "none": "Denek bozkatu dute.",
+    "compactOne": "{{name}} falta da bozkatzeko",
+    "compactMany": "{{name}} eta beste {{count}} falta dira bozkatzeko"
   },
   "actions": {
     "reopen": "Bozketa berrireki",
@@ -242,7 +245,7 @@
   "install": {
     "title": "Instalatu Agora mugikorrean eta ireki app bat bezala.",
     "button": "Instalatu",
-    "iosHint": "Instalatzeko: Partekatu → Gehitu hasierako pantailara.",
+    "iosHint": "Instalatzeko: sakatu Partekatu eta gero Gehitu hasierako pantailara.",
     "dismiss": "Ez, eskerrik asko"
   },
   "sync": {

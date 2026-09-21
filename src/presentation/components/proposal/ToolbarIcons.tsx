@@ -55,8 +55,8 @@ export function ListIcon() {
 export function QuoteIcon() {
   return (
     <svg {...shared}>
-      <path d="M7 7h4v4c0 3-2 5-4 5" />
-      <path d="M15 7h4v4c0 3-2 5-4 5" />
+      <path d="M10 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.5 -1.5 4.5 -4 5" />
+      <path d="M19 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.5 -1.5 4.5 -4 5" />
     </svg>
   )
 }

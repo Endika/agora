@@ -127,7 +127,7 @@ describe('design tokens', () => {
 
   it('los delimitadores de control y las piedras vacías pasan 3:1', () => {
     for (const block of ['light', 'dark'] as const) {
-      for (const bg of ['surface', 'ground'] as const) {
+      for (const bg of ['surface', 'surface-sunken', 'ground'] as const) {
         expect(contrast(token('border-control', block), token(bg, block))).toBeGreaterThanOrEqual(3)
       }
       expect(

@@ -42,4 +42,22 @@ describe('InstallPrompt', () => {
     const { container } = render(<InstallPrompt />)
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('gives the iOS-only hint in words, not an arrow the self-hosted fonts cannot render', () => {
+    const original = window.navigator.userAgent
+    Object.defineProperty(window.navigator, 'userAgent', {
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+      configurable: true,
+    })
+    try {
+      render(<InstallPrompt />)
+      expect(screen.getByText(/toca Compartir/)).toBeInTheDocument()
+      expect(screen.queryByText(/→/)).not.toBeInTheDocument()
+    } finally {
+      Object.defineProperty(window.navigator, 'userAgent', {
+        value: original,
+        configurable: true,
+      })
+    }
+  })
 })

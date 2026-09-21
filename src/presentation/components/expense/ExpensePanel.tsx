@@ -146,7 +146,6 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
             borderColor: iAmIn ? 'var(--pos)' : 'var(--border)',
           }}
         >
-          {iAmIn ? '✓ ' : ''}
           {t('expense.amIn')}
         </button>
       )}

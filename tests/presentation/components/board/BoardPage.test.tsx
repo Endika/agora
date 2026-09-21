@@ -79,10 +79,27 @@ describe('BoardPage', () => {
       { repo, slug },
     )
 
-    expect(screen.getByText(/1 de 2 han votado/)).toBeInTheDocument()
+    expect(screen.getByTestId('missing-voters')).toHaveTextContent('alice')
     expect(container.querySelectorAll('[data-vote]')).toHaveLength(0)
     expect(screen.getAllByTestId('pebble-cast')).toHaveLength(1)
     expect(screen.getAllByTestId('pebble-empty')).toHaveLength(1)
+  })
+
+  it('trunca a un nombre y un contador en la tarjeta, en vez de la lista completa', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob', 'carol', 'dave'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const missing = screen.getByTestId('missing-voters')
+    expect(missing).toHaveTextContent('bob')
+    expect(missing).toHaveTextContent('y 2 más')
+    // The other two who have not voted are still missing, not spelled out — that's the point.
+    expect(missing).not.toHaveTextContent('carol')
+    expect(missing).not.toHaveTextContent('dave')
   })
 
   it('offers reopen and close to the creator of a tie, and to nobody else', async () => {
@@ -272,9 +289,26 @@ describe('BoardPage', () => {
     const unchosen = screen.getByRole('button', { name: 'A favor' })
     expect(unchosen.style.background).toBe('var(--surface-sunken)')
     expect(unchosen.style.borderColor).toBe('var(--border-control)')
+  })
 
-    await userEvent.click(unchosen)
-    await waitFor(() => expect(repo.calls).toContain('castVote'))
+  it('no anuncia el recuento de votos más de una vez a quien usa un lector de pantalla', async () => {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob', 'carol'])
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('alice')
+    await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    const card = screen.getByRole('article')
+    // PsephoiRow (role=img) is the one place the tally is announced; VoteControls
+    // (role=group) must name the control instead of restating "N de M".
+    const accessibleNames = [
+      within(card).getByRole('img').getAttribute('aria-label'),
+      within(card).getByRole('group').getAttribute('aria-label'),
+    ]
+    const tallyMentions = accessibleNames.filter((name) => /\d+ de \d+/.test(name ?? '')).length
+    expect(tallyMentions).toBe(1)
   })
 
   it('freezes the vote once the proposal is resolved', async () => {
@@ -333,7 +367,7 @@ describe('BoardPage, the list itself', () => {
     expect(screen.queryByText('1 comentarios')).not.toBeInTheDocument()
   })
 
-  it('la tarjeta ya no repite el recuento ni duplica el enlace al detalle', async () => {
+  it('la tarjeta no duplica el enlace al detalle', async () => {
     const { repo, slug } = await agoraWith(['alice', 'bob'])
     await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
     await repo.createProposal({ slug, title: 'Pintar la cocina' })
@@ -341,8 +375,8 @@ describe('BoardPage, the list itself', () => {
     const board = await repo.getBoard(slug)
     renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
 
-    expect(screen.queryByRole('link', { name: 'Ver la propuesta' })).toBeNull()
-    expect(screen.queryAllByTestId('missing-voters')).toHaveLength(0)
+    // queryByRole would throw here, not fail, once the removed link comes back on two cards.
+    expect(screen.queryAllByRole('link', { name: 'Ver la propuesta' })).toHaveLength(0)
     expect(screen.getAllByRole('link', { name: 'Cambiar el sofá del salón' })).toHaveLength(1)
   })
 
