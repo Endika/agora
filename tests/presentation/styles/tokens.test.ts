@@ -98,10 +98,9 @@ describe('design tokens', () => {
     }
   })
 
-  // Light only: --pos changed for AA and no longer coincides with --vote-up. In dark both are
-  // "sin cambio" in the Task 4 brief and stay byte-identical (#4fa37c), pre-existing since before
-  // this task — a plan defect flagged in the Task 4 report, not silently fixed with an invented hue.
-  it('el voto a favor no es el mismo color que el saldo positivo (claro)', () => {
-    expect(token('vote-up', 'light')).not.toBe(token('pos', 'light'))
+  it('el voto a favor no es el mismo color que el saldo positivo', () => {
+    for (const block of ['light', 'dark'] as const) {
+      expect(token('vote-up', block)).not.toBe(token('pos', block))
+    }
   })
 })
