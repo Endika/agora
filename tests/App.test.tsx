@@ -115,4 +115,44 @@ describe('App, un enlace que entra directo', () => {
     const sheet = await screen.findByRole('dialog', { name: 'Editar la propuesta' })
     expect(within(sheet).getByLabelText('Título')).toHaveValue('Alquilar una furgoneta')
   })
+
+  it('el borrado no vive dentro de «Comparte el ágora»', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const { repo, slug } = await agora()
+    window.location.hash = `#/g/${slug}`
+    render(<App {...wiring()} repo={repo} />)
+
+    const share = await screen.findByText('Comparte el ágora')
+    const shareDetails = share.closest('details')!
+    await userEvent.click(share)
+
+    expect(within(shareDetails).queryByText('Borrar el ágora')).toBeNull()
+    expect(screen.getByText('Borrar el ágora')).toBeInTheDocument()
+  })
+
+  it('la exportación usa su propia cabecera, separada de compartir y de borrar', async () => {
+    const { repo, slug } = await agora()
+    window.location.hash = `#/g/${slug}`
+    render(<App {...wiring()} repo={repo} />)
+
+    const exportHeading = await screen.findByText('Llévate el tablón')
+    expect(exportHeading).toBeInTheDocument()
+
+    const exportDetails = exportHeading.closest('details')!
+    expect(within(exportDetails).queryByText('Borrar el ágora')).toBeNull()
+    expect(within(exportDetails).queryByText('Comparte el ágora')).toBeNull()
+  })
+
+  it('borrar el ágora se distingue visualmente, no es una cuarta caja gris igual', async () => {
+    const { repo, slug } = await agora()
+    window.location.hash = `#/g/${slug}`
+    render(<App {...wiring()} repo={repo} />)
+
+    const dangerHeading = await screen.findByText('Borrar el ágora')
+    const dangerDetails = dangerHeading.closest('details')!
+    const shareDetails = (await screen.findByText('Comparte el ágora')).closest('details')!
+
+    expect(dangerDetails.style.borderColor).toBe('var(--danger)')
+    expect(shareDetails.style.borderColor).not.toBe('var(--danger)')
+  })
 })

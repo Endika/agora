@@ -118,9 +118,34 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
               <summary className="min-h-11 cursor-pointer font-medium">
                 {t('share.heading')}
               </summary>
-              <div className="grid gap-6 pt-4">
+              <div className="pt-4">
                 <ShareAgoraDialog slug={board.group.slug} />
+              </div>
+            </details>
+
+            <details
+              className="rounded-[--radius] border p-4"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <summary className="min-h-11 cursor-pointer font-medium">
+                {t('export.heading')}
+              </summary>
+              <div className="pt-4">
                 <ExportButtons board={board} />
+              </div>
+            </details>
+
+            <details
+              className="rounded-[--radius] border-2 p-4"
+              style={{ borderColor: 'var(--danger)' }}
+            >
+              <summary
+                className="min-h-11 cursor-pointer font-medium"
+                style={{ color: 'var(--danger)' }}
+              >
+                {t('danger.heading')}
+              </summary>
+              <div className="pt-4">
                 <DangerZone
                   slug={board.group.slug}
                   agoraName={board.group.name}
