@@ -14,18 +14,25 @@ const SECRET =
 /** And the one that has to be there once it is too late to be warned. */
 const SECRET_PAST =
   'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
+/** The same pair for an agora whose ballot never opens, where no name is ever promised. */
+const FOREVER =
+  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
+const FOREVER_PAST =
+  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y nadie sabe quién puso cada uno.'
+/** All four, counted together: which one is on screen is a second question to the same paragraph. */
+const SENTENCES = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST]
 
 beforeEach(() => {
   localStorage.clear()
   window.location.hash = ''
 })
 
-async function agoraWith(names: string[]) {
+async function agoraWith(names: string[], { ballotOpen = true } = {}) {
   const repo = new InMemoryBoardRepository()
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: names[0]!,
-    ballotOpen: true,
+    ballotOpen,
   })
   for (const name of names.slice(1)) await repo.addParticipant({ slug, name })
   const as = (name: string) => repo.actAs(repo.participantId(slug, name))
@@ -921,6 +928,41 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     return { ...view, slug, id }
   }
 
+  /** Which of the four the reader is owed: the agora picks the pair, the round picks the tense. */
+  function sentenceFor(ballotOpen: boolean, resolved: boolean): string {
+    if (ballotOpen) return resolved ? SECRET_PAST : SECRET
+    return resolved ? FOREVER_PAST : FOREVER
+  }
+
+  /**
+   * One proposal in an agora of the given mode, resolved or not, rendered in one of the three
+   * shapes the same route takes: the list on its own, the sheet that covers it below 1024 px, and
+   * the panel beside it above. Resolving it is the real thing — everybody votes and the repository
+   * turns the round over — so what the view gets is the payload the server would have sent.
+   */
+  async function renderShape(
+    shape: 'board' | 'sheet' | 'panel',
+    { ballotOpen, resolved }: { ballotOpen: boolean; resolved: boolean },
+  ) {
+    const { repo, slug, as } = await agoraWith(['alice', 'bob'], { ballotOpen })
+    const id = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    if (resolved) {
+      for (const name of ['alice', 'bob']) {
+        as(name)
+        await repo.castVote({ proposalId: id, round: 1, value: 'up' })
+      }
+      as('alice')
+    }
+    const board = await repo.getBoard(slug)
+    matchMediaMatches(shape === 'panel')
+    return shape === 'board'
+      ? renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+      : renderWithBoard(
+          <BoardPage board={board} route={{ kind: 'proposal', slug, proposalId: id }} />,
+          { repo, slug },
+        )
+  }
+
   it('a partir de 1024 px la propuesta abierta es un panel lateral y no un diálogo', async () => {
     await openProposal(true)
 
@@ -1040,28 +1082,45 @@ describe('BoardPage, la lectura a dos columnas del escritorio', () => {
     // copy is right on its own, and it took a screenshot to notice that the side panel put both on
     // screen 300 px apart. A count scoped to one component cannot see that, which is how it got
     // through.
-    // Counted across both tenses together: the rule is one thing said once, and a version of this
-    // check that only knew the future tense scored a resolved proposal in a sheet as "fine" while
-    // it was in fact explaining nothing at all.
+    // Counted across all four variants together: the rule is one thing said once, and a version of
+    // this check that only knew the future tense scored a resolved proposal in a sheet as "fine"
+    // while it was in fact explaining nothing at all. Counting the tenses of one mode only would
+    // do the same to a secret agora, where the two tenses it does not know are the true ones.
     const onScreen = () =>
-      [...screen.queryAllByText(SECRET), ...screen.queryAllByText(SECRET_PAST)].filter(
+      SENTENCES.flatMap((sentence) => screen.queryAllByText(sentence)).filter(
         (node) => !node.closest('[inert]'),
       )
 
-    const panel = await openProposal(true)
-    expect(onScreen()).toHaveLength(1)
-    panel.unmount()
+    // Twelve readings: both agoras, both states of the round, and the three shapes the same route
+    // renders as. The expectation carries the case so a failure says which one broke.
+    for (const ballotOpen of [true, false]) {
+      for (const resolved of [true, false]) {
+        for (const shape of ['board', 'sheet', 'panel'] as const) {
+          const view = await renderShape(shape, { ballotOpen, resolved })
+          const said = onScreen().map((node) => node.textContent)
 
-    const sheet = await openProposal(false)
-    expect(onScreen()).toHaveLength(1)
-    sheet.unmount()
+          expect({ ballotOpen, resolved, shape, said }).toEqual({
+            ballotOpen,
+            resolved,
+            shape,
+            said: [sentenceFor(ballotOpen, resolved)],
+          })
+          view.unmount()
+        }
+      }
+    }
+  })
 
-    const { repo, slug } = await agoraWith(['alice', 'bob'])
-    await repo.createProposal({ slug, title: 'Pintar el pasillo' })
-    const board = await repo.getBoard(slug)
-    matchMediaMatches(true)
-    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
-    expect(onScreen()).toHaveLength(1)
+  it('un ágora secreta resuelta no publica ni un nombre junto a un sentido', async () => {
+    // The roll is the only place attribution is ever printed, and it is built from a voter the
+    // secret server never sends. Nothing added for the sentence may hand it one back.
+    const { container } = await renderShape('panel', { ballotOpen: false, resolved: true })
+
+    expect(screen.queryByTestId('vote-roll')).toBeNull()
+    expect(screen.queryByLabelText('Quién votó qué')).toBeNull()
+    expect(container.textContent ?? '').not.toMatch(/A favor:|En contra:|En blanco:/)
+    // The count is still public: the pebbles turn, they just carry nobody's name.
+    expect(screen.getAllByTestId('pebble-cast').length).toBeGreaterThan(0)
   })
 
   it('el hilo se lee junto al voto y el dinero después, en el panel y en la hoja', async () => {

@@ -102,6 +102,7 @@ export function ProposalDetail({
           cast={proposal.tally.cast}
           revealed={proposal.votes}
           explainSecret
+          ballotOpen={board.group.ballotOpen}
           mine={proposal.myVote !== null}
         />
         {proposal.status === 'open' && (
