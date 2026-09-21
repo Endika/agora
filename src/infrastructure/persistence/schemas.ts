@@ -1,4 +1,9 @@
-import { z } from 'zod'
+// `zod/mini` rather than `zod`: the same validators and the same inferred types, but the functional
+// API tree-shakes, and these schemas sit in the entry chunk because the cached board is parsed
+// before the first paint. Its API is functional, so an edit here writes `z.nullable(x)`, not
+// `x.nullable()`, and adds refinements with `.check(...)`. The only behavioural difference is that
+// issue messages are terser; nothing in the app reads them.
+import * as z from 'zod/mini'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 
 const voteValue = z.enum(['up', 'down', 'abstain'])
@@ -14,33 +19,33 @@ const proposal = z.object({
   tags: z.array(z.string()),
   // English on the wire: the Spanish names in the spec's prose are a UI concern.
   status: z.enum(['open', 'approved', 'rejected', 'debating', 'completed', 'closed']),
-  round: z.number().int().positive(),
-  deadline: z.string().nullable(),
-  closedReason: z.string().nullable(),
-  estimatedCents: z.number().int().nullable(),
-  actualCents: z.number().int().nullable(),
+  round: z.int().check(z.positive()),
+  deadline: z.nullable(z.string()),
+  closedReason: z.nullable(z.string()),
+  estimatedCents: z.nullable(z.int()),
+  actualCents: z.nullable(z.int()),
   createdAt: z.string(),
   updatedAt: z.string(),
-  completedAt: z.string().nullable(),
+  completedAt: z.nullable(z.string()),
   tally: z.object({
-    up: z.number().int(),
-    down: z.number().int(),
-    abstain: z.number().int(),
-    cast: z.number().int(),
-    net: z.number().int(),
+    up: z.int(),
+    down: z.int(),
+    abstain: z.int(),
+    cast: z.int(),
+    net: z.int(),
   }),
-  myVote: voteValue.nullable(),
+  myVote: z.nullable(voteValue),
   votesRevealed: z.boolean(),
-  votes: z.array(z.object({ participantId: z.string(), value: voteValue })).nullable(),
+  votes: z.nullable(z.array(z.object({ participantId: z.string(), value: voteValue }))),
   pending: z.array(z.string()),
   images: z.array(
     z.object({
       id: z.string(),
       path: z.string(),
       thumbPath: z.string(),
-      width: z.number().int(),
-      height: z.number().int(),
-      position: z.number().int(),
+      width: z.int(),
+      height: z.int(),
+      position: z.int(),
     }),
   ),
   shares: z.array(z.object({ participantId: z.string(), optedIn: z.boolean() })),
@@ -48,7 +53,7 @@ const proposal = z.object({
     z.object({
       id: z.string(),
       participantId: z.string(),
-      cents: z.number().int(),
+      cents: z.int(),
       createdAt: z.string(),
     }),
   ),
@@ -66,10 +71,10 @@ export const boardSnapshotSchema = z.object({
       id: z.string(),
       proposalId: z.string(),
       authorId: z.string(),
-      resolvedAt: z.string().nullable(),
-      resolvedBy: z.string().nullable(),
+      resolvedAt: z.nullable(z.string()),
+      resolvedBy: z.nullable(z.string()),
       createdAt: z.string(),
-      commentCount: z.number().int(),
+      commentCount: z.int(),
       comments: z.array(
         z.object({
           id: z.string(),
@@ -83,8 +88,8 @@ export const boardSnapshotSchema = z.object({
   history: z.array(
     z.object({
       id: z.string(),
-      proposalId: z.string().nullable(),
-      participantId: z.string().nullable(),
+      proposalId: z.nullable(z.string()),
+      participantId: z.nullable(z.string()),
       type: z.string(),
       description: z.string(),
       createdAt: z.string(),
@@ -114,8 +119,8 @@ export const commentsSchema = z.array(comment)
 
 const historyEntry = z.object({
   id: z.string(),
-  proposalId: z.string().nullable(),
-  participantId: z.string().nullable(),
+  proposalId: z.nullable(z.string()),
+  participantId: z.nullable(z.string()),
   type: z.string(),
   description: z.string(),
   createdAt: z.string(),
@@ -134,4 +139,4 @@ export const deleteResultSchema = z.discriminatedUnion('ok', [
   z.object({ ok: z.literal(false), error: z.literal('name_mismatch') }),
 ])
 
-export const versionSchema = z.object({ version: z.string(), proposals: z.number().int() })
+export const versionSchema = z.object({ version: z.string(), proposals: z.int() })

@@ -158,7 +158,8 @@
     "listItem": "first item",
     "headingText": "A heading",
     "toolbar": "Text formatting",
-    "image": "Image"
+    "image": "Image",
+    "plainFallback": "The formatting could not be loaded; the text reads as it is."
   },
   "images": {
     "add": "Add image",
