@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.23.1](https://github.com/Endika/agora/compare/v0.23.0...v0.23.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* **sync:** being removed from an agora is not a network failure ([11a4c3d](https://github.com/Endika/agora/commit/11a4c3d0a7ebc7dbcb5bb1cec26f0cede30c8200))
+* **ui:** a textarea should not be draggable wider than its page ([c1c2348](https://github.com/Endika/agora/commit/c1c23481535025e25e8f6574e01319c1319575d6))
+* **ui:** the radius token never reached the compiled CSS ([a447c1e](https://github.com/Endika/agora/commit/a447c1e294efed60a496aa89d75ee7e8eb48cbb9))
+
 ## [0.23.0](https://github.com/Endika/agora/compare/v0.22.0...v0.23.0) (2026-09-22)
 
 
