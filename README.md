@@ -5,9 +5,14 @@ sorts out the doubts, and whatever gets approved moves to a queue — with its c
 has one. No accounts, no login: you join an agora through its link and pick your name from the
 list.
 
-Votes stay secret until quorum. Then they are revealed at once — with the name of whoever cast
-each one, or without any name at all, depending on the ballot mode the agora chose when it was
-created. The choice is made once and cannot be changed.
+Every vote is secret while its proposal is open. What happens when the proposal closes is the one
+thing each agora chooses for itself, once, when it is created, and can never change afterwards:
+
+- **Open ballot** — closing publishes every vote with the name of whoever cast it, whether the
+  proposal closed because everybody voted or because its deadline passed.
+- **Secret ballot** — the votes are published without any name, and only once everybody has voted.
+  If the deadline gets there first the proposal closes undecided and its votes are never published
+  at all, because with a partial ballot the outcome would give them away.
 
 ## Status
 
@@ -80,8 +85,8 @@ order is not a preference:
      --data @<(jq -Rs '{query: .}' supabase/migrations/00NN_whatever.sql)
    ```
 
-   Send the file whole. `scripts/db.mjs` does the same locally, so a migration that needs
-   splitting would already have failed `npm run test:sql`.
+   Send the file whole. `npm run db:migrate` sends each file as a single query too, and CI runs it
+   on every push, so a migration that needed splitting would already have failed there.
 
 2. Make PostgREST forget its schema cache, or it will not see a new or changed RPC signature:
 
@@ -90,6 +95,11 @@ order is not a preference:
    ```
 
 3. **Then** merge, which publishes the frontend.
+
+One thing that window costs, so it is a decision and not a surprise: until step 3 publishes the
+new frontend, the deployed one still calls the four-argument `create_group`, which means an **open**
+ballot. Any agora created between steps 1 and 3 is open, and that cannot be undone. Deploy when
+nobody is starting an agora, or accept it.
 
 The reason for that order is that migrations here are written to be backwards-compatible — a new
 column arrives with a default, a changed RPC keeps its old signature as a wrapper — so the
