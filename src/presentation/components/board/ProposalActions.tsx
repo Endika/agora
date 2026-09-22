@@ -188,7 +188,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             rows={2}
-            className="min-w-0 rounded-(--radius) border p-2"
+            className="min-w-0 resize-y rounded-(--radius) border p-2"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           />
           <p
