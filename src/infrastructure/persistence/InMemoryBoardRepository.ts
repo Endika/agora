@@ -46,6 +46,12 @@ interface Row {
   createdAt: string
   updatedAt: string
   completedAt: string | null
+  /**
+   * How many people were entitled to vote at the moment this proposal left 'open'. The SQL recovers
+   * the same number from `created_at <= resolved_at`; here it is simply recorded when it happens.
+   * Null while the proposal is open, which is also the only time nothing consults it.
+   */
+  resolvedRoster: number | null
 }
 
 interface Agora {
@@ -220,6 +226,7 @@ export class InMemoryBoardRepository implements BoardRepository {
       closedReason: null,
       estimatedCents: input.estimatedCents ?? null,
       actualCents: null,
+      resolvedRoster: null,
       createdAt: stamp,
       updatedAt: stamp,
       completedAt: null,
@@ -277,6 +284,7 @@ export class InMemoryBoardRepository implements BoardRepository {
     if (row.createdBy !== this.me) throw refuse('PT403', 'only the creator may reopen')
     row.round += 1
     row.status = 'open'
+    row.resolvedRoster = null
     row.updatedAt = this.now()
     this.log(agora, row.id, 'reopened', '')
   }
@@ -481,12 +489,24 @@ export class InMemoryBoardRepository implements BoardRepository {
     // person's vote, and the board named them through `pending` all through the round. A deadline
     // that arrives before everybody has voted therefore closes the proposal undecided. Mirrors the
     // branch in `agora.resolve_proposal`; the open mode keeps deciding on a partial ballot.
+    //
+    // `row.status === 'open'` is the guard `resolve_proposal` writes as `if v_status is distinct
+    // from 'open' then return`. Without it this branch re-judges rows that are already finished:
+    // `resolve` hands back a closed row's own status untouched, the branch overwrites it with
+    // 'debating', and a creator-closed proposal loses its reason and gains a bogus history row on
+    // every single read — and a 'completed' one falls back to 'debating' the moment somebody joins.
     const next =
-      decided !== 'open' && !agora.ballotOpen && roundVotes.length < agora.participants.length
+      row.status === 'open' &&
+      decided !== 'open' &&
+      !agora.ballotOpen &&
+      roundVotes.length < agora.participants.length
         ? 'debating'
         : decided
     if (next !== row.status) {
       row.status = next
+      // Recorded here, at the transition, because this is when the roster is the one being judged
+      // against. Read later it would be today's, which retracts a reveal every time somebody joins.
+      row.resolvedRoster = agora.participants.length
       row.updatedAt = this.now()
       this.log(agora, row.id, 'resolved', next)
     }
@@ -516,7 +536,10 @@ export class InMemoryBoardRepository implements BoardRepository {
         // board once before a deadline holds that list, and a partial reveal afterwards is exactly
         // their votes. Two reads pair names with values. Quorum is the state where that subtraction
         // has nothing to find, because everybody voted.
-        const complete = roundVotes.length >= agora.participants.length
+        // The roster as it was when the proposal closed, not as it is now. Against today's, an
+        // `addParticipant` retracts a reveal that already happened — the exact bug this round's SQL
+        // fix removes, and one a client-level test of the late-joiner case would otherwise encode.
+        const complete = roundVotes.length >= (row.resolvedRoster ?? agora.participants.length)
         const revealed = row.status !== 'open' && (agora.ballotOpen || complete)
         // The count is public, the breakdown is not — while a secret round is open. `pending` names
         // who has not voted yet, so a breakdown that moves between two reads names the voter and

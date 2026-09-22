@@ -23,7 +23,7 @@ const FOREVER_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** And the third closed state: a secret agora that closed a partial ballot publishes nothing. */
 const FOREVER_WITHHELD =
-  'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.'
+  'La propuesta se cerró sin que votara todo el mundo, así que no hay decisión y los votos no se publican: solo se ve cuántas personas votaron.'
 /** All five, counted together: which one is on screen is a second question to the same paragraph. */
 const SENTENCES = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST, FOREVER_WITHHELD]
 

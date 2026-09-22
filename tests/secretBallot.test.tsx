@@ -159,7 +159,7 @@ describe('el invariante: en un ágora secreta ningún nombre aparece junto a un 
     // never arrive. This is also what proves ProposalDetail passes the proposal's own state down:
     // the row cannot tell "closed and withheld" from "still open" on its own.
     expect(sheet).toHaveTextContent(
-      'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.',
+      'La propuesta se cerró sin que votara todo el mundo, así que no hay decisión y los votos no se publican: solo se ve cuántas personas votaron.',
     )
     expect(sheet).not.toHaveTextContent(/Ahora los ve todo el grupo/)
     expect(sheet).not.toHaveTextContent(/Cuando se cierra/)

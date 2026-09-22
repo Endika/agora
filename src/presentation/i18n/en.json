@@ -22,7 +22,7 @@
     "abstainCounts": "Abstaining also counts towards quorum",
     "secretPast": "Nobody saw these votes while the proposal was open. Now the whole group sees them, with the name of whoever cast them.",
     "secretForeverPast": "Nobody saw these votes while the proposal was open. Now the whole group sees them, and none of them carries a name.",
-    "secretForeverWithheld": "The proposal closed without everybody having voted, so these votes are not published: the outcome and how many people voted, and nothing more.",
+    "secretForeverWithheld": "The proposal closed without everybody having voted, so there is no decision and the votes are not published: all that shows is how many people voted.",
     "roll": "Who voted what",
     "voted": {
       "up": "You voted in favour",
