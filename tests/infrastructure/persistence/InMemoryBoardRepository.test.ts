@@ -148,6 +148,81 @@ describe('InMemoryBoardRepository', () => {
     expect(proposal.tally).toEqual({ up: 0, down: 1, abstain: 0, cast: 1, net: -1 })
   })
 
+  it('will not let a deadline-resolved secret ballot be subtracted into who voted', async () => {
+    // The leak the fix closes: a passed deadline resolves a *partial* ballot, so the reveal and the
+    // list of who has not voted arrive together. `participants` minus `pending` is then the set of
+    // people who did vote, by name, beside their values. Two of three voting the same way names both
+    // at once, so that is the case asserted — and the assertion is the subtraction, not "pending is
+    // empty", so it survives any other shape the fix might take.
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: false,
+    })
+    for (const name of ['bob', 'carol']) await repo.addParticipant({ slug, name })
+    const as = (name: string) => repo.actAs(repo.participantId(slug, name))
+
+    as('alice')
+    // The deadline cannot be in the past at creation: casting resolves on the way out, so the
+    // proposal would close on the first vote and never carry two.
+    const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
+
+    as('carol')
+    const board = await repo.getBoard(slug)
+    const proposal = board.proposals[0]!
+
+    expect(proposal.status).not.toBe('open')
+    expect(proposal.votesRevealed).toBe(true)
+    // Or the subtraction would be safe only because nothing was revealed.
+    expect(proposal.votes).toHaveLength(2)
+    expect(board.participants.length - proposal.pending.length).toBe(board.participants.length)
+  })
+
+  it('but a secret agora still says who has to vote while nothing has been revealed', async () => {
+    // The feature the fix must not reach back into: during the round `pending` is what unblocks a
+    // stalled vote, and nothing has been revealed to pair it with.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    as('alice')
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+
+    expect(proposal.status).toBe('open')
+    expect(proposal.votes).toBeNull()
+    expect(proposal.pending).toHaveLength(2)
+  })
+
+  it('y un ágora abierta sigue nombrando a quien dejó pasar el plazo sin votar', async () => {
+    // The control. There the names are published beside the votes anyway, so the list is not a leak
+    // and stays: if this ever went empty too, the fix would have been over-applied.
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
+    for (const name of ['bob', 'carol']) await repo.addParticipant({ slug, name })
+    const as = (name: string) => repo.actAs(repo.participantId(slug, name))
+
+    as('alice')
+    const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
+
+    as('carol')
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+    expect(proposal.status).not.toBe('open')
+    expect(proposal.pending).toHaveLength(1)
+    expect(proposal.votes?.every((vote) => 'participantId' in vote)).toBe(true)
+  })
+
   it('carries the ballot mode on the agora, whichever it is', async () => {
     const open = await seedAgora(['alice', 'bob'])
     const secret = await seedAgora(['alice', 'bob'], false)

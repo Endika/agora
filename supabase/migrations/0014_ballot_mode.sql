@@ -174,13 +174,26 @@ returns json language sql security definer set search_path = '' as $$
                             from agora.votes v
                            where v.proposal_id = pr.id and v.round = pr.round), '[]'::json)
                         end,
-               -- Who still has to vote: a name, never a leaning. This is what unblocks a vote.
-               'pending', coalesce((
-                 select json_agg(pa.id order by pa.created_at) from agora.participants pa
-                  where pa.group_id = p_group
-                    and not exists (select 1 from agora.votes v
-                                     where v.proposal_id = pr.id and v.round = pr.round
-                                       and v.participant_id = pa.id)), '[]'::json),
+               -- Who still has to vote: a name, never a leaning. This is what unblocks a vote — and
+               -- it is a name and not a leaning only for as long as no vote data travels beside it.
+               --
+               -- A proposal that resolves because its deadline passed resolves on a *partial* ballot,
+               -- and then the reveal and this list are in the same payload: `participants` minus
+               -- `pending` is the set of people who voted, and if that set has one member and the
+               -- reveal has one value, the secret ballot has just published a name and a vote. Two of
+               -- three voting the same way names both at once. So in a secret agora the list stops
+               -- once the proposal does. Nothing on screen misses it: both readers of `pending` are
+               -- already inside a `status === 'open'` guard, because a list of who still has to vote
+               -- is meaningless once nobody can. An open agora keeps it — there the names are
+               -- published beside the votes anyway, which is what that mode is.
+               'pending', case when pr.ballot_open or pr.status = 'open'
+                            then coalesce((
+                              select json_agg(pa.id order by pa.created_at) from agora.participants pa
+                               where pa.group_id = p_group
+                                 and not exists (select 1 from agora.votes v
+                                                  where v.proposal_id = pr.id and v.round = pr.round
+                                                    and v.participant_id = pa.id)), '[]'::json)
+                            else '[]'::json end,
                'images', coalesce((
                  select json_agg(json_build_object('id', im.id, 'path', im.path, 'thumbPath', im.thumb_path,
                                                    'width', im.width, 'height', im.height, 'position', im.position)

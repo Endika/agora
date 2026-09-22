@@ -535,9 +535,16 @@ export class InMemoryBoardRepository implements BoardRepository {
                   : { value: v.value },
               )
             : null,
-          pending: agora.participants
-            .filter((p) => !roundVotes.some((v) => v.participantId === p.id))
-            .map((p) => p.id),
+          // Who still has to vote, and empty once a secret proposal is over. A deadline resolves a
+          // partial ballot, and then `participants` minus `pending` is exactly the set of people who
+          // voted, sitting in the same payload as the reveal: one missing name and one revealed
+          // value publish each other. Both readers are already behind a `status === 'open'` guard.
+          pending:
+            agora.ballotOpen || !revealed
+              ? agora.participants
+                  .filter((p) => !roundVotes.some((v) => v.participantId === p.id))
+                  .map((p) => p.id)
+              : [],
           images: this.images[row.id] ?? [],
           shares: [...(this.shares[row.id]?.entries() ?? [])].map(([participantId, optedIn]) => ({
             participantId,
