@@ -148,38 +148,89 @@ describe('InMemoryBoardRepository', () => {
     expect(proposal.tally).toEqual({ up: 0, down: 1, abstain: 0, cast: 1, net: -1 })
   })
 
-  it('will not let a deadline-resolved secret ballot be subtracted into who voted', async () => {
-    // The leak the fix closes: a passed deadline resolves a *partial* ballot, so the reveal and the
-    // list of who has not voted arrive together. `participants` minus `pending` is then the set of
-    // people who did vote, by name, beside their values. Two of three voting the same way names both
-    // at once, so that is the case asserted — and the assertion is the subtraction, not "pending is
-    // empty", so it survives any other shape the fix might take.
+  it('no deja emparejar una lectura abierta con la del cierre para poner nombre a un voto', async () => {
+    // The two-read attack, which one read cannot show. While the round is open the board names who
+    // has *not* voted — on screen, to everybody — so one glance during the deadline window hands an
+    // observer the voter set. If the deadline then resolves a partial ballot and the reveal arrives,
+    // those values belong to exactly those names. Four people and two voters, so that the voter set
+    // is a proper subset and the pairing is a real inference rather than arithmetic anybody could do.
     const repo = new InMemoryBoardRepository()
     const { slug } = await repo.createAgora({
       name: 'Cuadrilla',
       creatorName: 'alice',
       ballotOpen: false,
     })
-    for (const name of ['bob', 'carol']) await repo.addParticipant({ slug, name })
+    for (const name of ['bob', 'carol', 'dave']) await repo.addParticipant({ slug, name })
     const as = (name: string) => repo.actAs(repo.participantId(slug, name))
 
     as('alice')
-    // The deadline cannot be in the past at creation: casting resolves on the way out, so the
-    // proposal would close on the first vote and never carry two.
     const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
     await repo.castVote({ proposalId, round: 1, value: 'up' })
     as('bob')
     await repo.castVote({ proposalId, round: 1, value: 'up' })
+
+    // READ ONE, mid-round: this is the half an observer keeps.
+    as('carol')
+    const during = (await repo.getBoard(slug)).proposals[0]!
+    expect(during.status).toBe('open')
+    const known = 4 - during.pending.length
+    expect(known).toBe(2) // alice and bob, by name, straight off the card
+
+    // The deadline is aged after the votes: casting resolves on the way out, so a proposal born
+    // past its deadline would close on the first vote and never carry two.
+    await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
+
+    // READ TWO, after it resolves on the deadline with a partial ballot.
+    const after = (await repo.getBoard(slug)).proposals[0]!
+    expect(after.status).not.toBe('open')
+
+    // The join has to have nothing to join: no values at all while a proper subset is named.
+    expect(after.votes).toBeNull()
+    expect(after.tally).toEqual({ up: 0, down: 0, abstain: 0, cast: 2, net: 0 })
+    // And the outcome and the count are still published, because that is the part that is not a leak.
+    expect(after.tally.cast).toBe(2)
+  })
+
+  it('pero una papeleta completa sí se publica: el quórum es lo que no deja nada que restar', async () => {
+    // The other side of the same rule. When everybody voted, the voter set is the whole group and
+    // there is no subtraction to do, so the reveal happens exactly as before.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+    for (const name of ['alice', 'bob', 'carol']) {
+      as(name)
+      await repo.castVote({ proposalId, round: 1, value: name === 'carol' ? 'down' : 'up' })
+    }
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+
+    expect(proposal.votesRevealed).toBe(true)
+    expect(proposal.votes).toHaveLength(3)
+    expect(proposal.tally).toEqual({ up: 2, down: 1, abstain: 0, cast: 3, net: 1 })
+    // Unattributed, as ever.
+    for (const vote of proposal.votes!) expect(Object.keys(vote)).toEqual(['value'])
+  })
+
+  it('y el cierre por plazo no nombra a nadie por la resta, con reveal o sin él', async () => {
+    // Round 3's guarantee, kept: `participants` minus `pending` must not name a voter once the
+    // proposal is over. This is a field check on `pending` written as the subtraction it defends
+    // against — it is not shape-independent, and a different safe fix (publishing the whole
+    // participant list) would fail it.
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: false,
+    })
+    for (const name of ['bob', 'carol', 'dave']) await repo.addParticipant({ slug, name })
+    const as = (name: string) => repo.actAs(repo.participantId(slug, name))
+
+    as('alice')
+    const proposalId = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    await repo.castVote({ proposalId, round: 1, value: 'down' })
     await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
 
     as('carol')
     const board = await repo.getBoard(slug)
     const proposal = board.proposals[0]!
-
     expect(proposal.status).not.toBe('open')
-    expect(proposal.votesRevealed).toBe(true)
-    // Or the subtraction would be safe only because nothing was revealed.
-    expect(proposal.votes).toHaveLength(2)
     expect(board.participants.length - proposal.pending.length).toBe(board.participants.length)
   })
 

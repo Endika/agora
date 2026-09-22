@@ -501,7 +501,13 @@ export class InMemoryBoardRepository implements BoardRepository {
         const roundVotes = agora.votes.filter(
           (v) => v.proposalId === row.id && v.round === row.round,
         )
-        const revealed = row.status !== 'open'
+        // Revealed means revealed. A secret agora publishes nothing unless the ballot is
+        // complete: `pending` names the non-voters all through the round, so anybody who opened the
+        // board once before a deadline holds that list, and a partial reveal afterwards is exactly
+        // their votes. Two reads pair names with values. Quorum is the state where that subtraction
+        // has nothing to find, because everybody voted.
+        const complete = roundVotes.length >= agora.participants.length
+        const revealed = row.status !== 'open' && (agora.ballotOpen || complete)
         // The count is public, the breakdown is not — while a secret round is open. `pending` names
         // who has not voted yet, so a breakdown that moves between two reads names the voter and
         // the sense together. `board_json` zeroes the three senses and `net` there, and the fake
@@ -539,8 +545,11 @@ export class InMemoryBoardRepository implements BoardRepository {
           // partial ballot, and then `participants` minus `pending` is exactly the set of people who
           // voted, sitting in the same payload as the reveal: one missing name and one revealed
           // value publish each other. Both readers are already behind a `status === 'open'` guard.
+          // Keyed to the proposal's own state, never to `revealed`: a partial secret ballot is
+          // unrevealed *and* over, and that is precisely the case where naming the non-voters hands
+          // back the voter set. The SQL says `pr.ballot_open or pr.status = 'open'` for the same reason.
           pending:
-            agora.ballotOpen || !revealed
+            agora.ballotOpen || row.status === 'open'
               ? agora.participants
                   .filter((p) => !roundVotes.some((v) => v.participantId === p.id))
                   .map((p) => p.id)
