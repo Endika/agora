@@ -91,3 +91,49 @@ describe('el recuento de la exportación se resuelve de verdad en los tres idiom
     })
   }
 })
+
+/**
+ * The quorum purge, widened so it cannot happen a third time.
+ *
+ * Twice now a sentence has claimed something happens "at quorum". `agora.resolve_proposal` closes a
+ * vote when the whole group has voted **or** when its deadline passes, so every such claim was false
+ * on the second path — and the second path is the ordinary one for exactly the proposals whose votes
+ * a secret agora withholds. The first purge covered the five `psephoi` sentences; `privacy.visibleOpen`
+ * said it too, in all three locales, and nothing caught it.
+ *
+ * So: no string in any bundle mentions quorum, with one allowlisted exception. The allowlist is the
+ * point of the shape — a new mention cannot land silently, it has to be argued for here first.
+ */
+describe('nadie promete nada "al alcanzar el quórum"', () => {
+  /**
+   * The one legitimate mention. Abstaining really does count towards `v_cast`, which is what the
+   * quorum test in `resolve_proposal` compares, so this sentence is true and is about the thing it
+   * names — the *threshold*, not the publishing of anything.
+   */
+  const ALLOWED = new Set(['psephoi.abstainCounts'])
+
+  for (const [locale, bundle] of [
+    ['es', es],
+    ['en', en],
+    ['eu', eu],
+  ] as const) {
+    it(`${locale} no lo dice en ninguna clave que no esté en la lista`, () => {
+      const offenders = keysOf(bundle)
+        .filter((key) => !ALLOWED.has(key))
+        .filter((key) => {
+          const value = key
+            .split('.')
+            .reduce<unknown>(
+              (node, step) => (node as Record<string, unknown> | undefined)?.[step],
+              bundle,
+            )
+          // One pattern for the three locales: quórum, quorum, quoruma. The accent is the whole
+          // reason this is written out — /quor/i does not match «quórum», so the first version of
+          // this guard passed the very mutation it exists to catch.
+          return typeof value === 'string' && /qu[oó]r/i.test(value)
+        })
+
+      expect({ locale, offenders }).toEqual({ locale, offenders: [] })
+    })
+  }
+})

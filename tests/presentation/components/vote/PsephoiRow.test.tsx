@@ -12,7 +12,7 @@ const SECRET_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same two, in an agora whose ballot never opens: no name is promised in either tense. */
 const FOREVER =
-  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, y nunca lleva tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.'
 const FOREVER_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** Closed without everybody voting, in a secret agora: there is no reveal and there never will be. */
@@ -172,7 +172,11 @@ describe('PsephoiRow', () => {
     )
 
     const line = screen.getByText(FOREVER).textContent ?? ''
-    expect(line).toContain('nunca lleva tu nombre')
+    expect(line).toContain('sin ningún nombre')
+    // And both halves of the rule, because the second is what the branch itself enforces: a secret
+    // ballot publishes at quorum, and a deadline arriving first means it is never published.
+    expect(line).toContain('cuando ha votado todo el grupo')
+    expect(line).toContain('si el plazo llega antes, no se publica nunca')
     // The open agora's promise is the one that costs a name, and it must not leak into an agora
     // that never publishes one.
     expect(screen.queryByText(SECRET)).toBeNull()

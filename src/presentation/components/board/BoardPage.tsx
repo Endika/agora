@@ -4,7 +4,7 @@ import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
-import { ballotSentenceKey } from '@/presentation/components/vote/ballotSentence'
+import { type BallotState, ballotSentenceKey } from '@/presentation/components/vote/ballotSentence'
 import { useBoard } from '@/presentation/context/boardContext'
 import { clearDraft, draftKey } from '@/presentation/drafts'
 import {
@@ -75,14 +75,22 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   // promised something in the future tense.
   const anyProposal = visible.length > 0
   const anyOpen = visible.some((proposal) => proposal.status === 'open')
-  // Which of the two closed states the board is in. A secret agora withholds the votes of a
-  // proposal that closed without everybody voting, and a board showing one of those is showing
-  // pebbles that will never take a colour — so that is the state worth explaining, even when
-  // another proposal on the same board did publish. The alternative leaves the grey ones reading
-  // as a bug under a paragraph saying the whole group can see them.
-  const anyWithheld = visible.some(
-    (proposal) => proposal.status !== 'open' && proposal.votes === null,
-  )
+  // Which state this paragraph can honestly speak in. It sits above the whole list, so a sentence
+  // about one proposal's outcome is a universal claim about all of them — and on a mixed secret
+  // board «estos votos no se publican» was printed over a card showing its published votes in
+  // colour. So the specific past-tense sentences are used only when the list agrees with itself,
+  // and a mixed list falls back to the mode's general rule, which is true of every card on it:
+  // published once the whole group has voted, never published if the deadline gets there first.
+  // The per-proposal fact keeps being said per proposal, in the detail, where one is in view.
+  const closed = visible.filter((proposal) => proposal.status !== 'open')
+  const withheld = closed.filter((proposal) => proposal.votes === null).length
+  const sentence: BallotState = anyOpen
+    ? 'open'
+    : withheld === 0
+      ? 'published'
+      : withheld === closed.length
+        ? 'withheld'
+        : 'open'
 
   const act = (action: () => Promise<unknown>) => run(action, reload)
 
@@ -276,12 +284,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
             paragraph and the detail's cannot answer it differently either. */}
         {anyProposal && open === undefined && (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {t(
-              ballotSentenceKey(
-                board.group.ballotOpen,
-                anyOpen ? 'open' : anyWithheld ? 'withheld' : 'published',
-              ),
-            )}
+            {t(ballotSentenceKey(board.group.ballotOpen, sentence))}
           </p>
         )}
 

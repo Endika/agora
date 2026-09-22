@@ -24,7 +24,8 @@ import { boardHref } from '@/presentation/routing'
  */
 export function PrivacyNotice({ slug = null }: { slug?: string | null }) {
   const { t } = useTranslation()
-  const board = useContext(BoardContext)?.board ?? null
+  const context = useContext(BoardContext)
+  const board = context?.board ?? null
   const visible =
     board === null
       ? 'privacy.visibleBoth'
@@ -33,10 +34,12 @@ export function PrivacyNotice({ slug = null }: { slug?: string | null }) {
         : 'privacy.visibleSecret'
   // `board === null` is four situations at once — loading, offline, failed to load, and never in an
   // agora at all — and `visibleBoth` ends by telling the reader to enter an agora to find out which
-  // mode applies. To somebody who *is* in one, that is advice they have already taken. The slug is
-  // what tells the two apart, with no new state: it is set exactly when this page was opened from a
-  // board, so the generic answer can admit it is the generic answer.
-  const generic = board === null && slug !== null
+  // mode applies. To somebody who *is* in one, that is advice they have already taken.
+  //
+  // The slug says there is an agora behind this page; the context's status says what happened to
+  // it. Both are needed: on `slug` alone the apology is printed during an ordinary cold fetch —
+  // "could not be read" while it is being read — and then vanishes when the board arrives.
+  const generic = board === null && slug !== null && context?.status === 'error'
 
   const section = (heading: string, body: string[]) => (
     <section className="grid gap-2" key={heading}>
