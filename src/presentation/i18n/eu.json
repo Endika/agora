@@ -20,8 +20,8 @@
     "down": "Aurka",
     "abstain": "Zuri",
     "abstainCounts": "Zuriak ere quorumerako balio du",
-    "secretPast": "Inork ez zituen boto hauek ikusi proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, bakoitza nork eman zuen adierazita.",
-    "secretForeverPast": "Inork ez zituen boto hauek ikusi proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, eta bat bakarrak ere ez darama izenik.",
+    "secretPast": "Boto hauek ez ziren taulan agertu proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, bakoitza nork eman zuen adierazita.",
+    "secretForeverPast": "Boto hauek ez ziren taulan agertu proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, eta bat bakarrak ere ez darama izenik.",
     "secretForeverWithheld": "Proposamena denek bozkatu gabe itxi zen; beraz, ez dago erabakirik eta botoak ez dira argitaratzen: zenbatek bozkatu duten bakarrik ikusten da.",
     "roll": "Nork zer bozkatu duen",
     "voted": {

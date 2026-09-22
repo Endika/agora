@@ -184,16 +184,26 @@ describe('la frase de la papeleta retenida no promete un resultado que no existe
  * absolute back: the sentence has to name the board, and it may not say that nobody sees the vote.
  * The impersonation caveat deliberately does not appear here — repeating it above the buttons would
  * make it louder than the paragraph that qualifies it.
+ *
+ * The past-tense pair carries the same absolute — «Nadie vio estos votos» — and is false for the
+ * same reason, so it is held to the same claim. Weaker, because it is read after the voting rather
+ * than before it, but it is one promise in four places and fixing two of them would only make the
+ * app disagree with itself more quietly.
  */
 describe('la promesa que está encima de los botones se limita al tablón', () => {
   const scoped = {
-    es: { board: /tablón/, absolute: /nadie ve tu voto/i },
-    en: { board: /board/, absolute: /nobody sees your vote/i },
-    eu: { board: /taulan/, absolute: /inork ez du zure botoa ikusten/i },
+    es: { board: /tablón/, absolute: /nadie (ve|vio)/i },
+    en: { board: /board/, absolute: /nobody (sees|saw)/i },
+    eu: { board: /taulan/, absolute: /inork ez (du|zituen)/i },
   }
 
   for (const [locale, { board, absolute }] of Object.entries(scoped)) {
-    for (const key of ['psephoi.secret', 'psephoi.secretForever'] as const) {
+    for (const key of [
+      'psephoi.secret',
+      'psephoi.secretForever',
+      'psephoi.secretPast',
+      'psephoi.secretForeverPast',
+    ] as const) {
       it(`${locale} · ${key} nombra el tablón y no promete que no lo vea nadie`, () => {
         const sentence = i18next.getFixedT(locale)(key)
 
