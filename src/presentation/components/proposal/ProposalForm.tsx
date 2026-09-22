@@ -187,7 +187,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
               maxLength={20000}
-              className="min-w-0 rounded-(--radius) border p-3"
+              className="min-w-0 resize-y rounded-(--radius) border p-3"
               style={field}
             />
           </div>

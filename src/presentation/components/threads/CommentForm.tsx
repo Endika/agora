@@ -27,7 +27,7 @@ export function CommentForm({ label, onSend }: { label: string; onSend: (body: s
           rows={2}
           maxLength={2000}
           placeholder={t('threads.placeholder')}
-          className="min-w-0 rounded-(--radius) border p-2"
+          className="min-w-0 resize-y rounded-(--radius) border p-2"
           style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
         />
       </label>
