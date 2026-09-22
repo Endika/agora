@@ -40,7 +40,7 @@ export function DangerZone({
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
         />
       </label>
@@ -54,7 +54,7 @@ export function DangerZone({
       <button
         type="submit"
         disabled={confirmName.trim().toLowerCase() !== agoraName.trim().toLowerCase()}
-        className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium disabled:opacity-50"
+        className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium disabled:opacity-50"
         style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
       >
         {t('danger.submit')}

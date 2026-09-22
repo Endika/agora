@@ -36,7 +36,7 @@ export function TagInput({
           event.preventDefault()
           add()
         }}
-        className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+        className="min-h-11 min-w-0 rounded-(--radius) border px-3"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       />
       <p id="proposal-tags-hint" className="text-sm" style={{ color: 'var(--ink-muted)' }}>

@@ -29,7 +29,7 @@ export function AgoraList({
             <button
               type="button"
               onClick={() => onOpen(agora.slug)}
-              className="group flex min-h-14 flex-1 items-center gap-3 overflow-hidden rounded-[--radius] border pr-3 text-left transition-colors"
+              className="group flex min-h-14 flex-1 items-center gap-3 overflow-hidden rounded-(--radius) border pr-3 text-left transition-colors"
               style={{ background: 'var(--surface-sunken)', borderColor: 'var(--border)' }}
             >
               <span
@@ -51,7 +51,7 @@ export function AgoraList({
               type="button"
               onClick={() => onForget(agora.slug)}
               aria-label={t('home.forget', { name: agora.name })}
-              className="min-h-14 rounded-[--radius] border px-3"
+              className="min-h-14 rounded-(--radius) border px-3"
               style={{ borderColor: 'var(--border)', color: 'var(--ink-muted)' }}
             >
               ×

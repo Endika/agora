@@ -22,7 +22,7 @@ export function ThemePicker() {
           applyTheme(choice)
           setTheme(choice)
         }}
-        className="min-h-11 min-w-0 rounded-[--radius] border px-2"
+        className="min-h-11 min-w-0 rounded-(--radius) border px-2"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
         {(Object.keys(THEME_LABEL_KEY) as ThemeChoice[]).map((choice) => (

@@ -52,7 +52,7 @@ export function ProposalCard({
 
   return (
     <article
-      className="grid min-w-0 gap-3 rounded-[--radius] border p-4"
+      className="grid min-w-0 gap-3 rounded-(--radius) border p-4"
       style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       aria-labelledby={`title-${proposal.id}`}
     >

@@ -33,7 +33,7 @@ export function ShareAgoraDialog({ slug }: { slug: string }) {
         <button
           type="button"
           onClick={() => void copy()}
-          className="min-h-11 rounded-[--radius] px-4 font-medium"
+          className="min-h-11 rounded-(--radius) px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('share.copy')}

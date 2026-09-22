@@ -28,7 +28,7 @@ export function QrCode({ value, label }: { value: string; label: string }) {
       alt={label}
       width={192}
       height={192}
-      className="rounded-[--radius] bg-white p-2"
+      className="rounded-(--radius) bg-white p-2"
       // Real white, not --on-fill: a QR code needs true white to stay reliably scannable.
       style={{ background: '#ffffff' }}
     />

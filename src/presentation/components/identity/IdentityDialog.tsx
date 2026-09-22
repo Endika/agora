@@ -89,7 +89,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
                   type="button"
                   disabled={busy}
                   onClick={() => void claim(participant.id)}
-                  className="min-h-11 w-full rounded-[--radius] border px-4 text-left font-medium disabled:opacity-60"
+                  className="min-h-11 w-full rounded-(--radius) border px-4 text-left font-medium disabled:opacity-60"
                   style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
                 >
                   {participant.name}
@@ -101,7 +101,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
           <button
             type="button"
             onClick={() => setAdding(true)}
-            className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+            className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium"
             style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('identity.notOnTheList')}
@@ -118,7 +118,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
               onChange={(event) => setName(event.target.value)}
               maxLength={40}
               autoComplete="nickname"
-              className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+              className="min-h-11 min-w-0 rounded-(--radius) border px-3"
               style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
             />
           </label>
@@ -133,7 +133,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             <button
               type="submit"
               disabled={busy}
-              className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-60"
+              className="min-h-11 rounded-(--radius) px-4 font-medium disabled:opacity-60"
               style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
             >
               {t('identity.add')}
@@ -141,7 +141,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="min-h-11 rounded-[--radius] border px-4"
+              className="min-h-11 rounded-(--radius) border px-4"
               style={{ borderColor: 'var(--border)' }}
             >
               {t('identity.back')}

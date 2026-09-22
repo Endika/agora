@@ -266,7 +266,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
           type="button"
           ref={newProposal}
           onClick={() => openCompose(board.group.slug)}
-          className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+          className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('proposal.new')}
@@ -296,7 +296,7 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
         {archived.length > 0 && (
           <details
-            className="rounded-[--radius] border p-4"
+            className="rounded-(--radius) border p-4"
             style={{ borderColor: 'var(--border)' }}
           >
             <summary className="min-h-11 cursor-pointer font-medium">
@@ -318,14 +318,14 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
         <aside
           ref={panel}
           tabIndex={-1}
-          className="sticky top-8 grid max-h-[calc(100dvh-4rem)] min-w-0 gap-4 self-start overflow-y-auto overscroll-contain rounded-[--radius] border p-4 outline-none"
+          className="sticky top-8 grid max-h-[calc(100dvh-4rem)] min-w-0 gap-4 self-start overflow-y-auto overscroll-contain rounded-(--radius) border p-4 outline-none"
           style={{ borderColor: 'var(--border)' }}
           aria-label={open.title}
         >
           <button
             type="button"
             onClick={leavePanel}
-            className="min-h-11 justify-self-start rounded-[--radius] border px-4"
+            className="min-h-11 justify-self-start rounded-(--radius) border px-4"
             style={{ borderColor: 'var(--border-control)' }}
           >
             {t('board.back')}

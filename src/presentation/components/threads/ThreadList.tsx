@@ -71,7 +71,7 @@ export function ThreadList({
         <button
           type="button"
           onClick={() => setOpening(true)}
-          className="min-h-11 justify-self-start rounded-[--radius] border px-4"
+          className="min-h-11 justify-self-start rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('threads.open')}

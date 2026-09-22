@@ -41,7 +41,7 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
         <button
           type="button"
           onClick={() => void download('md')}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('export.markdown')}
@@ -49,7 +49,7 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
         <button
           type="button"
           onClick={() => void download('json')}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('export.json')}

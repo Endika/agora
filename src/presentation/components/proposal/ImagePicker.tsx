@@ -52,7 +52,7 @@ export function ImagePicker({
         type="button"
         disabled={busy || images.length >= MAX_IMAGES}
         onClick={() => input.current?.click()}
-        className="min-h-11 justify-self-start rounded-[--radius] border px-3 font-medium disabled:opacity-50"
+        className="min-h-11 justify-self-start rounded-(--radius) border px-3 font-medium disabled:opacity-50"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
         {t('images.add')}
@@ -83,7 +83,7 @@ export function ImagePicker({
                 alt={t('images.alt', { n: index + 1 })}
                 width={80}
                 height={80}
-                className="size-20 rounded-[--radius] object-cover"
+                className="size-20 rounded-(--radius) object-cover"
               />
               <button
                 type="button"

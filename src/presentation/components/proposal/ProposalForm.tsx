@@ -138,7 +138,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           maxLength={120}
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={field}
         />
         <p id="proposal-title-hint" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -187,13 +187,13 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
               maxLength={20000}
-              className="min-w-0 rounded-[--radius] border p-3"
+              className="min-w-0 rounded-(--radius) border p-3"
               style={field}
             />
           </div>
         ) : (
           <div
-            className="min-w-0 rounded-[--radius] border p-3"
+            className="min-w-0 rounded-(--radius) border p-3"
             style={field}
             data-testid="description-preview"
           >
@@ -217,7 +217,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
           aria-describedby="proposal-deadline-hint"
           value={deadline}
           onChange={(event) => setDeadline(event.target.value)}
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={field}
         />
         <p id="proposal-deadline-hint" className="text-sm" style={{ color: 'var(--warn)' }}>
@@ -231,7 +231,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
           value={cost}
           onChange={(event) => setCost(event.target.value)}
           inputMode="decimal"
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={{ ...field, fontFamily: 'var(--font-data)' }}
         />
       </label>
@@ -246,7 +246,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
               value={linkKind}
               onChange={(event) => setLinkKind(event.target.value as 'related' | 'supersedes')}
               aria-label={t('proposal.links')}
-              className="min-h-11 min-w-0 rounded-[--radius] border px-2"
+              className="min-h-11 min-w-0 rounded-(--radius) border px-2"
               style={field}
             >
               <option value="related">{t('proposal.linkRelated')}</option>
@@ -256,7 +256,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
               id="proposal-link"
               value={linkTo}
               onChange={(event) => setLinkTo(event.target.value)}
-              className="min-h-11 min-w-0 rounded-[--radius] border px-2"
+              className="min-h-11 min-w-0 rounded-(--radius) border px-2"
               style={field}
             >
               <option value="">{t('proposal.linkNone')}</option>
@@ -279,7 +279,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
       <div className="flex flex-wrap gap-2">
         <button
           type="submit"
-          className="min-h-11 rounded-[--radius] px-4 font-medium"
+          className="min-h-11 rounded-(--radius) px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {editing ? t('proposal.save') : t('proposal.submit')}
@@ -287,7 +287,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
         <button
           type="button"
           onClick={onCancel}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('common.cancel')}
@@ -297,7 +297,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
           <button
             type="button"
             onClick={() => setArmedFor(written)}
-            className="min-h-11 rounded-[--radius] border px-4"
+            className="min-h-11 rounded-(--radius) border px-4"
             style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
           >
             {t('proposal.discard')}
@@ -307,7 +307,7 @@ export function ProposalForm({ others, initial, draftKey, onSubmit, onCancel }: 
           <button
             type="button"
             onClick={discard}
-            className="min-h-11 rounded-[--radius] px-4 font-medium"
+            className="min-h-11 rounded-(--radius) px-4 font-medium"
             style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
           >
             {t('proposal.discardConfirm')}
