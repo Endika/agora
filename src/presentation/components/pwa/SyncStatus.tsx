@@ -51,7 +51,7 @@ export function SyncStatus({ queue, network, onReconnect }: Props) {
     <div className="grid gap-2" aria-live="polite">
       {!online && (
         <p
-          className="rounded-[--radius] px-3 py-2 text-sm"
+          className="rounded-(--radius) px-3 py-2 text-sm"
           style={{ background: 'var(--surface-sunken)', color: 'var(--warn)' }}
         >
           {t('sync.offline')}
@@ -67,7 +67,7 @@ export function SyncStatus({ queue, network, onReconnect }: Props) {
       {failed.length > 0 && (
         <div
           role="alert"
-          className="grid gap-2 rounded-[--radius] border p-3 text-sm"
+          className="grid gap-2 rounded-(--radius) border p-3 text-sm"
           style={{ borderColor: 'var(--danger)' }}
         >
           <p style={{ color: 'var(--danger)' }}>{t('sync.failed', { count: failed.length })}</p>
@@ -79,7 +79,7 @@ export function SyncStatus({ queue, network, onReconnect }: Props) {
                 setFailed([]),
               )
             }}
-            className="min-h-11 justify-self-start rounded-[--radius] border px-3"
+            className="min-h-11 justify-self-start rounded-(--radius) border px-3"
             style={{ borderColor: 'var(--border)' }}
           >
             {t('sync.dismissFailed')}

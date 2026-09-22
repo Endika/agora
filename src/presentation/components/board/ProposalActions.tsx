@@ -36,7 +36,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         <button
           type="button"
           onClick={onEdit}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('proposal.edit')}
@@ -47,7 +47,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         <button
           type="button"
           onClick={() => setCompleting(true)}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('actions.complete')}
@@ -63,7 +63,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             <button
               type="button"
               onClick={() => onComplete(null)}
-              className="min-h-11 rounded-[--radius] px-4 font-medium"
+              className="min-h-11 rounded-(--radius) px-4 font-medium"
               style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
             >
               {t('actions.completeConfirm')}
@@ -71,7 +71,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             <button
               type="button"
               onClick={() => setCompleting(false)}
-              className="min-h-11 rounded-[--radius] border px-4"
+              className="min-h-11 rounded-(--radius) border px-4"
               style={{ borderColor: 'var(--border)' }}
             >
               {t('common.no')}
@@ -90,7 +90,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             value={actual}
             onChange={(event) => setActual(event.target.value)}
             inputMode="decimal"
-            className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+            className="min-h-11 min-w-0 rounded-(--radius) border px-3"
             style={{
               background: 'var(--surface)',
               borderColor: 'var(--border)',
@@ -117,7 +117,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
                 }
                 onComplete(cents)
               }}
-              className="min-h-11 rounded-[--radius] px-4 font-medium"
+              className="min-h-11 rounded-(--radius) px-4 font-medium"
               style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
             >
               {t('actions.complete')}
@@ -125,7 +125,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             <button
               type="button"
               onClick={() => setCompleting(false)}
-              className="min-h-11 rounded-[--radius] border px-4"
+              className="min-h-11 rounded-(--radius) border px-4"
               style={{ borderColor: 'var(--border)' }}
             >
               {t('common.no')}
@@ -138,7 +138,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         <button
           type="button"
           onClick={() => setReopening(true)}
-          className="min-h-11 rounded-[--radius] px-4 font-medium"
+          className="min-h-11 rounded-(--radius) px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('actions.reopen')}
@@ -150,7 +150,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
           <button
             type="button"
             onClick={onReopen}
-            className="min-h-11 rounded-[--radius] px-4 font-medium"
+            className="min-h-11 rounded-(--radius) px-4 font-medium"
             style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('actions.reopenConfirm')}
@@ -158,7 +158,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
           <button
             type="button"
             onClick={() => setReopening(false)}
-            className="min-h-11 rounded-[--radius] border px-4"
+            className="min-h-11 rounded-(--radius) border px-4"
             style={{ borderColor: 'var(--border)' }}
           >
             {t('common.no')}
@@ -170,7 +170,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
         <button
           type="button"
           onClick={() => setClosing(true)}
-          className="min-h-11 rounded-[--radius] border px-4"
+          className="min-h-11 rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
         >
           {t('actions.close')}
@@ -188,7 +188,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             rows={2}
-            className="min-w-0 rounded-[--radius] border p-2"
+            className="min-w-0 rounded-(--radius) border p-2"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           />
           <p
@@ -203,7 +203,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
               type="button"
               disabled={reason.trim().length < 10}
               onClick={() => onClose(reason)}
-              className="min-h-11 rounded-[--radius] px-4 font-medium disabled:opacity-50"
+              className="min-h-11 rounded-(--radius) px-4 font-medium disabled:opacity-50"
               style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
             >
               {t('actions.closeConfirm')}
@@ -211,7 +211,7 @@ export function ProposalActions({ proposal, meId, onEdit, onReopen, onClose, onC
             <button
               type="button"
               onClick={() => setClosing(false)}
-              className="min-h-11 rounded-[--radius] border px-4"
+              className="min-h-11 rounded-(--radius) border px-4"
               style={{ borderColor: 'var(--border)' }}
             >
               {t('common.no')}

@@ -59,7 +59,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
 
   return (
     <section
-      className="grid gap-3 rounded-[--radius] p-3"
+      className="grid gap-3 rounded-(--radius) p-3"
       style={{ background: 'var(--surface-sunken)' }}
       aria-labelledby={`expense-${proposal.id}`}
     >
@@ -139,7 +139,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
             run(() => repo.setExpenseShare({ proposalId: proposal.id, optedIn: !iAmIn }), onChanged)
           }
           aria-pressed={iAmIn}
-          className="min-h-11 justify-self-start rounded-[--radius] border px-4 font-medium"
+          className="min-h-11 justify-self-start rounded-(--radius) border px-4 font-medium"
           style={{
             background: iAmIn ? 'var(--pos)' : 'var(--surface)',
             color: iAmIn ? 'var(--on-fill)' : 'var(--ink)',
@@ -206,7 +206,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
                     <button
                       type="button"
                       onClick={() => run(() => repo.removePayment(payment.id), onChanged)}
-                      className="min-h-11 rounded-[--radius] px-3 font-medium"
+                      className="min-h-11 rounded-(--radius) px-3 font-medium"
                       style={{ background: 'var(--danger)', color: 'var(--on-fill)' }}
                     >
                       {t('expense.removeConfirm')}
@@ -214,7 +214,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
                     <button
                       type="button"
                       onClick={() => setRemoving(null)}
-                      className="min-h-11 rounded-[--radius] border px-3"
+                      className="min-h-11 rounded-(--radius) border px-3"
                       style={{ borderColor: 'var(--border)' }}
                     >
                       {t('common.no')}
@@ -228,7 +228,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
                     type="button"
                     onClick={() => setRemoving(payment.id)}
                     aria-label={t('expense.removePayment', { amount: money(payment.cents) })}
-                    className="min-h-11 rounded-[--radius] border px-3"
+                    className="min-h-11 rounded-(--radius) border px-3"
                     style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
                   >
                     ×
@@ -248,7 +248,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               inputMode="decimal"
-              className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+              className="min-h-11 min-w-0 rounded-(--radius) border px-3"
               style={{
                 background: 'var(--surface)',
                 borderColor: 'var(--border)',
@@ -263,7 +263,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
           )}
           <button
             type="submit"
-            className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+            className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium"
             style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
             {t('expense.save')}
@@ -273,7 +273,7 @@ export function ExpensePanel({ proposal, participants, meId, onChanged }: Props)
         <button
           type="button"
           onClick={() => setRecording(true)}
-          className="min-h-11 justify-self-start rounded-[--radius] border px-4"
+          className="min-h-11 justify-self-start rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {t('expense.iPaid')}

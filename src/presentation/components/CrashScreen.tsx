@@ -46,7 +46,7 @@ export function CrashScreen() {
       <button
         type="button"
         onClick={() => void clearAndReload()}
-        className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium"
+        className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium"
         style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
       >
         {t('crash.reload')}

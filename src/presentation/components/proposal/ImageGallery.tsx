@@ -28,7 +28,7 @@ export function ImageGallery({ images }: { images: ProposalImage[] }) {
               height={112}
               loading="lazy"
               decoding="async"
-              className="size-28 rounded-[--radius] object-cover"
+              className="size-28 rounded-(--radius) object-cover"
               style={{ background: 'var(--surface-sunken)' }}
             />
           </a>

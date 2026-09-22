@@ -55,7 +55,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
           value={agoraName}
           onChange={(event) => setAgoraName(event.target.value)}
           maxLength={80}
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={field}
         />
         <p id="create-agora-name-hint" className="text-sm" style={{ color: 'var(--ink-muted)' }}>
@@ -63,7 +63,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
         </p>
       </div>
 
-      <fieldset className="grid gap-2 rounded-[--radius] border p-3" style={field}>
+      <fieldset className="grid gap-2 rounded-(--radius) border p-3" style={field}>
         <legend className="px-1 font-medium">{t('create.ballotMode.legend')}</legend>
 
         <label className="grid min-h-11 cursor-pointer grid-cols-[auto_1fr] items-start gap-x-2 gap-y-0.5 py-1">
@@ -125,7 +125,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
           onChange={(event) => setName(event.target.value)}
           maxLength={40}
           autoComplete="nickname"
-          className="min-h-11 min-w-0 rounded-[--radius] border px-3"
+          className="min-h-11 min-w-0 rounded-(--radius) border px-3"
           style={field}
         />
       </label>
@@ -139,7 +139,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
       <button
         type="submit"
         disabled={busy}
-        className="min-h-11 justify-self-start rounded-[--radius] px-4 font-medium disabled:opacity-60"
+        className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium disabled:opacity-60"
         style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
       >
         {t('create.submit')}

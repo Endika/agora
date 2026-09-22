@@ -87,7 +87,7 @@ export function MarkdownToolbar({ textarea, value, onChange }: Props) {
           onClick={() => apply(action, action.placeholder)}
           aria-label={t(`editor.${key}`)}
           title={t(`editor.${key}`)}
-          className="grid min-h-11 min-w-11 place-items-center rounded-[--radius] border font-medium"
+          className="grid min-h-11 min-w-11 place-items-center rounded-(--radius) border font-medium"
           style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
         >
           <Icon />

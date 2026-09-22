@@ -56,7 +56,7 @@ export function InstallPrompt() {
 
   return (
     <aside
-      className="flex flex-wrap items-center gap-3 rounded-[--radius] border p-3 text-sm"
+      className="flex flex-wrap items-center gap-3 rounded-(--radius) border p-3 text-sm"
       style={{ background: 'var(--surface)', borderColor: 'var(--brand)' }}
     >
       <span className="min-w-0 flex-1">{iosOnly ? t('install.iosHint') : t('install.title')}</span>
@@ -64,7 +64,7 @@ export function InstallPrompt() {
         <button
           type="button"
           onClick={() => void install()}
-          className="min-h-11 rounded-[--radius] px-4 font-medium"
+          className="min-h-11 rounded-(--radius) px-4 font-medium"
           style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
         >
           {t('install.button')}
@@ -73,7 +73,7 @@ export function InstallPrompt() {
       <button
         type="button"
         onClick={dismiss}
-        className="min-h-11 rounded-[--radius] border px-3"
+        className="min-h-11 rounded-(--radius) border px-3"
         style={{ borderColor: 'var(--border)' }}
       >
         {t('install.dismiss')}

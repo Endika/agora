@@ -14,7 +14,7 @@ export function LanguagePicker() {
       <select
         value={i18n.language}
         onChange={(event) => void i18n.changeLanguage(event.target.value)}
-        className="min-h-11 min-w-0 rounded-[--radius] border px-2"
+        className="min-h-11 min-w-0 rounded-(--radius) border px-2"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
         {LOCALES.map((locale) => (

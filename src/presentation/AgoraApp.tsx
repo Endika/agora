@@ -114,7 +114,7 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
             {/* Folded away: the board matters every time, everything below it does not. */}
             {/* The panel is only mounted once the disclosure is open, which is what makes the fetch lazy. */}
             <details
-              className="rounded-[--radius] border p-4"
+              className="rounded-(--radius) border p-4"
               style={{ borderColor: 'var(--border)' }}
               onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
             >
@@ -125,7 +125,7 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
             </details>
 
             <details
-              className="rounded-[--radius] border p-4"
+              className="rounded-(--radius) border p-4"
               style={{ borderColor: 'var(--border)' }}
             >
               <summary className="min-h-11 cursor-pointer font-medium">
@@ -137,7 +137,7 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
             </details>
 
             <details
-              className="rounded-[--radius] border p-4"
+              className="rounded-(--radius) border p-4"
               style={{ borderColor: 'var(--border)' }}
             >
               <summary className="min-h-11 cursor-pointer font-medium">
@@ -149,7 +149,7 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
             </details>
 
             <details
-              className="rounded-[--radius] border-2 p-4"
+              className="rounded-(--radius) border-2 p-4"
               style={{ borderColor: 'var(--danger)' }}
             >
               <summary

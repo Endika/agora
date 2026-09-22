@@ -91,7 +91,7 @@ export function Thread({ thread, participants, meId, proposalAuthorId, slug, onC
               .setThreadResolved({ threadId: thread.id, resolved: !resolved })
               .then(onChanged)
           }
-          className="min-h-11 justify-self-start rounded-[--radius] border px-4"
+          className="min-h-11 justify-self-start rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
         >
           {resolved ? t('threads.reopen') : t('threads.resolve')}
@@ -122,7 +122,7 @@ export function Thread({ thread, participants, meId, proposalAuthorId, slug, onC
   return (
     <details
       open={!resolved}
-      className="rounded-[--radius] border p-3"
+      className="rounded-(--radius) border p-3"
       style={{ borderColor: 'var(--border)' }}
     >
       <summary className="min-h-11 cursor-pointer">{summary}</summary>
