@@ -31,8 +31,16 @@ export function App({ repo, visited, images, queue, network, replay }: Wiring) {
     >
       {/* The notice is inside the provider so that, read from inside an agora, it can say which of
           the two ballot modes the reader is under instead of describing both and naming neither.
-          Read from the home screen the slug is null, the provider stays idle, and it describes both. */}
-      {route.kind === 'privacy' ? <PrivacyNotice /> : <AgoraApp network={network} route={route} />}
+          Read from the home screen the slug is null, the provider stays idle, and it describes both.
+          Walking to it from a board costs nothing — the provider is the same element across the
+          route change, so it neither remounts nor refetches. Landing on the address cold does fetch
+          that board, and remembers the agora on this device, which is the price of the notice
+          answering the reader's actual question instead of listing both answers. */}
+      {route.kind === 'privacy' ? (
+        <PrivacyNotice slug={route.slug} />
+      ) : (
+        <AgoraApp network={network} route={route} />
+      )}
     </BoardProvider>
   )
 }
