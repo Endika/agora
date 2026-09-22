@@ -9,6 +9,7 @@ import type {
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
+import { notAParticipant } from '@/domain/repositories/BoardRepository'
 import { sortProposals } from '@/domain/services/ProposalSorter'
 import { KEPT_AGORAS, type BoardStore } from '@/infrastructure/persistence/BoardStore'
 
@@ -30,7 +31,10 @@ export class CachingBoardRepository implements BoardRepository {
     if (!cached) return this.fetchFull(slug)
 
     // With a snapshot in hand, no network failure should reach the UI: the board opens offline, which is
-    // the whole point of keeping it on the device.
+    // the whole point of keeping it on the device. Being removed from the agora is not one of those
+    // failures, and swallowing it kept a board on screen that the device no longer has any claim to —
+    // readable for ever, offline, long after the group had taken the name out. So that one refusal is
+    // let through, and the copy goes with it: the UI already reads it as "this phone has not joined".
     try {
       const version = await this.remote.getVersion(slug)
       if (version === cached.version) return cached
@@ -39,7 +43,11 @@ export class CachingBoardRepository implements BoardRepository {
       const merged = merge(cached, delta)
       await this.keep(slug, merged)
       return merged
-    } catch {
+    } catch (cause) {
+      if (notAParticipant(cause)) {
+        await this.store.forget(slug)
+        throw cause
+      }
       return cached
     }
   }

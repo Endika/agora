@@ -74,4 +74,33 @@ describe('CachingBoardRepository', () => {
     const kept = await store.slugs()
     expect(kept).toHaveLength(3)
   })
+
+  /**
+   * The two failures the catch has to tell apart. A dead network must not reach the UI — opening the
+   * board on a train is the whole reason the snapshot is on the device. Being removed from the agora
+   * must, and it must take the copy with it: before this, a device whose name the group had deleted
+   * went on serving its own snapshot for ever, offline, with no way back to the join screen.
+   */
+  it('sigue sirviendo la copia cuando la red se cae', async () => {
+    const { remote, repo, slug, store } = await seed()
+    const first = await repo.getBoard(slug)
+
+    remote.getVersion = () => Promise.reject(new Error('Failed to fetch'))
+
+    const again = await repo.getBoard(slug)
+    expect(again.group.slug).toBe(first.group.slug)
+    expect(await store.load(slug)).not.toBeNull()
+  })
+
+  it('deja de servirla, y la olvida, cuando el servidor dice que ya no estás en el ágora', async () => {
+    const { remote, repo, slug, store } = await seed()
+    await repo.getBoard(slug)
+    expect(await store.load(slug)).not.toBeNull()
+
+    remote.getVersion = () =>
+      Promise.reject(Object.assign(new Error('unknown participant'), { code: 'PT403' }))
+
+    await expect(repo.getBoard(slug)).rejects.toMatchObject({ code: 'PT403' })
+    expect(await store.load(slug)).toBeNull()
+  })
 })

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import { notAParticipant } from '@/domain/repositories/BoardRepository'
 import type { ActionQueue } from '@/domain/ports/ActionQueue'
 import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
@@ -58,10 +59,10 @@ export function BoardProvider({
         setResult({ slug, phase: 'ready', board, error: null })
       } catch (cause) {
         if (!live) return
-        // An unknown device token is not a failure: it means this phone has not joined yet.
-        const code = (cause as { code?: string }).code
+        // An unknown device token is not a failure: it means this phone has not joined yet. The
+        // predicate is the port's, not a second copy — the cache has to answer it the same way.
         const message = cause instanceof Error ? cause.message : String(cause)
-        const joining = code === 'PT403' || /unknown participant/i.test(message)
+        const joining = notAParticipant(cause)
         setResult({
           slug,
           phase: joining ? 'joining' : 'error',

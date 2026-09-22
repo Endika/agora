@@ -115,3 +115,16 @@ export interface BoardRepository {
     bytes: number
   }): Promise<void>
 }
+
+/**
+ * "This device is not in that agora" — the one refusal a reader is expected to hit, and the only
+ * one that is not a failure: with no accounts, opening an agora you have not joined is how joining
+ * starts. It lives beside the port because it is part of the port's contract, and because two
+ * layers have to agree on it: the cache, which must not mistake it for a dead network, and the UI,
+ * which turns it into the "who are you?" screen.
+ */
+export function notAParticipant(cause: unknown): boolean {
+  const code = (cause as { code?: string } | null)?.code
+  const message = cause instanceof Error ? cause.message : String(cause)
+  return code === 'PT403' || /unknown participant/i.test(message)
+}
