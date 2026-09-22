@@ -47,6 +47,10 @@ export function proposalHref(slug: string, proposalId: string): string {
  * Read from inside an agora, the privacy notice is about *that* agora: the ballot mode is half of
  * "who can see this", and the two agoras answer it in opposite ways. Read from the home screen
  * there is no agora yet, and the notice says so rather than picking one of the two answers.
+ *
+ * The two spellings are not an oversight. Every route is Spanish, `#/privacy` is not, and it stays
+ * that way because it is the address in the footer of a shipped app: renaming it breaks the link in
+ * anybody's history or messages, for a tidiness nobody but us would notice.
  */
 export function privacyHref(slug: string | null): string {
   return slug ? `#/g/${slug}/privacidad` : '#/privacy'

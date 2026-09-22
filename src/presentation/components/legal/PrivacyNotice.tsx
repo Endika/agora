@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Logo } from '@/presentation/components/Logo'
 import { BoardContext } from '@/presentation/context/boardContext'
+import { boardHref } from '@/presentation/routing'
 
 /**
  * Short, plain and honest — a privacy notice nobody reads is a dark pattern with extra steps. It names every
@@ -18,9 +19,10 @@ import { BoardContext } from '@/presentation/context/boardContext'
  * The context is optional on purpose. Reached from the home screen, or from a link somebody pasted, there
  * is no agora and no mode to report: `privacy.visibleBoth` then describes the two and says where the
  * answer for a given agora is written, which is the honest reading of "it depends". The component still
- * renders bare, outside any provider, which is what keeps it a document and not a board screen.
+ * renders bare, outside any provider and with no slug, which is what keeps it a document and not a
+ * board screen.
  */
-export function PrivacyNotice() {
+export function PrivacyNotice({ slug = null }: { slug?: string | null }) {
   const { t } = useTranslation()
   const board = useContext(BoardContext)?.board ?? null
   const visible =
@@ -71,8 +73,10 @@ export function PrivacyNotice() {
       {section('privacy.rightsHeading', ['privacy.rights'])}
       {section('privacy.deviceHeading', ['privacy.device'])}
 
-      <a href="#/" className="min-h-11 content-center underline">
-        {t('footer.back')}
+      {/* Back is back to where you were. Reached from an agora's footer that is its board, not the
+          home screen — the slug is in the address, so losing it would be a choice. */}
+      <a href={slug ? boardHref(slug) : '#/'} className="min-h-11 content-center underline">
+        {t(slug ? 'board.back' : 'footer.back')}
       </a>
     </main>
   )
