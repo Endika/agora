@@ -7,12 +7,12 @@ import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 // Every variant speaks of the proposal being open or closed, never of quorum: a deadline closes a
 // vote without one, so "until quorum was reached" was false on every proposal that ran out of time.
 const SECRET =
-  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.'
+  'Tu voto no aparece en el tablón mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.'
 const SECRET_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same two, in an agora whose ballot never opens: no name is promised in either tense. */
 const FOREVER =
-  'Nadie ve tu voto mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.'
+  'Tu voto no aparece en el tablón mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.'
 const FOREVER_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** Closed without everybody voting, in a secret agora: there is no reveal and there never will be. */
@@ -84,7 +84,11 @@ describe('PsephoiRow', () => {
       />,
     )
     const line = screen.getByText(SECRET).textContent ?? ''
-    expect(line).toContain('Nadie ve tu voto')
+    // The claim is scoped to the board, which is the thing this sentence can actually promise: a
+    // vote is not on it while the proposal is open. «Nadie ve tu voto» was an absolute the app's
+    // own privacy notice contradicts — anybody who takes your name reads your vote as you — and it
+    // said so three centimetres above the vote buttons. The threat model stays in the notice.
+    expect(line).toContain('no aparece en el tablón')
     expect(line).toContain('con tu nombre')
   })
 

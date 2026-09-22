@@ -13,8 +13,8 @@
   "psephoi": {
     "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
     "progressMine": "{{total}}(e)tik {{cast}}(e)k bozkatu dute, zurea barne",
-    "secret": "Inork ez du zure botoa ikusten proposamena zabalik dagoen bitartean. Ixten denean, talde osoak ikusiko du, zure izenarekin.",
-    "secretForever": "Inork ez du zure botoa ikusten proposamena zabalik dagoen bitartean. Talde osoak bozkatu duenean argitaratzen da, inolako izenik gabe; epemuga lehenago iristen bada, ez da inoiz argitaratzen.",
+    "secret": "Zure botoa ez da taulan agertzen proposamena zabalik dagoen bitartean. Ixten denean, talde osoak ikusiko du, zure izenarekin.",
+    "secretForever": "Zure botoa ez da taulan agertzen proposamena zabalik dagoen bitartean. Talde osoak bozkatu duenean argitaratzen da, inolako izenik gabe; epemuga lehenago iristen bada, ez da inoiz argitaratzen.",
     "choose": "Zure botoa",
     "up": "Alde",
     "down": "Aurka",

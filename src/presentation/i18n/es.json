@@ -13,8 +13,8 @@
   "psephoi": {
     "progress": "Han votado {{cast}} de {{total}}",
     "progressMine": "Han votado {{cast}} de {{total}}, tu voto incluido",
-    "secret": "Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.",
-    "secretForever": "Nadie ve tu voto mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.",
+    "secret": "Tu voto no aparece en el tablón mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.",
+    "secretForever": "Tu voto no aparece en el tablón mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.",
     "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
