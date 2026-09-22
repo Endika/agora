@@ -13,8 +13,8 @@
   "psephoi": {
     "progress": "{{cast}} of {{total}} have voted",
     "progressMine": "{{cast}} of {{total}} have voted, yours among them",
-    "secret": "Nobody sees your vote while the proposal is open. When it closes, the whole group sees it, with your name.",
-    "secretForever": "Nobody sees your vote while the proposal is open. It is published, with no name on it, once the whole group has voted; if the deadline gets there first, it is never published at all.",
+    "secret": "Your vote does not appear on the board while the proposal is open. When it closes, the whole group sees it, with your name.",
+    "secretForever": "Your vote does not appear on the board while the proposal is open. It is published, with no name on it, once the whole group has voted; if the deadline gets there first, it is never published at all.",
     "choose": "Your vote",
     "up": "In favour",
     "down": "Against",

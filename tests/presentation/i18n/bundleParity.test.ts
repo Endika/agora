@@ -168,3 +168,38 @@ describe('la frase de la papeleta retenida no promete un resultado que no existe
     })
   }
 })
+
+/**
+ * The two sentences that sit directly above the vote buttons, checked against what the app can
+ * actually promise.
+ *
+ * Both used to open with «Nadie ve tu voto mientras la propuesta está abierta», and the privacy
+ * notice in the same app explains that somebody who takes your name on their own device reads your
+ * vote as you — there are no passwords, by design. So the absolute was contradicted by the app
+ * itself, in the worse of the two places: the notice is opened on purpose, this is read at the
+ * moment somebody decides how to vote.
+ *
+ * The claim is now scoped to the board, which is exactly what the redaction work delivers and what
+ * a reader can check. Asserted as the claim and not the wording, so a translation cannot put the
+ * absolute back: the sentence has to name the board, and it may not say that nobody sees the vote.
+ * The impersonation caveat deliberately does not appear here — repeating it above the buttons would
+ * make it louder than the paragraph that qualifies it.
+ */
+describe('la promesa que está encima de los botones se limita al tablón', () => {
+  const scoped = {
+    es: { board: /tablón/, absolute: /nadie ve tu voto/i },
+    en: { board: /board/, absolute: /nobody sees your vote/i },
+    eu: { board: /taulan/, absolute: /inork ez du zure botoa ikusten/i },
+  }
+
+  for (const [locale, { board, absolute }] of Object.entries(scoped)) {
+    for (const key of ['psephoi.secret', 'psephoi.secretForever'] as const) {
+      it(`${locale} · ${key} nombra el tablón y no promete que no lo vea nadie`, () => {
+        const sentence = i18next.getFixedT(locale)(key)
+
+        expect(sentence).toMatch(board)
+        expect(sentence).not.toMatch(absolute)
+      })
+    }
+  }
+})
