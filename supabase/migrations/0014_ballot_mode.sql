@@ -100,10 +100,24 @@ returns json language sql security definer set search_path = '' as $$
            g.ballot_open,
            -- Whether everybody entitled to vote actually did. A proposal that resolves on its
            -- deadline resolves on a *partial* ballot, and that is the difference this whole
-           -- redaction turns on. `>=` rather than `=` because a participant joining after the
-           -- fact must make the ballot look less complete, never more.
+           -- redaction turns on.
+           --
+           -- Counted against the roster **as it was when the proposal closed**, which is what
+           -- `resolve_proposal` itself counted. Against today's roster instead, `add_participant`
+           -- retracts a reveal that already happened: the votes were published, somebody joins, and
+           -- the same proposal goes back to grey. Worse than odd — `add_participant` bumps
+           -- `board_version` without touching `proposals.updated_at`, so the delta carries the new
+           -- roster and no proposals, and a device that already had the board keeps showing the
+           -- reveal for ever while a fresh device shows stone. Two live clients, permanently
+           -- disagreeing about whether a secret ballot was published.
+           --
+           -- `resolved_at` is null for a proposal the creator closed by hand, which never went
+           -- through `resolve_proposal`; `updated_at` is that closure's own timestamp, and for an
+           -- open proposal neither is consulted because `status = 'open'` gates all three readers.
            t.cast_total >= (select count(*) from agora.participants pa
-                             where pa.group_id = p_group) as complete,
+                             where pa.group_id = p_group
+                               and pa.created_at <= coalesce(p.resolved_at, p.updated_at))
+             as complete,
            case p.status when 'approved' then 0
                          when 'open' then 1 when 'debating' then 1
                          when 'completed' then 2 else 3 end as bucket
@@ -264,6 +278,66 @@ returns json language sql security definer set search_path = '' as $$
     'history', '[]'::json
   );
 $$;
+
+-- The verdict was the last field still carrying the sense.
+--
+-- `resolve_proposal` decides from `v_up - v_down` alone, so with one vote cast the outcome *is* that
+-- person's vote: up gives 'approved', down gives 'rejected', abstain gives 'debating'. The board
+-- names the single voter through `pending` all through the round, so an observer who looked once
+-- reads the verdict straight back onto them. Withholding the votes array and the breakdown, as this
+-- migration already does, left that one field publishing the same fact in a different shape — and at
+-- `cast = 1` there is no way to publish the outcome and withhold the vote, because they are the same
+-- fact.
+--
+-- So: in a secret agora, a proposal that closes without a complete ballot closes **undecided**. The
+-- rule that falls out is better than the one it replaces. A secret agora decides when the whole
+-- group has voted, and a deadline arriving first closes the proposal without a decision — where
+-- before it would approve a flatshare's spending on one vote out of four while announcing which way
+-- that one person voted. The open mode is untouched: it keeps deciding on a partial ballot and
+-- publishing the names, which is 0.22.0's behaviour and what the spec pins.
+--
+-- Note the quorum test is `v_cast >= v_people`: everybody, not a majority. Copy of 0002:104-127 with
+-- the ballot mode read and one branch added; nothing else changed.
+create or replace function agora.resolve_proposal(p_proposal uuid)
+returns void language plpgsql security definer set search_path = '' as $$
+declare
+  v_status agora.proposal_status; v_round int; v_deadline timestamptz; v_group uuid;
+  v_up int; v_down int; v_cast int; v_people int; v_next agora.proposal_status;
+  v_ballot_open boolean;
+begin
+  select status, round, deadline, group_id into v_status, v_round, v_deadline, v_group
+    from agora.proposals where id = p_proposal for update;
+  if v_status is distinct from 'open' then return; end if;
+
+  select count(*) filter (where value = 'up'),
+         count(*) filter (where value = 'down'),
+         count(*)
+    into v_up, v_down, v_cast
+    from agora.votes where proposal_id = p_proposal and round = v_round;
+
+  select count(*) into v_people from agora.participants where group_id = v_group;
+  select ballot_open into v_ballot_open from agora.groups where id = v_group;
+
+  if not (v_cast >= v_people or (v_deadline is not null and now() > v_deadline)) then return; end if;
+
+  v_next := case when v_up - v_down > 0 then 'approved'
+                 when v_up - v_down < 0 then 'rejected'
+                 else 'debating' end;
+
+  -- The one branch. An incomplete secret ballot yields no verdict, because the verdict would be the
+  -- ballot. 'debating' is the existing "closed without deciding" state, which is what this is.
+  if not v_ballot_open and v_cast < v_people then
+    v_next := 'debating';
+  end if;
+
+  update agora.proposals
+     set status = v_next, resolved_at = now(), updated_at = now()
+   where id = p_proposal;
+
+  perform agora.log(v_group, p_proposal, null, 'resolved', v_next::text);
+end;
+$$;
+revoke all on function agora.resolve_proposal(uuid) from public, anon, authenticated;
 
 grant execute on function agora.create_group(text, text, text, text, boolean) to anon;
 grant execute on function agora.create_group(text, text, text, text) to anon;

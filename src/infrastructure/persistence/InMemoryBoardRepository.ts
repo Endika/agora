@@ -468,13 +468,23 @@ export class InMemoryBoardRepository implements BoardRepository {
   }
 
   private resolveRow(agora: Agora, row: Row): void {
-    const next = resolve({
+    const roundVotes = agora.votes.filter((v) => v.proposalId === row.id && v.round === row.round)
+    const decided = resolve({
       status: row.status,
-      tally: tally(agora.votes.filter((v) => v.proposalId === row.id && v.round === row.round)),
+      tally: tally(roundVotes),
       participants: agora.participants.length,
       deadline: row.deadline,
       now: this.now(),
     })
+    // In a secret agora an incomplete ballot yields no verdict, because the verdict *is* the
+    // ballot: `resolve` decides from `net` alone, so with one vote cast the outcome is that one
+    // person's vote, and the board named them through `pending` all through the round. A deadline
+    // that arrives before everybody has voted therefore closes the proposal undecided. Mirrors the
+    // branch in `agora.resolve_proposal`; the open mode keeps deciding on a partial ballot.
+    const next =
+      decided !== 'open' && !agora.ballotOpen && roundVotes.length < agora.participants.length
+        ? 'debating'
+        : decided
     if (next !== row.status) {
       row.status = next
       row.updatedAt = this.now()

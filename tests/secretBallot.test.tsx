@@ -142,8 +142,11 @@ describe('el invariante: en un ágora secreta ningún nombre aparece junto a un 
     render(<App {...wiring(repo)} />)
     const sheet = await screen.findByRole('dialog', { name: 'Alquilar una furgoneta' })
 
-    // The outcome and the count are still the group's: that part was never the leak.
-    expect(sheet).toHaveTextContent('Aprobada')
+    // No verdict, and that is the rule now: with one vote cast the outcome *is* that vote, and the
+    // board named the voters through `pending` all through the round. A secret agora decides when
+    // the whole group has voted; a deadline arriving first closes the proposal undecided.
+    expect(sheet).toHaveTextContent('En debate')
+    expect(sheet).not.toHaveTextContent('Aprobada')
     expect(sheet.querySelector('[role="img"]')).toHaveAttribute('aria-label', 'Han votado 2 de 4')
     // And not one pebble carries a colour, nor is there a roll, nor an empty one.
     expect(sheet.querySelectorAll('[data-vote]')).toHaveLength(0)

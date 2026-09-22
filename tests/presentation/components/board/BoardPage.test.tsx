@@ -18,7 +18,7 @@ const SECRET_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same pair for an agora whose ballot never opens, where no name is ever promised. */
 const FOREVER =
-  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, y nunca lleva tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.'
 const FOREVER_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** And the third closed state: a secret agora that closed a partial ballot publishes nothing. */
@@ -1595,6 +1595,59 @@ describe('BoardPage, un solo tiempo verbal por ruta', () => {
       expect(onScreen[0]).toHaveTextContent(SECRET)
       view.unmount()
     }
+  })
+
+  it('con todo cerrado y nada publicado, el tablón explica por qué está todo gris', async () => {
+    // The board paragraph is a universal claim about the list beneath it, so it may only speak in
+    // the withheld tense when every closed proposal on that list is withheld. Here they are, and
+    // the sentence is the one that says why the pebbles will never take a colour.
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'], { ballotOpen: false })
+    const stalled = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    as('Amaia')
+    await repo.castVote({ proposalId: stalled, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId: stalled, deadline: '2020-01-01T00:00:00.000Z' })
+
+    as('Ekin')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    expect(screen.getByText(FOREVER_WITHHELD)).toBeInTheDocument()
+    for (const other of SENTENCES.filter((sentence) => sentence !== FOREVER_WITHHELD)) {
+      expect(screen.queryByText(other)).toBeNull()
+    }
+  })
+
+  it('pero en un tablón mixto vuelve a la regla del modo, porque la frase habla de toda la lista', async () => {
+    // One card published in colour, one withheld and grey. The withheld sentence is written as a
+    // universal — «estos votos no se publican» — and printing it here puts it directly above a card
+    // showing its published votes. The mode's general rule is the only thing true of both, and it
+    // is what explains the grey card too: published once the whole group has voted, never if the
+    // deadline gets there first.
+    const { repo, slug, as } = await agoraWith(['Ekin', 'Amaia', 'Iker'], { ballotOpen: false })
+    const full = await repo.createProposal({ slug, title: 'Cambiar el sofá del salón' })
+    for (const name of ['Ekin', 'Amaia', 'Iker']) {
+      as(name)
+      await repo.castVote({ proposalId: full, round: 1, value: 'up' })
+    }
+    as('Ekin')
+    const stalled = await repo.createProposal({ slug, title: 'Pintar el pasillo' })
+    as('Amaia')
+    await repo.castVote({ proposalId: stalled, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId: stalled, deadline: '2020-01-01T00:00:00.000Z' })
+
+    as('Ekin')
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'board', slug }} />, { repo, slug })
+
+    // Both states really are on the list, or this proves nothing about a mixed one.
+    expect(board.proposals.filter((proposal) => proposal.votes !== null)).toHaveLength(1)
+    expect(
+      board.proposals.filter((proposal) => proposal.status !== 'open' && proposal.votes === null),
+    ).toHaveLength(1)
+
+    expect(screen.getByText(FOREVER)).toBeInTheDocument()
+    expect(screen.queryByText(FOREVER_WITHHELD)).toBeNull()
+    expect(screen.queryByText(FOREVER_PAST)).toBeNull()
   })
 
   it('un filtro que solo deja propuestas resueltas las explica en pasado', async () => {

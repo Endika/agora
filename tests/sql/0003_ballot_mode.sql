@@ -508,11 +508,128 @@ begin
   if (v_after->'tally'->>'cast') is distinct from '2' then
     raise exception 'FAIL: the group lost the count of who voted, which is not the leak';
   end if;
-  if (v_after->>'status') is distinct from 'approved' then
-    raise exception 'FAIL: the outcome itself went missing, got %', v_after->>'status';
+  -- And no verdict, which is the point: with a partial ballot the verdict *is* the ballot.
+  if (v_after->>'status') is distinct from 'debating' then
+    raise exception 'FAIL: an incomplete secret ballot reached a verdict, got %', v_after->>'status';
   end if;
 
   raise notice 'PASS an open read and a deadline read cannot be joined into a name and a vote';
+end $$;
+
+-- The verdict was the last field still carrying the sense.
+--
+-- `resolve_proposal` decides from `v_up - v_down` alone, so with one vote cast the outcome *is* that
+-- person's vote: up gives 'approved', down gives 'rejected', abstain gives 'debating'. The last open
+-- read named the single voter through `pending`, and the resolved read published the verdict — the
+-- whole two-read attack again, through the one field rounds 2 and 4 left alone.
+--
+-- Same shape as the other indistinguishability tests: three identical secret agoras, one voter, a
+-- different sense in each, and one canonical board out of all three. The volatile keys are dropped
+-- because ids differ by construction; everything that could carry the sense stays in.
+do $$
+declare v_prop uuid; v_slug text; v_sense text; v_boards text[] := '{}'; v_after jsonb;
+begin
+  foreach v_sense in array array['up', 'down', 'abstain'] loop
+    v_slug := 'ballot6' || (array_position(array['up', 'down', 'abstain'], v_sense))::text;
+    perform agora.create_group('Verdict', v_slug, 'alice', 'tok-a' || v_slug, false);
+    perform agora.add_participant(v_slug, 'bob', 'tok-b' || v_slug);
+    perform agora.add_participant(v_slug, 'carol', 'tok-c' || v_slug);
+    perform agora.add_participant(v_slug, 'dave', 'tok-d' || v_slug);
+
+    v_prop := agora.create_proposal('tok-a' || v_slug, v_slug, json_build_object('title', 'Furgoneta'));
+    perform agora.cast_vote('tok-b' || v_slug, v_prop, 1, v_sense::agora.vote_value);
+    update agora.proposals set deadline = now() - interval '1 minute' where id = v_prop;
+
+    v_after := (agora.get_board(v_slug, 'tok-a' || v_slug)->'proposals'->0)::jsonb
+               - 'id' - 'groupId' - 'createdBy' - 'createdAt' - 'updatedAt';
+    v_boards := v_boards || v_after::text;
+  end loop;
+
+  if v_boards[1] is distinct from v_boards[2] or v_boards[1] is distinct from v_boards[3] then
+    raise exception 'FAIL: a lone up, down and abstain give three different boards: %', v_boards;
+  end if;
+  -- And it is the undecided state they all agree on, not some other verdict they happen to share.
+  if (v_boards[1]::jsonb->>'status') is distinct from 'debating' then
+    raise exception 'FAIL: expected no verdict on an incomplete secret ballot, got %',
+      v_boards[1]::jsonb->>'status';
+  end if;
+
+  raise notice 'PASS an incomplete secret ballot reaches no verdict, so the verdict names nobody';
+end $$;
+
+-- The open mode keeps deciding on a partial ballot, which is 0.22.0's behaviour and the spec's.
+do $$
+declare v_prop uuid; v_status text;
+begin
+  perform agora.create_group('Verdict open', 'ballot64', 'alice', 'tok-a64', true);
+  perform agora.add_participant('ballot64', 'bob', 'tok-b64');
+  perform agora.add_participant('ballot64', 'carol', 'tok-c64');
+
+  v_prop := agora.create_proposal('tok-a64', 'ballot64', json_build_object('title', 'Furgoneta'));
+  perform agora.cast_vote('tok-b64', v_prop, 1, 'up');
+  update agora.proposals set deadline = now() - interval '1 minute' where id = v_prop;
+  perform agora.get_board('ballot64', 'tok-a64');
+
+  select status::text into v_status from agora.proposals where id = v_prop;
+  if v_status is distinct from 'approved' then
+    raise exception 'FAIL: an open agora stopped deciding on a partial ballot, got %', v_status;
+  end if;
+
+  raise notice 'PASS an open agora still decides on a partial ballot, verdict and names alike';
+end $$;
+
+-- A reveal that happened does not un-happen because somebody joined afterwards.
+do $$
+declare v_prop uuid; v_before json; v_after json;
+begin
+  perform agora.create_group('Late join', 'ballot65', 'alice', 'tok-a65', false);
+  perform agora.add_participant('ballot65', 'bob', 'tok-b65');
+  perform agora.add_participant('ballot65', 'carol', 'tok-c65');
+
+  v_prop := agora.create_proposal('tok-a65', 'ballot65', json_build_object('title', 'Furgoneta'));
+  perform agora.cast_vote('tok-a65', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-b65', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-c65', v_prop, 1, 'down');
+
+  -- now() is the transaction start time and this whole file runs in one transaction, so every row
+  -- here shares one instant and "joined afterwards" would not be afterwards at all. The three who
+  -- were there are aged back behind the resolution, which is the ordering production actually has.
+  update agora.participants set created_at = now() - interval '10 minutes'
+   where group_id = (select group_id from agora.proposals where id = v_prop);
+  update agora.proposals set resolved_at = now() - interval '5 minutes' where id = v_prop;
+
+  v_before := agora.get_board('ballot65', 'tok-a65')->'proposals'->0;
+  if json_array_length(v_before->'votes') is distinct from 3 then
+    raise exception 'FAIL: the fixture never published anything to retract';
+  end if;
+
+  -- Somebody joins the agora after the fact. Counted against today's roster the ballot would stop
+  -- being complete and the reveal would vanish — and because add_participant bumps board_version
+  -- without touching proposals.updated_at, the delta carries the roster and no proposals, so a
+  -- device that already had the board would keep showing the reveal while a fresh one showed
+  -- stone. Two live clients, permanently disagreeing about whether a secret ballot was published.
+  perform agora.add_participant('ballot65', 'dave', 'tok-d65');
+
+  v_after := agora.get_board('ballot65', 'tok-a65')->'proposals'->0;
+  if (v_after->>'votesRevealed') is distinct from 'true' then
+    raise exception 'FAIL: a late joiner retracted a reveal that had already happened';
+  end if;
+  if json_array_length(v_after->'votes') is distinct from 3 then
+    raise exception 'FAIL: the published votes vanished when somebody joined: %', v_after->'votes';
+  end if;
+  if (v_after->'tally'->>'up') is distinct from '2' then
+    raise exception 'FAIL: the published breakdown vanished when somebody joined: %', v_after->'tally';
+  end if;
+
+  -- And the count at close is the one resolve_proposal itself used: three participants existed
+  -- then, three voted, so it resolved. Read back from the catalogue rather than assumed.
+  if (select count(*) from agora.participants pa
+       join agora.proposals pr on pr.id = v_prop
+      where pa.group_id = pr.group_id and pa.created_at <= pr.resolved_at) is distinct from 3 then
+    raise exception 'FAIL: the roster at resolution is not the one the resolver counted';
+  end if;
+
+  raise notice 'PASS a late joiner does not retract a reveal that already happened';
 end $$;
 
 -- The other side of the rule: a complete ballot publishes exactly as before. Without this the fix
