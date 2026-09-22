@@ -514,6 +514,10 @@ export class InMemoryBoardRepository implements BoardRepository {
         // exists to enforce what the database enforces: a client test that passed on a breakdown
         // the server never sends would be worth nothing. `resolveRow` above still uses the real
         // tally, because resolution is the server's own arithmetic, not something it publishes.
+        // `resolveRow` above ran on the *unredacted* tally, and it has to: `QuorumResolver.resolve`
+        // branches on `tally.net`, so handed the redacted one it would answer 'debating' for
+        // everything. Anybody wiring that resolver into the client for optimistic resolution is
+        // reaching for a tally that no longer carries a net — read the votes, not the payload.
         const published = tally(roundVotes)
         return {
           ...row,

@@ -31,6 +31,12 @@ export function PrivacyNotice({ slug = null }: { slug?: string | null }) {
       : board.group.ballotOpen
         ? 'privacy.visibleOpen'
         : 'privacy.visibleSecret'
+  // `board === null` is four situations at once — loading, offline, failed to load, and never in an
+  // agora at all — and `visibleBoth` ends by telling the reader to enter an agora to find out which
+  // mode applies. To somebody who *is* in one, that is advice they have already taken. The slug is
+  // what tells the two apart, with no new state: it is set exactly when this page was opened from a
+  // board, so the generic answer can admit it is the generic answer.
+  const generic = board === null && slug !== null
 
   const section = (heading: string, body: string[]) => (
     <section className="grid gap-2" key={heading}>
@@ -58,7 +64,12 @@ export function PrivacyNotice({ slug = null }: { slug?: string | null }) {
       {section('privacy.whoHeading', ['privacy.who'])}
       {section('privacy.whatHeading', ['privacy.what', 'privacy.noAccounts'])}
       {section('privacy.basisHeading', ['privacy.basis'])}
-      {section('privacy.visibleHeading', ['privacy.visible', visible])}
+      {section(
+        'privacy.visibleHeading',
+        generic
+          ? ['privacy.visible', visible, 'privacy.visibleUnknown']
+          : ['privacy.visible', visible],
+      )}
 
       <section className="grid gap-2">
         <h2 className="text-xl font-semibold">{t('privacy.processorsHeading')}</h2>

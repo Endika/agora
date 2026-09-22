@@ -103,6 +103,7 @@ export function ProposalDetail({
           revealed={proposal.votes}
           explainSecret
           ballotOpen={board.group.ballotOpen}
+          resolved={proposal.status !== 'open'}
           mine={proposal.myVote !== null}
         />
         {proposal.status === 'open' && (

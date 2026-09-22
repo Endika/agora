@@ -52,7 +52,7 @@ begin
 
   begin
     insert into agora.groups (name, slug, ballot_open)
-    values (btrim(p_name), p_slug, coalesce(p_ballot_open, true))
+    values (btrim(p_name), p_slug, p_ballot_open)
     returning id into v_group;
   exception when unique_violation then
     raise exception 'slug taken' using errcode = 'PT409';

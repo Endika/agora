@@ -13,15 +13,16 @@
   "psephoi": {
     "progress": "Han votado {{cast}} de {{total}}",
     "progressMine": "Han votado {{cast}} de {{total}}, tu voto incluido",
-    "secret": "Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.",
-    "secretForever": "Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.",
+    "secret": "Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.",
+    "secretForever": "Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, y nunca lleva tu nombre.",
     "choose": "Tu voto",
     "up": "A favor",
     "down": "En contra",
     "abstain": "En blanco",
     "abstainCounts": "En blanco también cuenta para el quórum",
-    "secretPast": "Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.",
-    "secretForeverPast": "Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y ninguno lleva un nombre.",
+    "secretPast": "Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.",
+    "secretForeverPast": "Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.",
+    "secretForeverWithheld": "La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.",
     "roll": "Quién votó qué",
     "voted": {
       "up": "Has votado a favor",
@@ -132,7 +133,8 @@
       "secretLabel": "En secreto",
       "secretHint": "Tu voto no llevará tu nombre nunca, ni siquiera cuando se resuelva la propuesta.",
       "openLabel": "Con tu nombre",
-      "openHint": "Cuando se resuelva la propuesta, tu voto llevará tu nombre."
+      "openHint": "Cuando se resuelva la propuesta, tu voto llevará tu nombre.",
+      "permanent": "Se elige ahora y vale para siempre: no hay vuelta atrás."
     }
   },
   "danger": {
@@ -308,7 +310,8 @@
     "visible": "Cualquiera que tenga el enlace del ágora entra en ella: ve los nombres de la lista, las propuestas, los comentarios y las imágenes. El enlace es la llave, así que compártelo solo con quien deba estar dentro. Mientras una votación está abierta, ningún voto se publica con el nombre de quien lo emitió: se ve cuántas personas han votado y quién falta por votar.",
     "visibleOpen": "Esta ágora tiene el voto abierto: en cuanto se alcanza el quórum y la propuesta se resuelve, se publica quién votó qué, y cualquiera que tenga el enlace ve el nombre de cada persona junto a su voto. Así se queda mientras exista el ágora: no hay forma de volver a ocultarlo, porque el modo de voto se elige al crear el ágora y no se puede cambiar. Mientras la votación sigue abierta se ve además cómo va el recuento a favor, en contra y en blanco, todavía sin nombres.",
     "visibleSecret": "Esta ágora tiene el voto secreto: no se publica nunca quién votó qué, ni al resolverse la propuesta ni después. El servidor no envía el nombre de quien vota junto a su voto, así que no aparece ni en pantalla ni en la exportación. En la base de datos el voto sigue guardado junto a la persona, para que nadie pueda votar dos veces, y el modo de voto se elige al crear el ágora y no se puede cambiar. Mientras la votación sigue abierta solo se ve cuántas personas han votado y quién falta: el recuento a favor, en contra y en blanco no sale del servidor hasta que la propuesta se resuelve. Lo que sí se ve durante ese rato es quién ha votado ya, así que una propuesta que se cierre en su plazo sin que haya votado todo el mundo podría dejar al grupo deducir cómo cayeron los votos. Por eso, en ese caso, los votos no se publican en absoluto: se ve el resultado y cuántas personas votaron, y nada más.",
-    "visibleBoth": "Cada ágora elige al crearse cómo son sus votos, y después no se puede cambiar. Con el voto abierto, al resolverse una propuesta se publica quién votó qué: cualquiera que tenga el enlace ve el nombre de cada persona junto a su voto, y así se queda mientras exista el ágora. Con el voto secreto no se publica nunca, ni al resolverse ni después: el servidor no envía el nombre de quien vota junto a su voto. Entra en un ágora y esta misma página te dirá cuál de los dos rige en ella.",
+    "visibleBoth": "Cada ágora elige al crearse cómo son sus votos, y después no se puede cambiar. Con el voto abierto, al resolverse una propuesta se publica quién votó qué: cualquiera que tenga el enlace ve el nombre de cada persona junto a su voto, y así se queda mientras exista el ágora. Con el voto secreto no se publica nunca, ni al resolverse ni después: el servidor no envía el nombre de quien vota junto a su voto. Entra en un ágora y esta misma página te dirá cuál de los dos rige en ella. En cualquiera de los dos, mientras una votación está abierta se ve quién ha votado ya, así que una propuesta cerrada en su plazo sin que vote todo el mundo podría dejar deducir cómo cayeron los votos; por eso, en ese caso, esos votos no se publican.",
+    "visibleUnknown": "Estás dentro de un ágora, pero su tablón no se ha podido leer aquí, así que esta página no puede decir cuál de los dos modos rige en ella. Ábrela desde el tablón y lo dirá.",
     "processorsHeading": "Con quién se comparte",
     "supabase": "Supabase — base de datos y almacenamiento de imágenes. Región eu-west-2 (Londres, Reino Unido), cubierta por la decisión de adecuación de la Comisión Europea.",
     "github": "GitHub Pages — sirve la aplicación. Como cualquier servidor web, registra la dirección IP de quien la descarga. GitHub está en Estados Unidos, con transferencia amparada en el Data Privacy Framework.",

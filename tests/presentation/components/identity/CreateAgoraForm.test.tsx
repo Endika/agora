@@ -34,6 +34,22 @@ describe('CreateAgoraForm', () => {
     )
   })
 
+  it('dice ahí mismo que la elección es para siempre, que es donde se puede actuar', async () => {
+    // The only irreversible act in the app besides deleting an agora, and there is no settings
+    // screen to undo it on. The branch said "cannot be changed" three times before this, all three
+    // in the privacy notice — a document read after the fact, if at all — and never at the moment
+    // somebody is choosing. Inside the fieldset, so a screen reader on the group hears it too.
+    renderWithBoard(<CreateAgoraForm onCreated={() => {}} />, { slug: null })
+
+    const group = screen.getByRole('group', { name: '¿Cómo se ven los votos?' })
+    const permanence = screen.getByText('Se elige ahora y vale para siempre: no hay vuelta atrás.')
+    expect(group).toContainElement(permanence)
+    // The house phrasing for a thing with no undo, and not a decibel louder: this choice is final,
+    // not dangerous, so it borrows `danger.explain`'s clause and none of its colour.
+    expect(permanence).toHaveTextContent(/no hay vuelta atrás/i)
+    expect(permanence).not.toHaveAttribute('role', 'alert')
+  })
+
   it('creates a secret agora by default, without anyone touching the radios', async () => {
     const repo = new InMemoryBoardRepository()
     let created: string | null = null

@@ -4,17 +4,22 @@ import type { CastVote, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
 import { PsephoiRow } from '@/presentation/components/vote/PsephoiRow'
 
+// Every variant speaks of the proposal being open or closed, never of quorum: a deadline closes a
+// vote without one, so "until quorum was reached" was false on every proposal that ran out of time.
 const SECRET =
-  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.'
 const SECRET_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
+  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same two, in an agora whose ballot never opens: no name is promised in either tense. */
 const FOREVER =
-  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, y nunca lleva tu nombre.'
 const FOREVER_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
+  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
+/** Closed without everybody voting, in a secret agora: there is no reveal and there never will be. */
+const FOREVER_WITHHELD =
+  'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.'
 /** Counted together wherever the question is "how many of these are on screen". */
-const ALL = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST]
+const ALL = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST, FOREVER_WITHHELD]
 
 /** Named people, in the order their votes are handed to the row. */
 function people(...names: string[]): Participant[] {
@@ -51,7 +56,16 @@ describe('PsephoiRow', () => {
   })
 
   it('dice en pantalla la regla entera de la papeleta cuando el llamador lo pide, sin duplicarla por voz', () => {
-    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret ballotOpen />)
+    render(
+      <PsephoiRow
+        participants={crowd(5)}
+        cast={2}
+        revealed={null}
+        explainSecret
+        resolved={false}
+        ballotOpen
+      />,
+    )
     expect(screen.getByText(SECRET)).toBeInTheDocument()
     expect(screen.getByRole('img').getAttribute('aria-label')).not.toContain('quórum')
   })
@@ -59,7 +73,16 @@ describe('PsephoiRow', () => {
   it('avisa de que el voto acaba llevando tu nombre, no solo de que se verá', () => {
     // The whole point of the sentence: a row of anonymous grey pebbles reads as a secret ballot,
     // and somebody who only learns at quorum that their "En contra" is signed learned it too late.
-    render(<PsephoiRow participants={crowd(5)} cast={2} revealed={null} explainSecret ballotOpen />)
+    render(
+      <PsephoiRow
+        participants={crowd(5)}
+        cast={2}
+        revealed={null}
+        explainSecret
+        resolved={false}
+        ballotOpen
+      />,
+    )
     const line = screen.getByText(SECRET).textContent ?? ''
     expect(line).toContain('Nadie ve tu voto')
     expect(line).toContain('con tu nombre')
@@ -78,6 +101,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={ballots(voters, 'up', 'down')}
         explainSecret
+        resolved
         ballotOpen
       />,
     )
@@ -93,7 +117,14 @@ describe('PsephoiRow', () => {
     const both = () => ALL.flatMap((sentence) => screen.queryAllByText(sentence))
 
     const open = render(
-      <PsephoiRow participants={voters} cast={1} revealed={null} explainSecret ballotOpen />,
+      <PsephoiRow
+        participants={voters}
+        cast={1}
+        revealed={null}
+        explainSecret
+        resolved={false}
+        ballotOpen
+      />,
     )
     expect(both()).toHaveLength(1)
     open.unmount()
@@ -104,6 +135,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={ballots(voters, 'up', 'down')}
         explainSecret
+        resolved
         ballotOpen
       />,
     )
@@ -118,6 +150,7 @@ describe('PsephoiRow', () => {
         cast={1}
         revealed={ballots(voters, 'up')}
         explainSecret
+        resolved
         ballotOpen
       />,
     )
@@ -133,6 +166,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={null}
         explainSecret
+        resolved={false}
         ballotOpen={false}
       />,
     )
@@ -142,6 +176,44 @@ describe('PsephoiRow', () => {
     // The open agora's promise is the one that costs a name, and it must not leak into an agora
     // that never publishes one.
     expect(screen.queryByText(SECRET)).toBeNull()
+  })
+
+  it('los tres estados de un ágora secreta dicen tres frases distintas, y solo la suya', () => {
+    // The table cannot type-check one valid key swapped for another, and this is the swap that
+    // matters: a secret agora now has three states, not two. Open, closed-and-published, and
+    // closed-and-withheld — the last one looking at pebbles that will never take a colour, where
+    // «Ahora los ve todo el grupo» would be a plain lie printed over the top of them. Rendered
+    // rather than asserted against the table, so a caller that stops passing `resolved` fails too.
+    const voters = people('Amaia', 'Iker')
+    for (const [resolved, revealed, expected] of [
+      [false, null, FOREVER],
+      [true, unsigned('up', 'down'), FOREVER_PAST],
+      [true, null, FOREVER_WITHHELD],
+    ] as const) {
+      const view = render(
+        <PsephoiRow
+          participants={voters}
+          cast={2}
+          revealed={revealed}
+          explainSecret
+          ballotOpen={false}
+          resolved={resolved}
+        />,
+      )
+      expect(screen.getByText(expected)).toBeInTheDocument()
+      // Exactly one of the five, so a swap shows up as the wrong one *and* as the right one gone.
+      for (const other of ALL.filter((sentence) => sentence !== expected)) {
+        expect(screen.queryByText(other)).toBeNull()
+      }
+      view.unmount()
+    }
+  })
+
+  it('y ninguna de las cinco frases habla ya de quórum, porque un plazo cierra sin él', () => {
+    // `agora.resolve_proposal` closes a vote when everybody has voted *or* when the deadline
+    // passes. Naming quorum made every sentence false on the second path — which is the ordinary
+    // path for exactly the proposals whose votes are now withheld.
+    for (const sentence of ALL) expect(sentence).not.toMatch(/quórum/i)
   })
 
   it('resuelta y secreta, sigue sin prometer nombres en vez de caer en el pasado del otro modo', () => {
@@ -154,6 +226,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={unsigned('up', 'down')}
         explainSecret
+        resolved
         ballotOpen={false}
       />,
     )
@@ -172,9 +245,10 @@ describe('PsephoiRow', () => {
     const said = () => ALL.flatMap((line) => screen.queryAllByText(line))
 
     for (const ballotOpen of [true, false]) {
-      for (const [revealed, expected] of [
-        [null, ballotOpen ? SECRET : FOREVER],
+      for (const [resolved, revealed, expected] of [
+        [false, null, ballotOpen ? SECRET : FOREVER],
         [
+          true,
           ballotOpen ? ballots(voters, 'up', 'down') : unsigned('up', 'down'),
           ballotOpen ? SECRET_PAST : FOREVER_PAST,
         ],
@@ -186,6 +260,7 @@ describe('PsephoiRow', () => {
             revealed={revealed}
             explainSecret
             ballotOpen={ballotOpen}
+            resolved={resolved}
           />,
         )
         expect(said().map((node) => node.textContent)).toEqual([expected])
@@ -202,6 +277,7 @@ describe('PsephoiRow', () => {
         cast={2}
         revealed={unsigned('up', 'down')}
         explainSecret
+        resolved
         ballotOpen={false}
       />,
     )
@@ -361,7 +437,14 @@ describe('PsephoiRow', () => {
   it('MIENTRAS SIGUE ABIERTA no hay ni un nombre junto a un sentido', () => {
     const voters = people('Ekin', 'Amaia', 'Iker')
     const { container } = render(
-      <PsephoiRow participants={voters} cast={3} revealed={null} explainSecret ballotOpen />,
+      <PsephoiRow
+        participants={voters}
+        cast={3}
+        revealed={null}
+        explainSecret
+        resolved={false}
+        ballotOpen
+      />,
     )
 
     // No roll and no colours. Secrecy during the round is the whole premise.

@@ -13,15 +13,16 @@
   "psephoi": {
     "progress": "{{total}}(e)tik {{cast}}(e)k bozkatu dute",
     "progressMine": "{{total}}(e)tik {{cast}}(e)k bozkatu dute, zurea barne",
-    "secret": "Inork ez du zure botoa ikusten quoruma lortu arte. Ordutik aurrera talde osoak ikusiko du, zure izenarekin.",
-    "secretForever": "Inork ez du zure botoa ikusten quoruma lortu arte. Ordutik aurrera talde osoak ikusiko du, eta ez du inoiz zure izena eramango.",
+    "secret": "Inork ez du zure botoa ikusten proposamena zabalik dagoen bitartean. Ixten denean, talde osoak ikusiko du, zure izenarekin.",
+    "secretForever": "Inork ez du zure botoa ikusten proposamena zabalik dagoen bitartean. Ixten denean, talde osoak ikusiko du, eta ez du inoiz zure izena eramango.",
     "choose": "Zure botoa",
     "up": "Alde",
     "down": "Aurka",
     "abstain": "Zuri",
     "abstainCounts": "Zuriak ere quorumerako balio du",
-    "secretPast": "Inork ez zituen boto hauek ikusi quoruma lortu arte. Orain talde osoak ikusten ditu, bakoitza nork eman zuen adierazita.",
-    "secretForeverPast": "Inork ez zituen boto hauek ikusi quoruma lortu arte. Orain talde osoak ikusten ditu, eta bat bakarrak ere ez darama izenik.",
+    "secretPast": "Inork ez zituen boto hauek ikusi proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, bakoitza nork eman zuen adierazita.",
+    "secretForeverPast": "Inork ez zituen boto hauek ikusi proposamena zabalik zegoen bitartean. Orain talde osoak ikusten ditu, eta bat bakarrak ere ez darama izenik.",
+    "secretForeverWithheld": "Proposamena denek bozkatu gabe itxi zen; beraz, boto hauek ez dira argitaratzen: emaitza eta zenbatek bozkatu duten ikusten da, eta besterik ez.",
     "roll": "Nork zer bozkatu duen",
     "voted": {
       "up": "Alde bozkatu duzu",
@@ -132,7 +133,8 @@
       "secretLabel": "Ezkutuan",
       "secretHint": "Zure botoak inoiz ez du zure izena eramango, proposamena ebatzi ondoren ere ez.",
       "openLabel": "Zure izenarekin",
-      "openHint": "Proposamena ebazten denean, zure botoak zure izena eramango du."
+      "openHint": "Proposamena ebazten denean, zure botoak zure izena eramango du.",
+      "permanent": "Orain aukeratzen da eta betirako balio du: ez dago atzera bueltarik."
     }
   },
   "danger": {
@@ -308,7 +310,8 @@
     "visible": "Agoraren lotura duen edonork sartzen da bertan: zerrendako izenak, proposamenak, iruzkinak eta irudiak ikusten ditu. Lotura da giltza; beraz, barruan egon behar duenari bakarrik eman. Bozketa bat zabalik dagoen bitartean, ez da boto bat bera ere argitaratzen eman duenaren izenarekin: zenbatek bozkatu duten eta nor falta den ikusten da.",
     "visibleOpen": "Agora honek botoa irekia du: quoruma lortu eta proposamena ebazten den unean, nork zer bozkatu duen argitaratzen da, eta lotura duen edonork pertsona bakoitzaren izena ikusten du bere botoaren ondoan. Horrela geratzen da agorak irauten duen bitartean: ez dago berriro ezkutatzerik, botoaren modua agora sortzean aukeratzen delako eta ezin delako aldatu. Bozketa zabalik dagoen bitartean, aldeko, aurkako eta zuriko boto kopurua ere ikusten da, oraindik izenik gabe.",
     "visibleSecret": "Agora honek botoa sekretua du: ez da inoiz argitaratzen nork zer bozkatu duen, ez proposamena ebaztean ez geroago. Zerbitzariak ez du bozkatzen duenaren izena bere botoaren ondoan bidaltzen; beraz, ez da ez pantailan ez esportazioan agertzen. Datu-basean botoa pertsonari lotuta gordetzen da oraindik, inork bi aldiz bozkatu ez dezan, eta botoaren modua agora sortzean aukeratzen da eta ezin da aldatu. Bozketa zabalik dagoen bitartean, zenbatek bozkatu duten eta nor falta den bakarrik ikusten da: aldeko, aurkako eta zuriko kontaketa ez da zerbitzaritik ateratzen proposamena ebatzi arte. Denbora horretan nork bozkatu duen ikusten da, beraz, proposamen bat epemugan ixten bada denek bozkatu gabe, taldeak boto-banaketa ondoriozta lezake. Horregatik, kasu horretan botoak ez dira argitaratzen: emaitza eta zenbatek bozkatu duten ikusten da, eta besterik ez.",
-    "visibleBoth": "Agora bakoitzak sortzean aukeratzen du bere botoak nolakoak diren, eta gero ezin da aldatu. Botoa irekia bada, proposamena ebaztean nork zer bozkatu duen argitaratzen da: lotura duen edonork pertsona bakoitzaren izena ikusten du bere botoaren ondoan, eta horrela geratzen da agorak irauten duen bitartean. Botoa sekretua bada, ez da inoiz argitaratzen, ez ebaztean ez geroago: zerbitzariak ez du bozkatzen duenaren izena bere botoaren ondoan bidaltzen. Sartu agora batean eta orri honek berak esango dizu zein den bertan indarrean dagoena.",
+    "visibleBoth": "Agora bakoitzak sortzean aukeratzen du bere botoak nolakoak diren, eta gero ezin da aldatu. Botoa irekia bada, proposamena ebaztean nork zer bozkatu duen argitaratzen da: lotura duen edonork pertsona bakoitzaren izena ikusten du bere botoaren ondoan, eta horrela geratzen da agorak irauten duen bitartean. Botoa sekretua bada, ez da inoiz argitaratzen, ez ebaztean ez geroago: zerbitzariak ez du bozkatzen duenaren izena bere botoaren ondoan bidaltzen. Sartu agora batean eta orri honek berak esango dizu zein den bertan indarrean dagoena. Bietan, bozketa bat zabalik dagoen bitartean nork bozkatu duen ikusten da; beraz, proposamen bat epemugan ixten bada denek bozkatu gabe, taldeak boto-banaketa ondoriozta lezake, eta horregatik, kasu horretan, boto horiek ez dira argitaratzen.",
+    "visibleUnknown": "Agora batean zaude, baina bere taula ezin izan da hemen irakurri; beraz, orri honek ezin du esan zein modu dagoen indarrean bertan. Ireki taulatik eta esango dizu.",
     "processorsHeading": "Norekin partekatzen da",
     "supabase": "Supabase — datu-basea eta irudien biltegia. eu-west-2 eskualdea (Londres, Erresuma Batua), Europako Batzordearen egokitasun-erabakiak babestuta.",
     "github": "GitHub Pages — aplikazioa zerbitzatzen du. Edozein web zerbitzari bezala, deskargatzen duenaren IP helbidea erregistratzen du. GitHub Estatu Batuetan dago, Data Privacy Framework-ek babestutako transferentziarekin.",

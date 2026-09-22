@@ -152,6 +152,14 @@ describe('el invariante: en un ágora secreta ningún nombre aparece junto a un 
     expect(screen.queryByTestId('vote-roll')).toBeNull()
     // Nor the net line, which would otherwise print a redacted zero as if it were a result.
     expect(sheet).not.toHaveTextContent(/Neto/)
+    // And the sentence beside them says why they are grey, instead of promising a reveal that can
+    // never arrive. This is also what proves ProposalDetail passes the proposal's own state down:
+    // the row cannot tell "closed and withheld" from "still open" on its own.
+    expect(sheet).toHaveTextContent(
+      'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.',
+    )
+    expect(sheet).not.toHaveTextContent(/Ahora los ve todo el grupo/)
+    expect(sheet).not.toHaveTextContent(/Cuando se cierra/)
     expect(attributionLeaks(document.body, ['alice', 'bob', 'carol', 'dave'])).toEqual([])
   })
 

@@ -154,6 +154,37 @@ describe('PrivacyNotice', () => {
     )
   })
 
+  it('con un ágora detrás pero sin tablón, admite que la respuesta genérica es genérica', async () => {
+    // `board === null` is loading, offline, failed-to-load and never-joined all at once, and the
+    // generic paragraph ends by telling the reader to enter an agora to find out which mode
+    // applies — advice already taken by somebody who is standing in one. The slug is what tells
+    // the two apart, and it is set exactly when this page was opened from a board.
+    render(<PrivacyNotice slug="abcd1234" />)
+
+    expect(screen.getByText(/Cada ágora elige al crearse/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/esta página no puede decir cuál de los dos modos rige en ella/),
+    ).toBeInTheDocument()
+  })
+
+  it('y sin ágora ninguna no se disculpa por nada, porque no hay nada que no haya podido leer', async () => {
+    render(<PrivacyNotice />)
+
+    expect(screen.getByText(/Cada ágora elige al crearse/)).toBeInTheDocument()
+    expect(screen.queryByText(/esta página no puede decir cuál de los dos modos/)).toBeNull()
+  })
+
+  it('el párrafo genérico tampoco promete un absoluto que la app no cumple', async () => {
+    // It is a GDPR notice: an absolute the app cannot deliver is the problem wherever it is
+    // printed, not only on the page that names one agora. The short form of the same caveat.
+    render(<PrivacyNotice />)
+
+    const visible = screen.getByText(/Cada ágora elige al crearse/)
+    expect(visible).toHaveTextContent(/mientras una votación está abierta se ve quién ha votado ya/)
+    expect(visible).toHaveTextContent(/podría dejar deducir cómo cayeron los votos/)
+    expect(visible).toHaveTextContent(/en ese caso, esos votos no se publican/)
+  })
+
   it('y lo dice en los tres idiomas, no solo en el que se lee por defecto', async () => {
     // Each locale gets the same pair of legal statements it gets in Spanish: the open agora
     // promising a published name, the secret one refusing to promise it ever. The paragraph is
