@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.23.0](https://github.com/Endika/agora/compare/v0.22.0...v0.23.0) (2026-09-22)
+
+
+### Features
+
+* **board:** carry the agora's ballot mode through the seam ([33e57cd](https://github.com/Endika/agora/commit/33e57cd2e09280eee61822fab7b1b9e01662774f))
+* **create:** choose the ballot mode when the agora is born ([f788bcc](https://github.com/Endika/agora/commit/f788bcc211a28d425a76ddc9bf0ce103da41fb1f))
+* **privacy:** describe both ballot modes in the notice ([c55dc55](https://github.com/Endika/agora/commit/c55dc555512f562a6c3c22d716a4e4e176aee0f7))
+* **sql:** let each agora choose whether its ballot is secret ([1b984ea](https://github.com/Endika/agora/commit/1b984ea552d5d29ce8b222e1615af8029eaed432))
+* **vote:** tell the truth about the ballot in both modes ([aa6ef6e](https://github.com/Endika/agora/commit/aa6ef6e3f3eebf2f70a547a9031ac19b4d7cef15))
+
+
+### Bug Fixes
+
+* **a11y:** make the whole ballot row clickable, not just the dot ([dff1ccb](https://github.com/Endika/agora/commit/dff1ccb03bf0a6e3d5cd46f9054acfa6999ec926))
+* **export:** print the count when there is no breakdown to print ([a313f0b](https://github.com/Endika/agora/commit/a313f0bbe33a4d1c7fa6770684a5b55822f2d1c4))
+* **privacy:** come back to the board you came from ([4b1f7fc](https://github.com/Endika/agora/commit/4b1f7fc4c4d9e2a79615d116e159632cf48056f5))
+* **sql:** empty pending once a secret proposal is resolved ([ec554a5](https://github.com/Endika/agora/commit/ec554a5512c70f7b023e5355287354a95f8db65f))
+* **sql:** stop a secret open round leaking its breakdown ([09db1f0](https://github.com/Endika/agora/commit/09db1f089d573e75dff252b44bdf6abe435b4994))
+* **sql:** withhold the reveal when a secret ballot is partial ([405e683](https://github.com/Endika/agora/commit/405e683b34ddf107ef0c7ef9a83734cc044c3852))
+* **vote:** a withheld ballot has no result to show ([96a63ac](https://github.com/Endika/agora/commit/96a63ac129d7340d68fffb824cd3565b919c31a7))
+* **vote:** no verdict when a secret ballot is incomplete ([38b5067](https://github.com/Endika/agora/commit/38b5067b65593abaf92ad59ee3c7bc1efeefe412))
+* **vote:** promise the board, not everybody's eyes ([6638b30](https://github.com/Endika/agora/commit/6638b30c0079a58f77d142d2871086e835941a70))
+* **vote:** promise what the record carries, not what nobody knows ([da51c55](https://github.com/Endika/agora/commit/da51c551e0d14229c64fe7471129ac6810a01c9d))
+* **vote:** say the rule in terms of closing, not of quorum ([c591903](https://github.com/Endika/agora/commit/c591903f5f952f6e6d041b1aad5c9112a1eeea3c))
+* **vote:** the past tense promised the same absolute ([196ca1c](https://github.com/Endika/agora/commit/196ca1cfeaf20ee95d549b860da2f72c9695b239))
+
 ## [0.22.0](https://github.com/Endika/agora/compare/v0.21.0...v0.22.0) (2026-09-21)
 
 
