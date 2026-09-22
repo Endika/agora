@@ -274,6 +274,68 @@ describe('InMemoryBoardRepository', () => {
     expect(proposal.votes?.every((vote) => 'participantId' in vote)).toBe(true)
   })
 
+  it('no vuelve a juzgar una propuesta que ya está cerrada, por mucho que se lea', async () => {
+    // `resolve_proposal` returns early on anything that is not open. The fake applied the secret
+    // branch after `resolve` had already handed back a closed row's own status, so every read
+    // rewrote it to 'debating': the closing reason went, a bogus history row arrived, and the
+    // damage compounded on each read. This is a test double whose whole job is to behave like the
+    // database, and a client test of this path would have encoded the bug instead of catching it.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
+    as('alice')
+    expect((await repo.getBoard(slug)).proposals[0]!.status).toBe('debating')
+
+    await repo.closeProposal({ proposalId, reason: 'lo dejamos para el mes que viene' })
+    const history = (await repo.history({ slug })).length
+
+    for (let read = 0; read < 3; read++) {
+      const proposal = (await repo.getBoard(slug)).proposals[0]!
+      expect(proposal.status).toBe('closed')
+      expect(proposal.closedReason).toBe('lo dejamos para el mes que viene')
+    }
+    // And no invented history: re-judging logged a 'resolved' row every time it ran.
+    expect(await repo.history({ slug })).toHaveLength(history)
+  })
+
+  it('ni deshace una propuesta ya hecha porque entre alguien nuevo', async () => {
+    // The same re-judging, reached from the other side: a 'completed' proposal counted against a
+    // roster that just grew looks incomplete, and fell back to 'debating'.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob'], false)
+    for (const name of ['alice', 'bob']) {
+      as(name)
+      await repo.castVote({ proposalId, round: 1, value: 'up' })
+    }
+    as('alice')
+    await repo.completeProposal({ proposalId, actualCents: 1200 })
+    await repo.addParticipant({ slug, name: 'carol' })
+
+    const proposal = (await repo.getBoard(slug)).proposals[0]!
+    expect(proposal.status).toBe('completed')
+    expect(proposal.actualCents).toBe(1200)
+  })
+
+  it('y un reparto ya publicado no se retira porque entre alguien después', async () => {
+    // Mirrors the SQL test: completeness is a fact about the moment the proposal closed. Measured
+    // against today's roster, `addParticipant` retracts a reveal that already happened.
+    const { repo, slug, proposalId, as } = await seedAgora(['alice', 'bob', 'carol'], false)
+    for (const name of ['alice', 'bob', 'carol']) {
+      as(name)
+      await repo.castVote({ proposalId, round: 1, value: name === 'carol' ? 'down' : 'up' })
+    }
+    as('alice')
+    const before = (await repo.getBoard(slug)).proposals[0]!
+    expect(before.votes).toHaveLength(3)
+
+    await repo.addParticipant({ slug, name: 'dave' })
+
+    const after = (await repo.getBoard(slug)).proposals[0]!
+    expect(after.votesRevealed).toBe(true)
+    expect(after.votes).toHaveLength(3)
+    expect(after.tally).toEqual({ up: 2, down: 1, abstain: 0, cast: 3, net: 1 })
+  })
+
   it('carries the ballot mode on the agora, whichever it is', async () => {
     const open = await seedAgora(['alice', 'bob'])
     const secret = await seedAgora(['alice', 'bob'], false)

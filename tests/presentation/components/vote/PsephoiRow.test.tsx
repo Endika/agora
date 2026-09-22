@@ -17,7 +17,7 @@ const FOREVER_PAST =
   'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** Closed without everybody voting, in a secret agora: there is no reveal and there never will be. */
 const FOREVER_WITHHELD =
-  'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.'
+  'La propuesta se cerró sin que votara todo el mundo, así que no hay decisión y los votos no se publican: solo se ve cuántas personas votaron.'
 /** Counted together wherever the question is "how many of these are on screen". */
 const ALL = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST, FOREVER_WITHHELD]
 

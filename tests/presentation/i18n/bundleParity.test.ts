@@ -137,3 +137,34 @@ describe('nadie promete nada "al alcanzar el quórum"', () => {
     })
   }
 })
+
+/**
+ * The sentence shown over a withheld ballot, in every locale, checked against what is actually on
+ * the card beside it.
+ *
+ * This is the second failure of the same class as the quorum one: a string that was true when it was
+ * written and stopped being true when the behaviour under it moved. It was written when an
+ * incomplete secret ballot still carried a verdict, so it said «se ve el resultado»; the no-verdict
+ * ruling left it promising an outcome directly above a card labelled «En debate», while the privacy
+ * notice two screens away said the proposal closes without a decision. Nothing caught it, because
+ * the earlier net was looking for one particular word.
+ *
+ * So this one asserts the claim rather than the wording: there is no decision, and the only number
+ * published is how many people voted. A translation that keeps the old shape fails here too.
+ */
+describe('la frase de la papeleta retenida no promete un resultado que no existe', () => {
+  const withheld = {
+    es: { has: [/no hay decisión/, /cuántas personas votaron/], hasNot: [/el resultado/] },
+    en: { has: [/there is no decision/, /how many people voted/], hasNot: [/the outcome/] },
+    eu: { has: [/ez dago erabakirik/, /zenbatek bozkatu duten/], hasNot: [/emaitza/] },
+  }
+
+  for (const [locale, { has, hasNot }] of Object.entries(withheld)) {
+    it(`${locale} dice que no hay decisión y no menciona ningún resultado`, () => {
+      const sentence = i18next.getFixedT(locale)('psephoi.secretForeverWithheld')
+
+      for (const claim of has) expect(sentence).toMatch(claim)
+      for (const lie of hasNot) expect(sentence).not.toMatch(lie)
+    })
+  }
+})
