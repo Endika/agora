@@ -75,6 +75,14 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
   // promised something in the future tense.
   const anyProposal = visible.length > 0
   const anyOpen = visible.some((proposal) => proposal.status === 'open')
+  // Which of the two closed states the board is in. A secret agora withholds the votes of a
+  // proposal that closed without everybody voting, and a board showing one of those is showing
+  // pebbles that will never take a colour — so that is the state worth explaining, even when
+  // another proposal on the same board did publish. The alternative leaves the grey ones reading
+  // as a bug under a paragraph saying the whole group can see them.
+  const anyWithheld = visible.some(
+    (proposal) => proposal.status !== 'open' && proposal.votes === null,
+  )
 
   const act = (action: () => Promise<unknown>) => run(action, reload)
 
@@ -268,7 +276,12 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
             paragraph and the detail's cannot answer it differently either. */}
         {anyProposal && open === undefined && (
           <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-            {t(ballotSentenceKey(board.group.ballotOpen, !anyOpen))}
+            {t(
+              ballotSentenceKey(
+                board.group.ballotOpen,
+                anyOpen ? 'open' : anyWithheld ? 'withheld' : 'published',
+              ),
+            )}
           </p>
         )}
 

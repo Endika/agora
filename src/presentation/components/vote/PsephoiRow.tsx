@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CastVote, VoteValue } from '@/domain/entities/Proposal'
 import type { Participant } from '@/domain/repositories/BoardRepository'
-import { ballotSentenceKey } from './ballotSentence'
+import { type BallotState, ballotSentenceKey } from './ballotSentence'
 
 interface Pebbles {
   /** Everyone entitled to vote: the row's length, and the names the roll is written from. */
@@ -34,11 +34,26 @@ type Explaining =
   | { explainSecret: false }
   | {
       explainSecret: true
-      /** From `board.group.ballotOpen`: true if the ballot opens at quorum, false if never. */
+      /** From `board.group.ballotOpen`: true if the ballot opens when the proposal closes. */
       ballotOpen: boolean
+      /**
+       * Whether the proposal is over. The row cannot derive it: `revealed` says "and published",
+       * which used to be the same thing and is not any more — a secret agora closes a partial
+       * ballot without publishing it, and a row that read `revealed === null` as "still open"
+       * would promise a reveal over pebbles that will never take a colour.
+       */
+      resolved: boolean
     }
 
 type Props = Pebbles & Explaining
+
+/**
+ * The two facts the row holds, read as the three states the sentence distinguishes. Closed without a
+ * reveal is its own case, not a variant of open: it is the end of the story, and the story is that
+ * these votes are never published.
+ */
+const state = (resolved: boolean, revealed: CastVote[] | null): BallotState =>
+  !resolved ? 'open' : revealed !== null ? 'published' : 'withheld'
 
 /** A long row should not take a second to finish arriving, so the stagger stops counting at eight. */
 const STAGGER_CAP = 8
@@ -202,7 +217,7 @@ export function PsephoiRow(props: Props) {
         // whole group sees them, with the name of whoever cast them" over a roll that will never
         // exist. That was the lie; the mode is here so it cannot be told.
         <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
-          {t(ballotSentenceKey(props.ballotOpen, revealed !== null))}
+          {t(ballotSentenceKey(props.ballotOpen, state(props.resolved, revealed)))}
         </p>
       )}
       {roll.length > 0 && (

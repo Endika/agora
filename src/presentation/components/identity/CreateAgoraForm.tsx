@@ -107,6 +107,15 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
             {t('create.ballotMode.openHint')}
           </span>
         </label>
+
+        {/* The only irreversible act in the app besides deleting an agora, and the branch says
+            "cannot be changed" three times — all three in the privacy notice, none of them where
+            somebody can still act on it. There is no settings screen to change it on later. Said in
+            `danger.explain`'s register because that is the house phrasing for a thing with no undo,
+            and not a line louder: this choice is final, not dangerous. */}
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+          {t('create.ballotMode.permanent')}
+        </p>
       </fieldset>
 
       <label className="grid gap-1">

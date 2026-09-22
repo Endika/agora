@@ -8,19 +8,24 @@ import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
 import { renderWithBoard } from '../../support/renderWithBoard'
 import { matchMediaMatches } from '../../../support/matchMedia'
 
+// Every variant speaks of the proposal being open or closed, never of quorum: a deadline closes a
+// vote without one, so "until quorum was reached" was false on every proposal that ran out of time.
 /** The one sentence that has to be on screen before anybody taps a vote button. */
 const SECRET =
-  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, con tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.'
 /** And the one that has to be there once it is too late to be warned. */
 const SECRET_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, con el nombre de quien los puso.'
+  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same pair for an agora whose ballot never opens, where no name is ever promised. */
 const FOREVER =
-  'Nadie ve tu voto hasta que se alcanza el quórum. Después lo ve todo el grupo, y nunca lleva tu nombre.'
+  'Nadie ve tu voto mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, y nunca lleva tu nombre.'
 const FOREVER_PAST =
-  'Nadie vio estos votos hasta que se alcanzó el quórum. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
-/** All four, counted together: which one is on screen is a second question to the same paragraph. */
-const SENTENCES = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST]
+  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
+/** And the third closed state: a secret agora that closed a partial ballot publishes nothing. */
+const FOREVER_WITHHELD =
+  'La propuesta se cerró sin que votara todo el mundo, así que estos votos no se publican: se ve el resultado y cuántas personas votaron, y nada más.'
+/** All five, counted together: which one is on screen is a second question to the same paragraph. */
+const SENTENCES = [SECRET, SECRET_PAST, FOREVER, FOREVER_PAST, FOREVER_WITHHELD]
 
 beforeEach(() => {
   localStorage.clear()

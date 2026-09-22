@@ -60,6 +60,36 @@ begin
   raise notice 'PASS an agora is created secret or open and the column records which';
 end $$;
 
+-- An explicit null fifth argument is not a way to get an open agora.
+do $$
+declare v_refused boolean := false;
+begin
+  -- The column's own `default true` is what covers the argument being *omitted*, which is the case
+  -- the four-argument form depends on and which must keep working. An explicit null is a different
+  -- call shape: it used to be coalesced to true, so a client that sent `p_ballot_open: null` got an
+  -- open agora in a product whose stated default is secret, silently. It is now refused.
+  begin
+    perform agora.create_group('Null mode', 'ballot50', 'alice', 'tok-a50', null);
+  exception when others then v_refused := true;
+  end;
+  if not v_refused then
+    raise exception 'FAIL: an explicit null ballot mode was accepted, and it made a % agora',
+      (select case when ballot_open then 'public' else 'secret' end
+         from agora.groups where slug = 'ballot50');
+  end if;
+  if exists (select 1 from agora.groups where slug = 'ballot50') then
+    raise exception 'FAIL: the refused agora was created anyway';
+  end if;
+
+  -- And omitting it still means open, which is the whole point of keeping the four-argument form.
+  perform agora.create_group('Omitted mode', 'ballot51', 'alice', 'tok-a51');
+  if (select ballot_open from agora.groups where slug = 'ballot51') is not true then
+    raise exception 'FAIL: omitting the argument stopped meaning an open ballot';
+  end if;
+
+  raise notice 'PASS an explicit null ballot mode is refused, an omitted one still means open';
+end $$;
+
 -- The invariant: in a secret agora a resolved proposal ships no attribution at all.
 do $$
 declare v_prop uuid; v_board json; v_delta json; v_votes json; v_text text; i int;
