@@ -116,6 +116,45 @@ describe('el invariante: en un ágora secreta ningún nombre aparece junto a un 
     expect(attributionLeaks(document.body, names)).toEqual([])
   })
 
+  it('y una papeleta parcial no se publica en absoluto: resultado y recuento, sin colores', async () => {
+    // A deadline resolves a *partial* ballot, and the set of people who voted is public knowledge
+    // from the open round. So there is no reveal at all here — the pebbles stay stone for ever.
+    // This is the visible cost of closing that channel, pinned so nobody restores the reveal by
+    // accident, and so the state is known to be coherent rather than broken.
+    const repo = new InMemoryBoardRepository()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: false,
+    })
+    for (const name of ['bob', 'carol', 'dave']) await repo.addParticipant({ slug, name })
+    const as = (name: string) => repo.actAs(repo.participantId(slug, name))
+
+    as('alice')
+    const proposalId = await repo.createProposal({ slug, title: 'Alquilar una furgoneta' })
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    as('bob')
+    await repo.castVote({ proposalId, round: 1, value: 'up' })
+    await repo.updateProposal({ proposalId, deadline: '2020-01-01T00:00:00.000Z' })
+
+    as('carol')
+    window.location.hash = `#/g/${slug}/p/${proposalId}`
+    render(<App {...wiring(repo)} />)
+    const sheet = await screen.findByRole('dialog', { name: 'Alquilar una furgoneta' })
+
+    // The outcome and the count are still the group's: that part was never the leak.
+    expect(sheet).toHaveTextContent('Aprobada')
+    expect(sheet.querySelector('[role="img"]')).toHaveAttribute('aria-label', 'Han votado 2 de 4')
+    // And not one pebble carries a colour, nor is there a roll, nor an empty one.
+    expect(sheet.querySelectorAll('[data-vote]')).toHaveLength(0)
+    expect(sheet.querySelectorAll('[data-testid="pebble-cast"]')).toHaveLength(2)
+    expect(sheet.querySelectorAll('[data-testid="pebble-empty"]')).toHaveLength(2)
+    expect(screen.queryByTestId('vote-roll')).toBeNull()
+    // Nor the net line, which would otherwise print a redacted zero as if it were a result.
+    expect(sheet).not.toHaveTextContent(/Neto/)
+    expect(attributionLeaks(document.body, ['alice', 'bob', 'carol', 'dave'])).toEqual([])
+  })
+
   it('ni en la hoja de la propuesta resuelta, que es donde se publicaría', async () => {
     const { repo, slug, resolved, names } = await agora(false)
     window.location.hash = `#/g/${slug}/p/${resolved}`

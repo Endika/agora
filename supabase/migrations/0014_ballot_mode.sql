@@ -98,6 +98,12 @@ returns json language sql security definer set search_path = '' as $$
            t.up, t.down, t.abstain, t.cast_total,
            t.up - t.down as net,
            g.ballot_open,
+           -- Whether everybody entitled to vote actually did. A proposal that resolves on its
+           -- deadline resolves on a *partial* ballot, and that is the difference this whole
+           -- redaction turns on. `>=` rather than `=` because a participant joining after the
+           -- fact must make the ballot look less complete, never more.
+           t.cast_total >= (select count(*) from agora.participants pa
+                             where pa.group_id = p_group) as complete,
            case p.status when 'approved' then 0
                          when 'open' then 1 when 'debating' then 1
                          when 'completed' then 2 else 3 end as bucket
@@ -148,14 +154,17 @@ returns json language sql security definer set search_path = '' as $$
                -- forget to. Once the proposal leaves 'open' the real breakdown is published in both
                -- modes — that is the moment the senses become public — so this redaction never
                -- outlives the round it protects.
-               'tally', case when pr.ballot_open or pr.status <> 'open'
+               'tally', case when pr.ballot_open or (pr.status <> 'open' and pr.complete)
                           then json_build_object('up', pr.up, 'down', pr.down, 'abstain', pr.abstain,
                                                  'cast', pr.cast_total, 'net', pr.net)
                           else json_build_object('up', 0, 'down', 0, 'abstain', 0,
                                                  'cast', pr.cast_total, 'net', 0) end,
                'myVote', (select v.value from agora.votes v
                            where v.proposal_id = pr.id and v.round = pr.round and v.participant_id = p_me),
-               'votesRevealed', pr.status <> 'open',
+               -- Revealed means revealed. In a secret agora a partial ballot is never published
+               -- (see `votes` below), so this says false there and every reader of it — the net
+               -- line on the card, the export — follows without being told twice.
+               'votesRevealed', pr.status <> 'open' and (pr.ballot_open or pr.complete),
                -- Only once the vote is over. Before that this key is null, not filtered client-side.
                -- What being over reveals is the agora's choice, made when it was created. With an open
                -- ballot the payload attributes each vote and the UI prints the names, and cast order is
@@ -165,7 +174,18 @@ returns json language sql security definer set search_path = '' as $$
                -- read a chronological reveal back onto people. Hence v.id, a v4 uuid uncorrelated with
                -- time (0001:80), as the ordering key there. The two order keys are mutually exclusive by
                -- construction: for a given agora exactly one of them is ever non-null.
-               'votes', case when pr.status <> 'open' then coalesce((
+               --
+               -- And a secret agora publishes nothing at all unless the ballot is complete. Stripping
+               -- the names is enough only while the set of people who voted is unknown, and it is not:
+               -- `pending` names the non-voters all through the round, on screen, to everyone. Anybody
+               -- who opened the board once before the deadline holds that list; when the deadline then
+               -- resolves a partial ballot, the reveal they get is exactly the votes of exactly the
+               -- people that list left over. Two reads, no special access, names and votes paired. So
+               -- the reveal waits for `complete`, which is what quorum means — everybody voted, so the
+               -- voter set is the whole group and there is nothing left to subtract. The cost is real
+               -- and deliberate: a secret proposal that dies on its deadline keeps its votes for ever.
+               'votes', case when pr.status <> 'open' and (pr.ballot_open or pr.complete)
+                        then coalesce((
                           select json_agg(case when pr.ballot_open
                                             then json_build_object('participantId', v.participant_id, 'value', v.value)
                                             else json_build_object('value', v.value) end

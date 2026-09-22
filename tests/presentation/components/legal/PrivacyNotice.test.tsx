@@ -122,6 +122,15 @@ describe('PrivacyNotice', () => {
     expect(visible).toHaveTextContent(
       /el recuento a favor, en contra y en blanco no sale del servidor hasta que la propuesta se resuelve/,
     )
+    // And the limit of that promise, said out loud. The app shows who has already voted while a
+    // round is open, so somebody who looked once can pair that list with whatever closes afterwards.
+    // The votes of a partial ballot are therefore never published at all — which is the mitigation,
+    // and the notice owes the reader both halves rather than an absolute it cannot keep.
+    expect(visible).toHaveTextContent(/durante ese rato es quién ha votado ya/)
+    expect(visible).toHaveTextContent(/podría dejar al grupo deducir cómo cayeron los votos/)
+    expect(visible).toHaveTextContent(
+      /en ese caso, los votos no se publican en absoluto: se ve el resultado y cuántas personas votaron/,
+    )
     expect(screen.queryByText(/Esta ágora tiene el voto abierto/)).toBeNull()
     expect(screen.queryByText(/Cada ágora elige al crearse/)).toBeNull()
   })
