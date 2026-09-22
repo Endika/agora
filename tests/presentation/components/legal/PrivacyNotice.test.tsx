@@ -138,17 +138,15 @@ describe('PrivacyNotice', () => {
       /Si el plazo vence antes, no se publica ninguno de los dos y la propuesta se cierra sin decisión/,
     )
     expect(visible).toHaveTextContent(/durante la votación se ve quién ha votado ya/)
-    // And where the secrecy stops. There are no passwords by design, so anybody with the link can
-    // take a name and read that person's own vote from their device — which is a consequence of
-    // having no accounts, not a flaw in the ballot. A notice that promised secrecy without saying
-    // this would be selling the mode on a promise the product does not keep, and the mode is
-    // chosen on exactly that promise. The limit is named too, because it is what a reader can act
-    // on: it logs the real person out and it is written in the history.
-    expect(visible).toHaveTextContent(/Lo que el voto secreto no protege es la suplantación/)
-    expect(visible).toHaveTextContent(/puede quedarse con el tuyo en su móvil/)
-    expect(visible).toHaveTextContent(/ve tu voto como si fuera tú/)
-    expect(visible).toHaveTextContent(/No es silencioso/)
-    expect(visible).toHaveTextContent(/el historial registra «entró desde otro móvil»/)
+    // And where the secrecy stops, said as a bound rather than as a method. Agora has no passwords
+    // by design, so the link is the whole of the key and the ballot cannot promise more than the
+    // link does. Saying nothing would sell the mode on a promise the product does not keep, and
+    // the mode is chosen on exactly that promise; spelling out how a name is taken would be a
+    // recipe in a privacy notice, which is a worse thing to publish than a vague one. So the
+    // paragraph states the limit and what the reader can act on — keep the link inside the group.
+    expect(visible).toHaveTextContent(/no sustituye a una contraseña/)
+    expect(visible).toHaveTextContent(/el enlace del ágora es la única llave/)
+    expect(visible).toHaveTextContent(/proteger al grupo de un enlace que salió de él/)
     expect(screen.queryByText(/Esta ágora tiene el voto abierto/)).toBeNull()
     expect(screen.queryByText(/Cada ágora elige al crearse/)).toBeNull()
   })
@@ -248,9 +246,9 @@ describe('PrivacyNotice', () => {
       /no publica sus votos ni se decide, precisamente para que el grupo no pueda atar cabos/,
     )
     expect(visible).not.toHaveTextContent(/En cualquiera de los dos/)
-    // The short form of the impersonation limit, on the page somebody reads while choosing a mode.
-    expect(visible).toHaveTextContent(/El voto secreto tampoco protege tu nombre/)
-    expect(visible).toHaveTextContent(/queda anotado en el historial/)
+    // The short form of the same limit, on the page somebody reads while choosing a mode.
+    expect(visible).toHaveTextContent(/tampoco sustituye a una contraseña/)
+    expect(visible).toHaveTextContent(/solo debería tenerlo el grupo/)
   })
 
   it('y lo dice en los tres idiomas, no solo en el que se lee por defecto', async () => {
