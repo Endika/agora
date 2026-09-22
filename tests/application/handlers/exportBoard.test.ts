@@ -235,6 +235,42 @@ describe('exportBoard y el modo de voto del ágora', () => {
     expect(md).not.toContain('votos emitidos')
   })
 
+  it('sigue lo que trae la carga útil, no una segunda copia de la regla', async () => {
+    // The redaction rule is written in three uncoupled places — `board_json`, the fake and this
+    // handler — and un-redacting any one of them leaves the other two green, because each decides
+    // for itself from `ballotOpen` and `votesRevealed`. This test is the coupling: it reads the
+    // decision off the *payload* instead of re-deriving it, so the producer and the consumer cannot
+    // drift apart in silence. A real tally has `cast = up + down + abstain`, so three zeroes with
+    // votes cast is not a tally at all — it is a breakdown the server withheld, and that is legible
+    // from the payload alone with no knowledge of why.
+    let withheldSeen = 0
+    let breakdownSeen = 0
+
+    for (const fixture of [
+      await openRoundAgora(false),
+      await resolvedAgora(false),
+      await openRoundAgora(true),
+      await resolvedAgora(true),
+    ]) {
+      const md = exportBoard(fixture.board, 'md', spanish, fixture.history)
+      const proposal = fixture.board.proposals[0]!
+      const t = proposal.tally
+      const withheld = t.cast > 0 && t.up === 0 && t.down === 0 && t.abstain === 0
+      const summary = md.split('\n').find((line) => line.startsWith('**'))!
+
+      if (withheld) {
+        withheldSeen += 1
+        expect(summary).toBe(`**${spanish.status(proposal.status)}** · ${spanish.castOnly(t.cast)}`)
+      } else {
+        breakdownSeen += 1
+        expect(summary).toBe(`**${spanish.status(proposal.status)}** · ${spanish.tally(t)}`)
+      }
+    }
+
+    // Or the whole thing could pass by never reaching one of the two branches.
+    expect({ withheldSeen, breakdownSeen }).toEqual({ withheldSeen: 1, breakdownSeen: 3 })
+  })
+
   it('el Markdown no lleva ni un voto, en ninguno de los dos modos', async () => {
     // Markdown carries the tally and nothing else, which is why it is safe in both modes. Asserted
     // so that adding a per-vote line later cannot go in quietly, on the mode where it would leak.

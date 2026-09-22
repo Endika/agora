@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import i18next from 'i18next'
 import en from '@/presentation/i18n/en.json'
 import es from '@/presentation/i18n/es.json'
 import eu from '@/presentation/i18n/eu.json'
@@ -61,4 +62,32 @@ describe('los tres bundles dicen las mismas cosas', () => {
 
     expect(blank).toEqual([])
   })
+})
+
+/**
+ * A plural key is the one kind of key the parity test above cannot vouch for: `castOnly_one` and
+ * `castOnly_other` are present in all three bundles and neither is blank, and `t('export.castOnly')`
+ * would still print the raw key if the suffixes were spelled the way i18next does not expect for a
+ * locale. Nothing else catches it either — every export test hands in a written label, and no test
+ * renders `ExportButtons` — so the export would carry the string `export.castOnly` into a document
+ * somebody keeps, with the suite green. Resolved here through the initialised instance the app uses,
+ * at the three counts that exercise both forms.
+ */
+describe('el recuento de la exportación se resuelve de verdad en los tres idiomas', () => {
+  const expected = {
+    es: ['0 votos emitidos', '1 voto emitido', '2 votos emitidos'],
+    en: ['0 votes cast', '1 vote cast', '2 votes cast'],
+    eu: ['0 boto emanda', 'boto 1 emanda', '2 boto emanda'],
+  }
+
+  for (const [locale, counts] of Object.entries(expected)) {
+    it(`${locale} dice el número y nunca la clave`, () => {
+      const t = i18next.getFixedT(locale)
+      for (const [count, text] of counts.entries()) {
+        expect(t('export.castOnly', { count })).toBe(text)
+        // The failure this guards is not a wrong word, it is the raw key reaching the document.
+        expect(t('export.castOnly', { count })).not.toContain('castOnly')
+      }
+    })
+  }
 })

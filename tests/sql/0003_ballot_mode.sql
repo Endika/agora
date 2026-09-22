@@ -407,3 +407,144 @@ begin
 
   raise notice 'PASS an open agora still shows the round developing, which is its whole point';
 end $$;
+
+-- The same leak, moved to the moment the round ends by itself.
+--
+-- A proposal whose deadline passes resolves on a *partial* ballot: it resolves on the next read,
+-- with only some people having voted. At that instant the reveal and `pending` are in the same
+-- payload, and `participants` minus `pending` is precisely the set of people who did vote. One name
+-- in that set beside one revealed value publishes both. Two of three voting the same way publishes
+-- two people at once, which is worse, so it is the case the assertion is built on.
+--
+-- The assertion is therefore not "pending is empty": it is that the subtraction does not identify a
+-- voter. Written that way it survives any other shape the fix might take later.
+do $$
+declare v_prop uuid; v_board json; v_voters int; v_values int; v_pending int; v_participants int;
+begin
+  perform agora.create_group('Deadline secret', 'ballot30', 'alice', 'tok-a30', false);
+  perform agora.add_participant('ballot30', 'bob', 'tok-b30');
+  perform agora.add_participant('ballot30', 'carol', 'tok-c30');
+
+  -- Two of three, both the same way: the homogeneous case, where knowing *who* voted is knowing
+  -- what each of them voted, because every revealed value is identical.
+  v_prop := agora.create_proposal('tok-a30', 'ballot30',
+    json_build_object('title', 'Alquilar una furgoneta'));
+  perform agora.cast_vote('tok-a30', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-b30', v_prop, 1, 'up');
+
+  -- The deadline is aged afterwards rather than set at creation: `cast_vote` resolves on the way
+  -- out, so a proposal born past its deadline would close on the first vote and never reach two.
+  update agora.proposals set deadline = now() - interval '1 minute' where id = v_prop;
+
+  -- Carol never votes; the deadline resolves it on this read, which is a tested feature of its own.
+  v_board := agora.get_board('ballot30', 'tok-c30');
+  if (select status::text from agora.proposals where id = v_prop) = 'open' then
+    raise exception 'FAIL: the deadline did not resolve, so this proves nothing about a partial ballot';
+  end if;
+  if (v_board->'proposals'->0->>'votesRevealed') is distinct from 'true' then
+    raise exception 'FAIL: the fixture never reached the reveal';
+  end if;
+
+  v_participants := json_array_length(v_board->'participants');
+  v_pending := json_array_length(v_board->'proposals'->0->'pending');
+  v_values := json_array_length(v_board->'proposals'->0->'votes');
+  v_voters := v_participants - v_pending;
+
+  -- The attack, stated as the subtraction: if the board still names a proper subset of the group as
+  -- the non-voters, then the rest of the group are the voters, by name, next to their votes.
+  if v_voters < v_participants then
+    raise exception
+      'FAIL: participants minus pending names % of % voters beside % revealed values',
+      v_voters, v_participants, v_values;
+  end if;
+  -- And the votes really are there, or the subtraction was safe only because nothing was revealed.
+  if v_values is distinct from 2 then
+    raise exception 'FAIL: the partial ballot lost its revealed votes (got %)', v_values;
+  end if;
+  -- Nor by any other route: no participant id at all in a resolved secret board.
+  if v_board::text like '%participantId%' then
+    raise exception 'FAIL: the resolved secret board published attribution: %', v_board;
+  end if;
+
+  raise notice 'PASS a deadline-resolved secret ballot cannot be subtracted into who voted';
+end $$;
+
+-- The single-voter case, which is the sharpest: one name out, one value in.
+do $$
+declare v_prop uuid; v_board json;
+begin
+  perform agora.create_group('Lone voter', 'ballot31', 'alice', 'tok-a31', false);
+  perform agora.add_participant('ballot31', 'bob', 'tok-b31');
+  perform agora.add_participant('ballot31', 'carol', 'tok-c31');
+
+  v_prop := agora.create_proposal('tok-a31', 'ballot31',
+    json_build_object('title', 'Pintar el pasillo'));
+  perform agora.cast_vote('tok-b31', v_prop, 1, 'down');
+  update agora.proposals set deadline = now() - interval '1 minute' where id = v_prop;
+  v_board := agora.get_board('ballot31', 'tok-a31');
+
+  if json_array_length(v_board->'proposals'->0->'votes') is distinct from 1 then
+    raise exception 'FAIL: the fixture did not reveal the single vote';
+  end if;
+  if json_array_length(v_board->'proposals'->0->'pending')
+     is distinct from 0 then
+    raise exception 'FAIL: one revealed value and a named non-voter list is bob, voting down';
+  end if;
+
+  raise notice 'PASS one revealed value beside a partial ballot still names nobody';
+end $$;
+
+-- The control: an open agora keeps naming who did not vote, because there the names are published
+-- beside the votes anyway. If this ever goes green in both modes the fix has been over-applied.
+do $$
+declare v_prop uuid; v_board json;
+begin
+  perform agora.create_group('Deadline open', 'ballot32', 'alice', 'tok-a32', true);
+  perform agora.add_participant('ballot32', 'bob', 'tok-b32');
+  perform agora.add_participant('ballot32', 'carol', 'tok-c32');
+
+  v_prop := agora.create_proposal('tok-a32', 'ballot32',
+    json_build_object('title', 'Alquilar una furgoneta'));
+  perform agora.cast_vote('tok-a32', v_prop, 1, 'up');
+  perform agora.cast_vote('tok-b32', v_prop, 1, 'up');
+  update agora.proposals set deadline = now() - interval '1 minute' where id = v_prop;
+  v_board := agora.get_board('ballot32', 'tok-c32');
+
+  if (select status::text from agora.proposals where id = v_prop) = 'open' then
+    raise exception 'FAIL: the control never resolved';
+  end if;
+  if json_array_length(v_board->'proposals'->0->'pending') is distinct from 1 then
+    raise exception 'FAIL: an open agora stopped saying who let the deadline pass without voting';
+  end if;
+  if v_board::text not like '%participantId%' then
+    raise exception 'FAIL: an open agora stopped attributing its votes';
+  end if;
+
+  raise notice 'PASS an open agora still names who let the deadline pass, which is its point';
+end $$;
+
+-- And during the round, in a secret agora, `pending` is untouched: it is the feature that unblocks a
+-- stalled vote, and the fix must not have reached back into the open round to break it.
+do $$
+declare v_prop uuid; v_board json;
+begin
+  perform agora.create_group('Still open', 'ballot33', 'alice', 'tok-a33', false);
+  perform agora.add_participant('ballot33', 'bob', 'tok-b33');
+  perform agora.add_participant('ballot33', 'carol', 'tok-c33');
+  v_prop := agora.create_proposal('tok-a33', 'ballot33', json_build_object('title', 'Pintar'));
+  perform agora.cast_vote('tok-b33', v_prop, 1, 'up');
+
+  v_board := agora.get_board('ballot33', 'tok-a33');
+  if (select status::text from agora.proposals where id = v_prop) is distinct from 'open' then
+    raise exception 'FAIL: the fixture resolved and stopped testing the open round';
+  end if;
+  if json_array_length(v_board->'proposals'->0->'pending') is distinct from 2 then
+    raise exception 'FAIL: a secret agora stopped saying who still has to vote, which unblocks it';
+  end if;
+  if (v_board->'proposals'->0->'votes') is not null
+     and (v_board->'proposals'->0->>'votes') is not null then
+    raise exception 'FAIL: the open round revealed votes, so pending is no longer safe to publish';
+  end if;
+
+  raise notice 'PASS a secret agora still names who has to vote while nothing has been revealed';
+end $$;
