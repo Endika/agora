@@ -2,13 +2,17 @@
 
 A proposal board for a small group. Someone proposes an idea, everyone votes once, the thread
 sorts out the doubts, and whatever gets approved moves to a queue — with its cost split if it
-has one. No accounts, no login: you join an agora through its link, pick a name and set a PIN.
+has one. No accounts, no login: you join an agora through its link and pick your name from the
+list.
 
-Votes stay secret until quorum. Then every vote is revealed at once.
+Votes stay secret until quorum. Then they are revealed at once — with the name of whoever cast
+each one, or without any name at all, depending on the ballot mode the agora chose when it was
+created. The choice is made once and cannot be changed.
 
 ## Status
 
-Early development. The board is not deployed yet.
+Deployed. The frontend lives on GitHub Pages and the database is the `agora` schema of the
+`apps-prod` Supabase project, shared with the other apps.
 
 ## Stack
 
@@ -56,6 +60,42 @@ npm run lint
 npm run type:check
 npm run test:run
 ```
+
+## Deploying
+
+Merging to `main` publishes the frontend and **nothing else**: `deploy.yml` runs `npm ci`,
+`npm run build` and uploads to Pages. `ci.yml` applies the migrations to a throwaway Postgres for
+the tests. **No workflow ever touches the production database.**
+
+So a change that adds a file to `supabase/migrations` is deployed by hand, in this order, and the
+order is not a preference:
+
+1. Apply the migration to production, as one query, with a Supabase personal access token:
+
+   ```bash
+   curl -sS -X POST \
+     "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
+     -H "Authorization: Bearer $SUPABASE_PAT" \
+     -H 'Content-Type: application/json' \
+     --data @<(jq -Rs '{query: .}' supabase/migrations/00NN_whatever.sql)
+   ```
+
+   Send the file whole. `scripts/db.mjs` does the same locally, so a migration that needs
+   splitting would already have failed `npm run test:sql`.
+
+2. Make PostgREST forget its schema cache, or it will not see a new or changed RPC signature:
+
+   ```sql
+   notify pgrst, 'reload schema';
+   ```
+
+3. **Then** merge, which publishes the frontend.
+
+The reason for that order is that migrations here are written to be backwards-compatible — a new
+column arrives with a default, a changed RPC keeps its old signature as a wrapper — so the
+**deployed** frontend keeps working between steps 1 and 3. The reverse is not true: a frontend
+that expects a column the database does not have yet is a blank board for everyone, not a
+degraded one, because `parseBoard` rejects the payload outright.
 
 ## Licence
 
