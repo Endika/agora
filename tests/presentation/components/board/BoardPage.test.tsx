@@ -15,12 +15,12 @@ const SECRET =
   'Tu voto no aparece en el tablón mientras la propuesta está abierta. Cuando se cierra, lo ve todo el grupo, con tu nombre.'
 /** And the one that has to be there once it is too late to be warned. */
 const SECRET_PAST =
-  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
+  'Estos votos no aparecieron en el tablón mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.'
 /** The same pair for an agora whose ballot never opens, where no name is ever promised. */
 const FOREVER =
   'Tu voto no aparece en el tablón mientras la propuesta está abierta. Se publica sin ningún nombre cuando ha votado todo el grupo; si el plazo llega antes, no se publica nunca.'
 const FOREVER_PAST =
-  'Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
+  'Estos votos no aparecieron en el tablón mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.'
 /** And the third closed state: a secret agora that closed a partial ballot publishes nothing. */
 const FOREVER_WITHHELD =
   'La propuesta se cerró sin que votara todo el mundo, así que no hay decisión y los votos no se publican: solo se ve cuántas personas votaron.'
@@ -1558,7 +1558,7 @@ describe('BoardPage, un solo tiempo verbal por ruta', () => {
   }
 
   it('una propuesta resuelta se lee en pasado a 390 px y a 1280 px, no una en cada uno', async () => {
-    // Measured: at 390 px the sheet said "Nadie vio estos votos…" and at 1280 px the same route
+    // Measured: at 390 px the sheet said "Estos votos no aparecieron…" and at 1280 px the same route
     // was still promising secrecy, 143 px above the published roll of names — because the board
     // decided the tense on "is anything open?" and the detail on "is this one resolved?".
     for (const wide of [false, true]) {

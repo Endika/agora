@@ -20,8 +20,8 @@
     "down": "En contra",
     "abstain": "En blanco",
     "abstainCounts": "En blanco también cuenta para el quórum",
-    "secretPast": "Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.",
-    "secretForeverPast": "Nadie vio estos votos mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.",
+    "secretPast": "Estos votos no aparecieron en el tablón mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, con el nombre de quien los puso.",
+    "secretForeverPast": "Estos votos no aparecieron en el tablón mientras la propuesta estuvo abierta. Ahora los ve todo el grupo, y ninguno lleva un nombre.",
     "secretForeverWithheld": "La propuesta se cerró sin que votara todo el mundo, así que no hay decisión y los votos no se publican: solo se ve cuántas personas votaron.",
     "roll": "Quién votó qué",
     "voted": {
