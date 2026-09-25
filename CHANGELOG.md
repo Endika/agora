@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.2](https://github.com/Endika/agora/compare/v0.23.1...v0.23.2) (2026-09-25)
+
+
+### Bug Fixes
+
+* never drop the visited agoras list on a bad read ([92837ec](https://github.com/Endika/agora/commit/92837ec54d51cf2d8eb7af7cb095505724388ffb))
+
 ## [0.23.1](https://github.com/Endika/agora/compare/v0.23.0...v0.23.1) (2026-09-22)
 
 
