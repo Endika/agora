@@ -13,3 +13,15 @@ export interface VisitedAgorasStore {
   remember(slug: string, name: string): void
   forget(slug: string): void
 }
+
+/**
+ * Thrown by remember/forget when the write itself fails — quota exceeded or storage blocked. A
+ * read failure never throws: the adapter falls back to an empty list and simply skips the write,
+ * the same as a key that was never set. It lives beside the port, like `notAParticipant`, because
+ * the UI needs the same type the adapter throws without reaching into the adapter itself.
+ */
+export class VisitedAgorasWriteFailed extends Error {
+  constructor(cause: unknown) {
+    super('agora:visited could not be saved', { cause })
+  }
+}

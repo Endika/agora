@@ -337,6 +337,7 @@
     "nameTaken": "That name is already in the agora. Pick it from the list.",
     "imageLimit": "Ten images per proposal, which is plenty.",
     "closeReason": "The reason needs at least 10 characters.",
-    "notCompleted": "Only an approved proposal can be marked as done."
+    "notCompleted": "Only an approved proposal can be marked as done.",
+    "visitedNotSaved": "This device's list of agoras could not be updated."
   }
 }

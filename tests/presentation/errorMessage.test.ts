@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import i18next from 'i18next'
 import { errorMessage } from '@/presentation/errorMessage'
+import { VisitedAgorasWriteFailed } from '@/domain/ports/VisitedAgorasStore'
 
 const t = i18next.t.bind(i18next)
 
@@ -31,6 +32,12 @@ describe('errorMessage', () => {
   it('recognises a lost network', () => {
     expect(errorMessage(new TypeError('Failed to fetch'), t)).toBe(
       'Sin conexión: se enviará cuando vuelvas a tenerla.',
+    )
+  })
+
+  it('names the visited-agoras list instead of falling back to the generic write failure', () => {
+    expect(errorMessage(new VisitedAgorasWriteFailed(new Error('quota')), t)).toBe(
+      'No se ha podido actualizar la lista de ágoras de este dispositivo.',
     )
   })
 })

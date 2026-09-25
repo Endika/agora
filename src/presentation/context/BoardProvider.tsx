@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { BoardRepository, BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { notAParticipant } from '@/domain/repositories/BoardRepository'
 import type { ActionQueue } from '@/domain/ports/ActionQueue'
 import type { ProposalImages } from '@/domain/ports/ProposalImages'
 import type { VisitedAgorasStore } from '@/domain/ports/VisitedAgorasStore'
+import { errorMessage } from '@/presentation/errorMessage'
 import { BoardContext, type BoardState } from './boardContext'
 
 interface Result {
@@ -38,6 +40,7 @@ export function BoardProvider({
   slug: string | null
   children: ReactNode
 }) {
+  const { t } = useTranslation()
   const [result, setResult] = useState<Result | null>(null)
   const [nonce, setNonce] = useState(0)
   const reload = useCallback(() => setNonce((n) => n + 1), [])
@@ -54,9 +57,16 @@ export function BoardProvider({
       try {
         const board = await repo.getBoard(slug)
         if (!live) return
-        // The device's own list of agoras: no account, so this is the only place it can live.
-        visited.remember(slug, board.group.name)
-        setResult({ slug, phase: 'ready', board, error: null })
+        // The device's own list of agoras: no account, so this is the only place it can live. A
+        // failed write here is local bookkeeping only — the board itself loaded fine, so it still
+        // shows, with the failure reported rather than swallowed.
+        let rememberError: string | null = null
+        try {
+          visited.remember(slug, board.group.name)
+        } catch (cause) {
+          rememberError = errorMessage(cause, t)
+        }
+        setResult({ slug, phase: 'ready', board, error: rememberError })
       } catch (cause) {
         if (!live) return
         // An unknown device token is not a failure: it means this phone has not joined yet. The
@@ -75,7 +85,7 @@ export function BoardProvider({
     return () => {
       live = false
     }
-  }, [repo, visited, slug, nonce])
+  }, [repo, visited, slug, nonce, t])
 
   // Revalidating when the tab comes back is the whole sync strategy: one tiny version call through
   // the caching repository, and no subscriptions to pay for.

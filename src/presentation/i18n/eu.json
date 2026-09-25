@@ -337,6 +337,7 @@
     "nameTaken": "Izen hori agoran dago jada. Aukeratu zerrendatik.",
     "imageLimit": "Hamar irudi proposamen bakoitzeko, nahikoa da.",
     "closeReason": "Arrazoiak gutxienez 10 karaktere behar ditu.",
-    "notCompleted": "Onartutako proposamena bakarrik marka daiteke eginda."
+    "notCompleted": "Onartutako proposamena bakarrik marka daiteke eginda.",
+    "visitedNotSaved": "Ezin izan da gailu honetako agoren zerrenda eguneratu."
   }
 }
