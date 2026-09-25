@@ -337,6 +337,7 @@
     "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
     "imageLimit": "Diez imágenes por propuesta, que ya son muchas.",
     "closeReason": "El motivo necesita al menos 10 caracteres.",
-    "notCompleted": "Solo se puede marcar como hecha una propuesta aprobada."
+    "notCompleted": "Solo se puede marcar como hecha una propuesta aprobada.",
+    "visitedNotSaved": "No se ha podido actualizar la lista de ágoras de este dispositivo."
   }
 }

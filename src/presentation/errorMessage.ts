@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import { VisitedAgorasWriteFailed } from '@/domain/ports/VisitedAgorasStore'
 
 /**
  * Server errors are written for whoever reads the logs: English, and about the database. Showing them raw is
@@ -19,6 +20,8 @@ const BY_TEXT: { pattern: RegExp; key: string }[] = [
 ]
 
 export function errorMessage(cause: unknown, t: TFunction): string {
+  if (cause instanceof VisitedAgorasWriteFailed) return t('errors.visitedNotSaved')
+
   const message = cause instanceof Error ? cause.message : String(cause)
   const code = (cause as { code?: string }).code
 

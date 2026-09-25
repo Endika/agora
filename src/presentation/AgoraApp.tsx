@@ -16,6 +16,7 @@ import { ThemePicker } from '@/presentation/components/settings/ThemePicker'
 import { Logo } from '@/presentation/components/Logo'
 import { useBoard } from '@/presentation/context/boardContext'
 import { openAgora, privacyHref, type Route } from '@/presentation/routing'
+import { useAction } from '@/presentation/useAction'
 
 export function AgoraApp({ network, route }: { network: OnlineDetector; route: Route }) {
   const { t } = useTranslation()
@@ -23,6 +24,13 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
   const [switching, setSwitching] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [knownAgoras, setKnownAgoras] = useState(() => visited.list())
+  const { run: forget, error: forgetError } = useAction()
+
+  const forgetLocally = (agoraSlug: string) =>
+    forget(async () => {
+      visited.forget(agoraSlug)
+      setKnownAgoras(visited.list())
+    })
 
   const identified = () => {
     setSwitching(false)
@@ -58,14 +66,12 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
 
         {status === 'idle' && (
           <>
-            <AgoraList
-              agoras={knownAgoras}
-              onOpen={openAgora}
-              onForget={(slug) => {
-                visited.forget(slug)
-                setKnownAgoras(visited.list())
-              }}
-            />
+            {forgetError && (
+              <p role="alert" style={{ color: 'var(--danger)' }}>
+                {forgetError}
+              </p>
+            )}
+            <AgoraList agoras={knownAgoras} onOpen={openAgora} onForget={forgetLocally} />
             <CreateAgoraForm onCreated={openAgora} />
           </>
         )}
@@ -76,6 +82,11 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
 
         {status === 'ready' && board && !switching && (
           <>
+            {error && (
+              <p role="alert" style={{ color: 'var(--danger)' }}>
+                {error}
+              </p>
+            )}
             <section className="grid gap-2">
               <h2 className="text-2xl font-semibold">{board.group.name}</h2>
               <p
@@ -163,7 +174,7 @@ export function AgoraApp({ network, route }: { network: OnlineDetector; route: R
                   slug={board.group.slug}
                   agoraName={board.group.name}
                   onDeleted={() => {
-                    visited.forget(board.group.slug)
+                    forgetLocally(board.group.slug)
                     window.location.hash = ''
                   }}
                 />
