@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.4](https://github.com/Endika/agora/compare/v0.23.3...v0.23.4) (2026-09-27)
+
+
+### Bug Fixes
+
+* point the privacy notice at the sections that export and delete ([971c951](https://github.com/Endika/agora/commit/971c951b86554de3bba28e38fbc1f0fdf14e2593))
+
 ## [0.23.3](https://github.com/Endika/agora/compare/v0.23.2...v0.23.3) (2026-09-27)
 
 
