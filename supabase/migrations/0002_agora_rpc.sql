@@ -80,7 +80,7 @@ create or replace function agora.log(
   values (p_group, p_proposal, p_actor, p_type, p_description);
 $$;
 
--- Cheap per-participant write throttle (spec §8). Counts rows already written in the window, so it
+-- Cheap per-participant write throttle. Counts rows already written in the window, so it
 -- needs no extra bookkeeping table.
 create or replace function agora.throttle(p_count int, p_max int, p_what text)
 returns void language plpgsql immutable set search_path = '' as $$
