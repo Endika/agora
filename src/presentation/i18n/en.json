@@ -320,7 +320,7 @@
     "retentionHeading": "How long",
     "retention": "What is in an agora stays while the agora exists: it is a board that lives for months and the group comes back to it. Nothing is deleted automatically by age.",
     "rightsHeading": "Your rights",
-    "rights": "You can access, correct and delete your data. Download: anyone in the agora can export it as Markdown or JSON from “Share the agora”. Delete: in that same section, “Delete the agora” really removes the rows and the images from the server, confirmed by typing the agora's name. If you would rather ask in writing, email endika2@gmail.com and you will get an answer within a month.",
+    "rights": "You can access, correct and delete your data. Download: anyone in the agora can export it as Markdown or JSON from “Take the board with you”. Delete: “Delete the agora”, its own section, really removes the rows and the images from the server, confirmed by typing the agora's name. If you would rather ask in writing, email endika2@gmail.com and you will get an answer within a month.",
     "deviceHeading": "What your phone keeps",
     "device": "To work offline, the app keeps on your device a copy of the board, any votes and comments waiting to be sent, your device identifier, and the list of agoras you have visited. None of that leaves your phone, and it goes when you clear the site's data or use the clear-and-reload button."
   },
