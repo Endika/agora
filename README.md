@@ -26,7 +26,7 @@ offline-first.
 
 ## Architecture
 
-Ports and adapters, with the dependency rule enforced by ESLint rather than by good intentions:
+Ports and adapters, with the dependency rule enforced by ESLint:
 
 - `src/domain` — entities, value objects and services. Framework-free; imports nothing.
 - `src/application` — one use case per action, talking to ports only.
@@ -72,8 +72,7 @@ Merging to `main` publishes the frontend and **nothing else**: `deploy.yml` runs
 `npm run build` and uploads to Pages. `ci.yml` applies the migrations to a throwaway Postgres for
 the tests. **No workflow ever touches the production database.**
 
-So a change that adds a file to `supabase/migrations` is deployed by hand, in this order, and the
-order is not a preference:
+So a change that adds a file to `supabase/migrations` is deployed by hand, in this order:
 
 1. Apply the migration to production, as one query, with a Supabase personal access token:
 
@@ -95,11 +94,6 @@ order is not a preference:
    ```
 
 3. **Then** merge, which publishes the frontend.
-
-One thing that window costs, so it is a decision and not a surprise: until step 3 publishes the
-new frontend, the deployed one still calls the four-argument `create_group`, which means an **open**
-ballot. Any agora created between steps 1 and 3 is open, and that cannot be undone. Deploy when
-nobody is starting an agora, or accept it.
 
 The reason for that order is that migrations here are written to be backwards-compatible — a new
 column arrives with a default, a changed RPC keeps its old signature as a wrapper — so the

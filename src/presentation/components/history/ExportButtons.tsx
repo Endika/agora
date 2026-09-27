@@ -4,7 +4,7 @@ import { exportBoard, exportFilename, type ExportFormat } from '@/application/ha
 import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
 
-/** Straight from the cached snapshot, so this works offline and costs no egress. */
+/** The Markdown comes straight from the cached snapshot, so it works offline; the JSON also fetches the history. */
 export function ExportButtons({ board }: { board: BoardSnapshot }) {
   const { t } = useTranslation()
   const { repo } = useBoard()

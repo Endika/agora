@@ -12,8 +12,7 @@ interface Labels {
 
 /**
  * The board is the group's, not the app's: this hands it back in a form that outlives Agora. Markdown to
- * read, JSON to reuse — and both are produced from the cached snapshot, so exporting works offline and
- * costs nothing in egress.
+ * read, JSON to reuse — both built from the cached snapshot, plus the history the caller fetches for the JSON.
  */
 export function exportBoard(
   board: BoardSnapshot,
