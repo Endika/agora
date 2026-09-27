@@ -1,16 +1,28 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { exportBoard, exportFilename, type ExportFormat } from '@/application/handlers/exportBoard'
-import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
+import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
 
 /** Straight from the cached snapshot, so this works offline and costs no egress. */
 export function ExportButtons({ board }: { board: BoardSnapshot }) {
   const { t } = useTranslation()
   const { repo } = useBoard()
+  const [error, setError] = useState<string | null>(null)
 
   const download = async (format: ExportFormat) => {
-    // History is not in the snapshot, so an export that promises "the whole board" fetches it.
-    const history = await repo.history({ slug: board.group.slug, limit: 200 }).catch(() => [])
+    setError(null)
+    // History is not in the snapshot and only the JSON carries it. Without it the file would claim to be
+    // the whole board and not be, so the JSON is refused rather than downloaded short.
+    let history: HistoryEntry[] = []
+    if (format === 'json') {
+      try {
+        history = await repo.history({ slug: board.group.slug, limit: 200 })
+      } catch {
+        setError(t('export.historyFailed'))
+        return
+      }
+    }
     const content = exportBoard(
       board,
       format,
@@ -55,6 +67,11 @@ export function ExportButtons({ board }: { board: BoardSnapshot }) {
           {t('export.json')}
         </button>
       </div>
+      {error && (
+        <p role="alert" className="text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
     </div>
   )
 }

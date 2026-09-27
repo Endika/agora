@@ -267,7 +267,8 @@
     "markdown": "Download Markdown",
     "json": "Download JSON",
     "castOnly_one": "{{count}} vote cast",
-    "castOnly_other": "{{count}} votes cast"
+    "castOnly_other": "{{count}} votes cast",
+    "historyFailed": "The JSON was not downloaded: the history could not be loaded. Try again."
   },
   "install": {
     "title": "Install Agora on your phone and open it like an app.",

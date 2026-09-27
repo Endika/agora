@@ -267,7 +267,8 @@
     "markdown": "Deskargatu Markdown",
     "json": "Deskargatu JSON",
     "castOnly_one": "boto {{count}} emanda",
-    "castOnly_other": "{{count}} boto emanda"
+    "castOnly_other": "{{count}} boto emanda",
+    "historyFailed": "Ez da JSONa deskargatu: ezin izan da historia kargatu. Saiatu berriro."
   },
   "install": {
     "title": "Instalatu Agora mugikorrean eta ireki app bat bezala.",
