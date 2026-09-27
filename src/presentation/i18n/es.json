@@ -320,7 +320,7 @@
     "retentionHeading": "Cuánto tiempo",
     "retention": "Lo que hay en un ágora se queda mientras el ágora exista: es un tablón que vive meses y el grupo vuelve a consultarlo. No hay borrado automático por tiempo.",
     "rightsHeading": "Tus derechos",
-    "rights": "Puedes acceder a tus datos, corregirlos y borrarlos. Descargar: cualquiera del ágora puede exportarla en Markdown o JSON desde «Comparte el ágora». Borrar: en la misma sección, «Borrar el ágora» elimina de verdad las filas y las imágenes del servidor, escribiendo el nombre del ágora para confirmar. Si prefieres pedirlo por escrito, escribe a endika2@gmail.com y se responde en menos de un mes.",
+    "rights": "Puedes acceder a tus datos, corregirlos y borrarlos. Descargar: cualquiera del ágora puede exportarla en Markdown o JSON desde «Llévate el tablón». Borrar: en su propia sección, «Borrar el ágora» elimina de verdad las filas y las imágenes del servidor, escribiendo el nombre del ágora para confirmar. Si prefieres pedirlo por escrito, escribe a endika2@gmail.com y se responde en menos de un mes.",
     "deviceHeading": "Lo que guarda tu móvil",
     "device": "Para funcionar sin conexión, la app guarda en tu dispositivo una copia del tablón, los votos y comentarios pendientes de enviar, tu identificador de dispositivo y la lista de ágoras que has visitado. Eso no sale de tu móvil y se borra al borrar los datos del sitio o con el botón de vaciar y recargar."
   },
