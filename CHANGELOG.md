@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.3](https://github.com/Endika/agora/compare/v0.23.2...v0.23.3) (2026-09-27)
+
+
+### Bug Fixes
+
+* tell the user when the export can't include history ([4768e04](https://github.com/Endika/agora/commit/4768e045de8fbd64c9217ec44503c75ace348afb))
+
 ## [0.23.2](https://github.com/Endika/agora/compare/v0.23.1...v0.23.2) (2026-09-25)
 
 
