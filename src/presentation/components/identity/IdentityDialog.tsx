@@ -34,10 +34,13 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
   }, [repo, slug, t])
 
   const claim = async (participantId: string) => {
+    setError(null)
     setBusy(true)
     try {
       await repo.claim({ slug, participantId })
       onIdentified()
+    } catch (cause) {
+      setError(errorMessage(cause, t, 'write'))
     } finally {
       setBusy(false)
     }
@@ -98,9 +101,18 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             ))}
           </ul>
 
+          {error && (
+            <p role="alert" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
+          )}
+
           <button
             type="button"
-            onClick={() => setAdding(true)}
+            onClick={() => {
+              setError(null)
+              setAdding(true)
+            }}
             className="min-h-11 justify-self-start rounded-(--radius) px-4 font-medium"
             style={{ background: 'var(--brand-strong)', color: 'var(--brand-ink)' }}
           >
@@ -140,7 +152,10 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
             </button>
             <button
               type="button"
-              onClick={() => setAdding(false)}
+              onClick={() => {
+                setError(null)
+                setAdding(false)
+              }}
               className="min-h-11 rounded-(--radius) border px-4"
               style={{ borderColor: 'var(--border)' }}
             >

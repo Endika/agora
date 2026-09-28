@@ -2,9 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { IdentityDialog } from '@/presentation/components/identity/IdentityDialog'
-import type { AgoraPreview } from '@/domain/repositories/BoardRepository'
+import type { AgoraPreview, Identity } from '@/domain/repositories/BoardRepository'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { renderWithBoard } from '../../support/renderWithBoard'
+
+class OfflineClaim extends InMemoryBoardRepository {
+  override async claim(): Promise<Identity> {
+    throw new TypeError('Failed to fetch')
+  }
+}
 
 class BrokenPreview extends InMemoryBoardRepository {
   override async preview(): Promise<AgoraPreview> {
@@ -92,6 +98,23 @@ describe('IdentityDialog', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Escribe tu nombre.')
     expect(repo.calls).not.toContain('addParticipant')
+  })
+
+  it('says why a claim failed instead of leaving the tap unanswered', async () => {
+    const { repo, slug } = await agora(['Endika', 'Marta'], new OfflineClaim())
+    let done = false
+    renderWithBoard(<IdentityDialog slug={slug} onIdentified={() => (done = true)} />, {
+      repo,
+      slug,
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Marta' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
+    expect(done).toBe(false)
+    expect(screen.getByRole('button', { name: 'Marta' })).toBeEnabled()
   })
 
   it('translates a failed preview rather than printing what the server said', async () => {
