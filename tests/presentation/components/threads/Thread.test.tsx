@@ -5,8 +5,13 @@ import { ThreadList } from '@/presentation/components/threads/ThreadList'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { renderWithBoard } from '../../support/renderWithBoard'
 
-async function threadOn(comments: string[]) {
-  const repo = new InMemoryBoardRepository()
+class RefusedResolve extends InMemoryBoardRepository {
+  override async setThreadResolved(): Promise<never> {
+    throw Object.assign(new Error('only the creator may resolve the thread'), { code: 'PT403' })
+  }
+}
+
+async function threadOn(comments: string[], repo = new InMemoryBoardRepository()) {
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: 'alice',
@@ -83,6 +88,33 @@ describe('Thread', () => {
 
     view(bob)
     expect(screen.getByRole('button', { name: 'Marcar como resuelto' })).toBeInTheDocument()
+  })
+
+  it('shows a refused resolve instead of dropping it', async () => {
+    const { repo, slug, proposalId, alice, bob, board } = await threadOn(
+      ['What colour?'],
+      new RefusedResolve(),
+    )
+    let changed = false
+    renderWithBoard(
+      <ThreadList
+        proposalId={proposalId}
+        proposalAuthorId={alice}
+        threads={board.threads}
+        participants={board.participants}
+        meId={bob}
+        slug={slug}
+        onChanged={() => (changed = true)}
+      />,
+      { repo, slug },
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Marcar como resuelto' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Solo quien creó la propuesta puede hacer eso.',
+    )
+    expect(changed).toBe(false)
   })
 
   it('fetches the rest of a long thread only when asked', async () => {
