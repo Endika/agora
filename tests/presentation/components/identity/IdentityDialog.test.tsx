@@ -2,11 +2,17 @@ import { describe, it, expect } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { IdentityDialog } from '@/presentation/components/identity/IdentityDialog'
+import type { AgoraPreview } from '@/domain/repositories/BoardRepository'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { renderWithBoard } from '../../support/renderWithBoard'
 
-async function agora(names: string[]) {
-  const repo = new InMemoryBoardRepository()
+class BrokenPreview extends InMemoryBoardRepository {
+  override async preview(): Promise<AgoraPreview> {
+    throw new Error('permission denied for function agora_preview')
+  }
+}
+
+async function agora(names: string[], repo = new InMemoryBoardRepository()) {
   const { slug } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: names[0]!,
@@ -86,5 +92,15 @@ describe('IdentityDialog', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Escribe tu nombre.')
     expect(repo.calls).not.toContain('addParticipant')
+  })
+
+  it('translates a failed preview rather than printing what the server said', async () => {
+    const { repo, slug } = await agora(['Endika'], new BrokenPreview())
+    renderWithBoard(<IdentityDialog slug={slug} onIdentified={() => {}} />, { repo, slug })
+
+    expect(
+      await screen.findByText('No se ha podido cargar. Inténtalo otra vez.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/permission denied/)).not.toBeInTheDocument()
   })
 })

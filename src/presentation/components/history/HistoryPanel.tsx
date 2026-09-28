@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { BoardSnapshot, HistoryEntry } from '@/domain/repositories/BoardRepository'
 import { formatCents } from '@/presentation/components/expense/money'
 import { useBoard } from '@/presentation/context/boardContext'
+import { errorMessage } from '@/presentation/errorMessage'
 
 /**
  * Who did what, newest first, as sentences.
@@ -27,12 +28,12 @@ export function HistoryPanel({ board }: { board: BoardSnapshot }) {
         if (live) setEntries(result)
       })
       .catch((cause: unknown) => {
-        if (live) setFailure(cause instanceof Error ? cause.message : String(cause))
+        if (live) setFailure(errorMessage(cause, t, 'read'))
       })
     return () => {
       live = false
     }
-  }, [repo, board.group.slug])
+  }, [repo, board.group.slug, t])
 
   const when = new Intl.DateTimeFormat(i18n.language, {
     day: 'numeric',
