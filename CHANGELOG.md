@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.23.6](https://github.com/Endika/agora/compare/v0.23.5...v0.23.6) (2026-09-28)
+
+
+### Bug Fixes
+
+* report a failed agora delete instead of dropping it ([f443019](https://github.com/Endika/agora/commit/f443019b7581efd4e48f491280b613d456e85102))
+* show a failed thread resolve instead of dropping it ([36dbd9e](https://github.com/Endika/agora/commit/36dbd9e73a8b8afc8fcb24bff2031539cb8d3196))
+* stop promising to send writes that were never queued ([dafe8ce](https://github.com/Endika/agora/commit/dafe8ce338a2781708b2e2dffc6790698806ab5c))
+
 ## [0.23.5](https://github.com/Endika/agora/compare/v0.23.4...v0.23.5) (2026-09-28)
 
 
