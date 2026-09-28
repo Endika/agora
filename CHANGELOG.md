@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.23.5](https://github.com/Endika/agora/compare/v0.23.4...v0.23.5) (2026-09-28)
+
+
+### Bug Fixes
+
+* tell the user when claiming a name fails ([28e0d7c](https://github.com/Endika/agora/commit/28e0d7c0b6e06a32d2a0144c7e9b303a3010da33))
+* translate load and create failures instead of raw server text ([a45e47f](https://github.com/Endika/agora/commit/a45e47ff934e1e4e942f65b7c21394a1c8d5d22d))
+
 ## [0.23.4](https://github.com/Endika/agora/compare/v0.23.3...v0.23.4) (2026-09-27)
 
 
