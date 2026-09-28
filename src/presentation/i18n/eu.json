@@ -119,7 +119,6 @@
     "add": "Gehitu ni",
     "back": "Itzuli zerrendara",
     "nameRequired": "Idatzi zure izena.",
-    "nameTaken": "Izen hori agoran dago. Aukeratu zerrendatik.",
     "switch": "Aldatu pertsona"
   },
   "create": {
@@ -327,6 +326,8 @@
   "errors": {
     "generic": "Ezin izan da gorde. Saiatu berriro.",
     "offline": "Konexiorik gabe: itzultzean bidaliko da.",
+    "offlineNow": "Konexiorik gabe: honek konexioa behar du. Saiatu berriro itzultzean.",
+    "notLoaded": "Ezin izan da kargatu. Saiatu berriro.",
     "PT403": "Ez duzu hori egiteko baimenik.",
     "PT404": "Hori jada ez dago.",
     "PT409": "Zerbait aldatu da bitartean. Birkargatu eta saiatu berriro.",

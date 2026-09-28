@@ -119,7 +119,6 @@
     "add": "Añadirme",
     "back": "Volver a la lista",
     "nameRequired": "Escribe tu nombre.",
-    "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
     "switch": "Cambiar de persona"
   },
   "create": {
@@ -327,6 +326,8 @@
   "errors": {
     "generic": "No se ha podido guardar. Inténtalo otra vez.",
     "offline": "Sin conexión: se enviará cuando vuelvas a tenerla.",
+    "offlineNow": "Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.",
+    "notLoaded": "No se ha podido cargar. Inténtalo otra vez.",
     "PT403": "No tienes permiso para hacer eso.",
     "PT404": "Eso ya no está.",
     "PT409": "Algo ha cambiado mientras lo hacías. Recarga y vuelve a intentarlo.",

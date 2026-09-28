@@ -2,8 +2,15 @@ import { describe, it, expect } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CreateAgoraForm } from '@/presentation/components/identity/CreateAgoraForm'
+import type { Identity } from '@/domain/repositories/BoardRepository'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { renderWithBoard } from '../../support/renderWithBoard'
+
+class RefusingCreate extends InMemoryBoardRepository {
+  override async createAgora(): Promise<Identity> {
+    throw new Error('duplicate key value violates unique constraint "groups_slug_key"')
+  }
+}
 
 async function fillAndSubmit(agoraName: string, creatorName: string) {
   await userEvent.type(screen.getByLabelText('Nombre del ágora'), agoraName)
@@ -110,5 +117,21 @@ describe('CreateAgoraForm', () => {
 
     const board = await repo.getBoard(created!)
     expect(board.group.ballotOpen).toBe(false)
+  })
+
+  it('translates a failed create rather than printing what the database said', async () => {
+    let created: string | null = null
+    renderWithBoard(<CreateAgoraForm onCreated={(slug) => (created = slug)} />, {
+      repo: new RefusingCreate(),
+      slug: null,
+    })
+
+    await fillAndSubmit('Piso de Gros', 'Endika')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se ha podido guardar. Inténtalo otra vez.',
+    )
+    expect(screen.queryByText(/duplicate key/)).not.toBeInTheDocument()
+    expect(created).toBeNull()
   })
 })

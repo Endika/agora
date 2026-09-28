@@ -71,13 +71,12 @@ export function BoardProvider({
         if (!live) return
         // An unknown device token is not a failure: it means this phone has not joined yet. The
         // predicate is the port's, not a second copy — the cache has to answer it the same way.
-        const message = cause instanceof Error ? cause.message : String(cause)
         const joining = notAParticipant(cause)
         setResult({
           slug,
           phase: joining ? 'joining' : 'error',
           board: null,
-          error: joining ? null : message,
+          error: joining ? null : errorMessage(cause, t, 'read'),
         })
       }
     })()

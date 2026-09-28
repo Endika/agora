@@ -17,8 +17,13 @@ const entry = (over: Partial<HistoryEntry>): HistoryEntry => ({
 })
 
 /** The panel fetches history itself, so the fake is seeded and the board only supplies names and titles. */
-async function panelWith(entries: HistoryEntry[]) {
-  const repo = new InMemoryBoardRepository()
+class BrokenHistory extends InMemoryBoardRepository {
+  override async history(): Promise<HistoryEntry[]> {
+    throw new Error('canceling statement due to statement timeout')
+  }
+}
+
+async function panelWith(entries: HistoryEntry[], repo = new InMemoryBoardRepository()) {
   const { slug, participantId } = await repo.createAgora({
     name: 'Cuadrilla',
     creatorName: 'Endika',
@@ -74,5 +79,13 @@ describe('HistoryPanel', () => {
   it('handles an entry about a proposal that is no longer there', async () => {
     await panelWith([entry({ proposalId: 'gone' })])
     expect(await screen.findByText('Endika propuso «una propuesta»')).toBeInTheDocument()
+  })
+
+  it('says the history could not be loaded, not what the database said', async () => {
+    await panelWith([entry({})], new BrokenHistory())
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se ha podido cargar. Inténtalo otra vez.',
+    )
+    expect(screen.queryByText(/statement timeout/)).not.toBeInTheDocument()
   })
 })

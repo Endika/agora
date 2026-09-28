@@ -40,4 +40,19 @@ describe('errorMessage', () => {
       'No se ha podido actualizar la lista de ágoras de este dispositivo.',
     )
   })
+
+  it('does not promise to send later what was never queued', () => {
+    expect(errorMessage(new TypeError('Failed to fetch'), t, 'write')).toBe(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
+    expect(errorMessage(new TypeError('Failed to fetch'), t, 'read')).toBe(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
+  })
+
+  it('says a failed read could not be loaded, not that it could not be saved', () => {
+    expect(errorMessage(new Error('relation does not exist'), t, 'read')).toBe(
+      'No se ha podido cargar. Inténtalo otra vez.',
+    )
+  })
 })

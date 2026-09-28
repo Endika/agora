@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AgoraPreview } from '@/domain/repositories/BoardRepository'
 import { useBoard } from '@/presentation/context/boardContext'
+import { errorMessage } from '@/presentation/errorMessage'
 
 /**
  * The "who are you?" step. Someone opens the link, we do not know them, so we ask — a list of the
@@ -25,12 +26,12 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
         if (live) setPreview(result)
       })
       .catch((cause: unknown) => {
-        if (live) setError(cause instanceof Error ? cause.message : String(cause))
+        if (live) setError(errorMessage(cause, t, 'read'))
       })
     return () => {
       live = false
     }
-  }, [repo, slug])
+  }, [repo, slug, t])
 
   const claim = async (participantId: string) => {
     setBusy(true)
@@ -54,8 +55,7 @@ export function IdentityDialog({ slug, onIdentified }: { slug: string; onIdentif
       await repo.addParticipant({ slug, name: name.trim() })
       onIdentified()
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause)
-      setError(/name taken/i.test(message) ? t('identity.nameTaken') : message)
+      setError(errorMessage(cause, t, 'write'))
     } finally {
       setBusy(false)
     }

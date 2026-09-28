@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AgoraApp } from '@/presentation/AgoraApp'
+import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { FakeOnlineDetector } from '@/infrastructure/network/OnlineDetector'
 import { VisitedAgoras } from '@/infrastructure/identity/VisitedAgoras'
@@ -68,5 +69,23 @@ describe('AgoraApp con el adaptador real de ágoras visitadas', () => {
     } finally {
       setItem.mockRestore()
     }
+  })
+
+  it('un tablón que no carga se explica, sin el texto del servidor', async () => {
+    class BrokenBoard extends InMemoryBoardRepository {
+      override async getBoard(): Promise<BoardSnapshot> {
+        throw new Error('JWT expired')
+      }
+    }
+
+    renderWithBoard(
+      <AgoraApp network={new FakeOnlineDetector()} route={{ kind: 'board', slug: 'abcd1234' }} />,
+      { repo: new BrokenBoard(), visited: VisitedAgoras, slug: 'abcd1234' },
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se ha podido cargar. Inténtalo otra vez.',
+    )
+    expect(screen.queryByText(/JWT/)).not.toBeInTheDocument()
   })
 })

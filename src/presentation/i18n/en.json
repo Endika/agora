@@ -119,7 +119,6 @@
     "add": "Add me",
     "back": "Back to the list",
     "nameRequired": "Type your name.",
-    "nameTaken": "That name is already in the agora. Pick it from the list.",
     "switch": "Switch person"
   },
   "create": {
@@ -327,6 +326,8 @@
   "errors": {
     "generic": "That could not be saved. Try again.",
     "offline": "Offline: it will be sent when you are back.",
+    "offlineNow": "Offline: this needs a connection. Try again when you are back.",
+    "notLoaded": "That could not be loaded. Try again.",
     "PT403": "You are not allowed to do that.",
     "PT404": "That is not there any more.",
     "PT409": "Something changed while you were doing that. Reload and try again.",

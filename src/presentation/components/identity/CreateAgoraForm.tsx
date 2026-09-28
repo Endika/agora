@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useBoard } from '@/presentation/context/boardContext'
+import { errorMessage } from '@/presentation/errorMessage'
 
 /** The agora's name and its ballot policy, then the one field that is about you: your own name. */
 export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => void }) {
@@ -33,7 +34,7 @@ export function CreateAgoraForm({ onCreated }: { onCreated: (slug: string) => vo
       })
       onCreated(identity.slug)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause))
+      setError(errorMessage(cause, t, 'write'))
     } finally {
       setBusy(false)
     }
