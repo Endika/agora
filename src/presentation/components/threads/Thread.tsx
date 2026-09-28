@@ -87,9 +87,10 @@ export function Thread({ thread, participants, meId, proposalAuthorId, slug, onC
         <button
           type="button"
           onClick={() =>
-            void repo
-              .setThreadResolved({ threadId: thread.id, resolved: !resolved })
-              .then(onChanged)
+            run(
+              () => repo.setThreadResolved({ threadId: thread.id, resolved: !resolved }),
+              onChanged,
+            )
           }
           className="min-h-11 justify-self-start rounded-(--radius) border px-4"
           style={{ borderColor: 'var(--border)' }}
