@@ -338,6 +338,10 @@
     "staleRound": "A new round has opened: vote again.",
     "nameTaken": "That name is already in the agora. Pick it from the list.",
     "imageLimit": "Ten images per proposal, which is plenty.",
+    "imagesNotUploaded_one": "The proposal is saved, but the image could not be uploaded. You can add it by editing the proposal.",
+    "imagesNotUploaded_other": "The proposal is saved, but {{count}} images could not be uploaded. You can add them by editing the proposal.",
+    "imagesNotUploadedOffline_one": "The proposal is saved, but the image could not be uploaded while offline. Add it by editing the proposal when you are back.",
+    "imagesNotUploadedOffline_other": "The proposal is saved, but {{count}} images could not be uploaded while offline. Add them by editing the proposal when you are back.",
     "closeReason": "The reason needs at least 10 characters.",
     "notCompleted": "Only an approved proposal can be marked as done.",
     "visitedNotSaved": "This device's list of agoras could not be updated."

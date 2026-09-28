@@ -338,6 +338,10 @@
     "staleRound": "Se ha abierto una ronda nueva: vuelve a votar.",
     "nameTaken": "Ese nombre ya está en el ágora. Elígelo en la lista.",
     "imageLimit": "Diez imágenes por propuesta, que ya son muchas.",
+    "imagesNotUploaded_one": "La propuesta está guardada, pero la imagen no se ha podido subir. Puedes añadirla editando la propuesta.",
+    "imagesNotUploaded_other": "La propuesta está guardada, pero {{count}} imágenes no se han podido subir. Puedes añadirlas editando la propuesta.",
+    "imagesNotUploadedOffline_one": "La propuesta está guardada, pero sin conexión la imagen no se ha podido subir. Añádela editando la propuesta cuando vuelvas a tenerla.",
+    "imagesNotUploadedOffline_other": "La propuesta está guardada, pero sin conexión {{count}} imágenes no se han podido subir. Añádelas editando la propuesta cuando vuelvas a tenerla.",
     "closeReason": "El motivo necesita al menos 10 caracteres.",
     "notCompleted": "Solo se puede marcar como hecha una propuesta aprobada.",
     "visitedNotSaved": "No se ha podido actualizar la lista de ágoras de este dispositivo."

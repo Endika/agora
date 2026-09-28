@@ -29,3 +29,16 @@ export interface ProposalImages {
   /** The URL to show for a stored path. */
   urlFor(path: string): string
 }
+
+/**
+ * Thrown once the proposal is written but some of its images did not make it: the proposal exists, so
+ * reporting the whole thing as failed would send the author to publish it a second time.
+ */
+export class ImagesNotAttached extends Error {
+  constructor(
+    readonly missing: number,
+    cause: unknown,
+  ) {
+    super(`${missing} image(s) not attached`, { cause })
+  }
+}
