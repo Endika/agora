@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.7](https://github.com/Endika/agora/compare/v0.23.6...v0.23.7) (2026-09-28)
+
+
+### Bug Fixes
+
+* keep a saved proposal when only its image fails to upload ([85ca352](https://github.com/Endika/agora/commit/85ca352b48bbe12b9cb7a64d23d857965563b88c))
+
 ## [0.23.6](https://github.com/Endika/agora/compare/v0.23.5...v0.23.6) (2026-09-28)
 
 
