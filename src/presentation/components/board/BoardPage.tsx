@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Proposal, VoteValue } from '@/domain/entities/Proposal'
+import { ImagesNotAttached } from '@/domain/ports/ProposalImages'
 import type { BoardSnapshot } from '@/domain/repositories/BoardRepository'
 import { ProposalForm, type ProposalDraft } from '@/presentation/components/proposal/ProposalForm'
 import { Sheet } from '@/presentation/components/Sheet'
@@ -94,10 +95,17 @@ export function BoardPage({ board, route }: { board: BoardSnapshot; route: Route
 
   const act = (action: () => Promise<unknown>) => run(action, reload)
 
-  // Images are picked before the proposal exists, so they are uploaded once it has an id.
+  // Images are picked before the proposal exists, so they are uploaded once it has an id. By then
+  // the proposal is saved, so a failed upload still refreshes the board and says only the images
+  // are missing: reported as a failed publish, the author published it again.
   const attachAll = async (proposalId: string, draft: ProposalDraft) => {
-    for (const prepared of draft.images) {
-      await pipeline.attach({ slug: board.group.slug, proposalId, prepared })
+    for (const [at, prepared] of draft.images.entries()) {
+      try {
+        await pipeline.attach({ slug: board.group.slug, proposalId, prepared })
+      } catch (cause) {
+        reload()
+        throw new ImagesNotAttached(draft.images.length - at, cause)
+      }
     }
   }
 

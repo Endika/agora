@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import i18next from 'i18next'
 import { errorMessage } from '@/presentation/errorMessage'
+import { ImagesNotAttached } from '@/domain/ports/ProposalImages'
 import { VisitedAgorasWriteFailed } from '@/domain/ports/VisitedAgorasStore'
 
 const t = i18next.t.bind(i18next)
@@ -32,6 +33,12 @@ describe('errorMessage', () => {
   it('recognises a lost network', () => {
     expect(errorMessage(new TypeError('Failed to fetch'), t)).toBe(
       'Sin conexión: se enviará cuando vuelvas a tenerla.',
+    )
+  })
+
+  it('says the proposal is saved when only its images failed, and how many', () => {
+    expect(errorMessage(new ImagesNotAttached(2, new Error('storage said no')), t)).toBe(
+      'La propuesta está guardada, pero 2 imágenes no se han podido subir. Puedes añadirlas editando la propuesta.',
     )
   })
 

@@ -338,6 +338,10 @@
     "staleRound": "Txanda berri bat ireki da: bozkatu berriro.",
     "nameTaken": "Izen hori agoran dago jada. Aukeratu zerrendatik.",
     "imageLimit": "Hamar irudi proposamen bakoitzeko, nahikoa da.",
+    "imagesNotUploaded_one": "Proposamena gordeta dago, baina ezin izan da irudia igo. Proposamena editatuz gehi dezakezu.",
+    "imagesNotUploaded_other": "Proposamena gordeta dago, baina ezin izan dira {{count}} irudi igo. Proposamena editatuz gehi ditzakezu.",
+    "imagesNotUploadedOffline_one": "Proposamena gordeta dago, baina konexiorik gabe ezin izan da irudia igo. Konexioa itzultzean, editatu proposamena eta gehitu irudia.",
+    "imagesNotUploadedOffline_other": "Proposamena gordeta dago, baina konexiorik gabe ezin izan dira {{count}} irudi igo. Konexioa itzultzean, editatu proposamena eta gehitu irudiak.",
     "closeReason": "Arrazoiak gutxienez 10 karaktere behar ditu.",
     "notCompleted": "Onartutako proposamena bakarrik marka daiteke eginda.",
     "visitedNotSaved": "Ezin izan da gailu honetako agoren zerrenda eguneratu."

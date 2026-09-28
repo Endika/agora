@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import { ImagesNotAttached } from '@/domain/ports/ProposalImages'
 import { VisitedAgorasWriteFailed } from '@/domain/ports/VisitedAgorasStore'
 
 /**
@@ -32,6 +33,7 @@ export function errorMessage(
   attempt: Attempt = 'queuedWrite',
 ): string {
   if (cause instanceof VisitedAgorasWriteFailed) return t('errors.visitedNotSaved')
+  if (cause instanceof ImagesNotAttached) return imagesMessage(cause, t)
 
   const message = cause instanceof Error ? cause.message : String(cause)
   const code = (cause as { code?: string }).code
@@ -47,4 +49,11 @@ export function errorMessage(
   }
 
   return t(attempt === 'read' ? 'errors.notLoaded' : 'errors.generic')
+}
+
+function imagesMessage(cause: ImagesNotAttached, t: TFunction): string {
+  const inner = cause.cause instanceof Error ? cause.cause.message : String(cause.cause)
+  if (/at most 10 images/i.test(inner)) return t('errors.imageLimit')
+  const key = OFFLINE.test(inner) ? 'errors.imagesNotUploadedOffline' : 'errors.imagesNotUploaded'
+  return t(key, { count: cause.missing })
 }

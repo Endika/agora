@@ -5,7 +5,7 @@ import { BoardPage } from '@/presentation/components/board/BoardPage'
 import type { VoteValue } from '@/domain/entities/Proposal'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { draftKey, readDraft, writeDraft } from '@/presentation/drafts'
-import { renderWithBoard } from '../../support/renderWithBoard'
+import { InMemoryProposalImages, renderWithBoard } from '../../support/renderWithBoard'
 import { matchMediaMatches } from '../../../support/matchMedia'
 
 // Every variant speaks of the proposal being open or closed, never of quorum: a deadline closes a
@@ -912,6 +912,106 @@ describe('BoardPage, el borrador y la escritura que puede fallar', () => {
     // click away in the proposal, the half-written edit exists nowhere else.
     expect(dialog().getByLabelText('Título')).toHaveValue('Rent two vans')
     expect(dialog().getByLabelText('Descripción')).toHaveValue('La grande no cabe')
+  })
+})
+
+/** Compresses fine, then loses the network on the way to Storage. */
+class OfflineUploads extends InMemoryProposalImages {
+  override async attach(): Promise<void> {
+    throw new TypeError('Failed to fetch')
+  }
+}
+
+class OfflineCreate extends InMemoryBoardRepository {
+  override async createProposal(): Promise<never> {
+    this.calls.push('createProposal')
+    throw new TypeError('Failed to fetch')
+  }
+}
+
+describe('BoardPage, la propuesta guardada cuya imagen no llega', () => {
+  const dialog = () => within(screen.getByRole('dialog'))
+  const photo = () => new File([new Uint8Array(1000)], 'sofa.jpg', { type: 'image/jpeg' })
+  const loads = (repo: InMemoryBoardRepository) =>
+    repo.calls.filter((call) => call === 'getBoard').length
+
+  it('publicar sin conexión para la imagen deja una sola propuesta y dice que solo falta la imagen', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, {
+      repo,
+      slug,
+      images: new OfflineUploads(),
+    })
+    await waitFor(() => expect(loads(repo)).toBeGreaterThan(1))
+    const before = loads(repo)
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.upload(dialog().getByLabelText('Añadir imagen'), photo())
+    await userEvent.click(dialog().getByRole('button', { name: 'Publicar la propuesta' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'La propuesta está guardada, pero sin conexión la imagen no se ha podido subir. Añádela editando la propuesta cuando vuelvas a tenerla.',
+    )
+    const titles = (await repo.getBoard(slug)).proposals.map((proposal) => proposal.title)
+    expect(titles).toEqual(['Un sofá nuevo'])
+    expect(readDraft(draftKey(slug))).toBeNull()
+    expect(window.location.hash).toBe(`#/g/${slug}`)
+    // The board is refreshed as on any publish, so the new proposal shows up.
+    expect(loads(repo)).toBeGreaterThan(before)
+  })
+
+  it('guardar una edición sin conexión para la imagen conserva los cambios y dice que solo falta la imagen', async () => {
+    const { repo, slug } = await agoraWith(['alice', 'bob'])
+    const id = await repo.createProposal({ slug, title: 'Rent a van' })
+    const board = await repo.getBoard(slug)
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'edit', slug, proposalId: id }} />, {
+      repo,
+      slug,
+      images: new OfflineUploads(),
+    })
+    await waitFor(() => expect(loads(repo)).toBeGreaterThan(1))
+    const before = loads(repo)
+
+    await userEvent.type(dialog().getByLabelText('Título'), ' grande')
+    await userEvent.upload(dialog().getByLabelText('Añadir imagen'), photo())
+    await userEvent.click(dialog().getByRole('button', { name: 'Guardar los cambios' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'La propuesta está guardada, pero sin conexión la imagen no se ha podido subir. Añádela editando la propuesta cuando vuelvas a tenerla.',
+    )
+    const titles = (await repo.getBoard(slug)).proposals.map((proposal) => proposal.title)
+    expect(titles).toEqual(['Rent a van grande'])
+    expect(readDraft(draftKey(slug, id))).toBeNull()
+    expect(window.location.hash).toBe(`#/g/${slug}/p/${id}`)
+    expect(loads(repo)).toBeGreaterThan(before)
+  })
+
+  it('si lo que falla sin conexión es la propuesta misma, no se crea nada y lo dice', async () => {
+    const repo = new OfflineCreate()
+    const { slug } = await repo.createAgora({
+      name: 'Cuadrilla',
+      creatorName: 'alice',
+      ballotOpen: true,
+    })
+    const board = await repo.getBoard(slug)
+    const images = new InMemoryProposalImages()
+    renderWithBoard(<BoardPage board={board} route={{ kind: 'compose', slug }} />, {
+      repo,
+      slug,
+      images,
+    })
+
+    await userEvent.type(dialog().getByLabelText('Título'), 'Un sofá nuevo')
+    await userEvent.upload(dialog().getByLabelText('Añadir imagen'), photo())
+    await userEvent.click(dialog().getByRole('button', { name: 'Publicar la propuesta' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
+    expect((await repo.getBoard(slug)).proposals).toEqual([])
+    expect(images.attached).toEqual([])
+    expect(readDraft(draftKey(slug))?.title).toBe('Un sofá nuevo')
   })
 })
 
