@@ -5,6 +5,33 @@ import { DangerZone } from '@/presentation/components/identity/DangerZone'
 import { InMemoryBoardRepository } from '@/infrastructure/persistence/InMemoryBoardRepository'
 import { renderWithBoard } from '../../support/renderWithBoard'
 
+class FailingDelete extends InMemoryBoardRepository {
+  constructor(private readonly cause: Error) {
+    super()
+  }
+
+  override async deleteAgora(): Promise<never> {
+    throw this.cause
+  }
+}
+
+async function submitDelete(cause: Error) {
+  const repo = new FailingDelete(cause)
+  const { slug } = await repo.createAgora({
+    name: 'Piso de Gros',
+    creatorName: 'Endika',
+    ballotOpen: true,
+  })
+  let deleted = false
+  renderWithBoard(
+    <DangerZone slug={slug} agoraName="Piso de Gros" onDeleted={() => (deleted = true)} />,
+    { repo, slug },
+  )
+  await userEvent.type(screen.getByLabelText(/Escribe el nombre/), 'Piso de Gros')
+  await userEvent.click(screen.getByRole('button', { name: 'Borrar para siempre' }))
+  return () => deleted
+}
+
 describe('DangerZone', () => {
   it('keeps the delete button disabled for a wrong name, but a case difference still enables it', async () => {
     const repo = new InMemoryBoardRepository()
@@ -83,5 +110,23 @@ describe('DangerZone', () => {
     expect(submit).toBeDisabled()
     await userEvent.type(screen.getByLabelText(/nombre/i), ' Gros')
     expect(submit).toBeEnabled()
+  })
+
+  it('says it needs a connection when the delete cannot reach the server', async () => {
+    const deleted = await submitDelete(new TypeError('Failed to fetch'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
+    expect(deleted()).toBe(false)
+  })
+
+  it('reports any other failed delete instead of leaving the form silent', async () => {
+    const deleted = await submitDelete(new Error('permission denied for function delete_group'))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se ha podido guardar. Inténtalo otra vez.',
+    )
+    expect(deleted()).toBe(false)
   })
 })

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useBoard } from '@/presentation/context/boardContext'
+import { errorMessage } from '@/presentation/errorMessage'
 
 /** Erasure for real: rows and Storage objects. Guarded by typing the name, which stops slips. */
 export function DangerZone({
@@ -20,9 +21,13 @@ export function DangerZone({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
-    const result = await repo.deleteAgora({ slug, confirmName })
-    if (result.ok) onDeleted()
-    else setError(t('danger.mismatch'))
+    try {
+      const result = await repo.deleteAgora({ slug, confirmName })
+      if (result.ok) onDeleted()
+      else setError(t('danger.mismatch'))
+    } catch (cause) {
+      setError(errorMessage(cause, t, 'write'))
+    }
   }
 
   return (
