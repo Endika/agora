@@ -1,10 +1,6 @@
 import type { ActionQueue, QueuedAction } from '@/domain/ports/ActionQueue'
 import type { BoardRepository } from '@/domain/repositories/BoardRepository'
-
-function isRefusal(cause: unknown): boolean {
-  const code = (cause as { code?: string }).code
-  return typeof code === 'string' && /^PT4/.test(code)
-}
+import { refused } from '@/domain/repositories/BoardRepository'
 
 /**
  * Drains the queue in order, oldest first.
@@ -30,7 +26,7 @@ export class QueueReplayer {
         await this.queue.remove(entry.id)
         sent += 1
       } catch (cause) {
-        if (!isRefusal(cause)) return { sent, failed }
+        if (!refused(cause)) return { sent, failed }
         const reason = cause instanceof Error ? cause.message : String(cause)
         await this.queue.fail(entry.id, reason)
         failed += 1

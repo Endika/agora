@@ -21,6 +21,12 @@ const proposal = (over: Partial<Parameters<typeof makeProposal>[0]> = {}) =>
     ...over,
   })
 
+class OfflinePayment extends InMemoryBoardRepository {
+  override async addPayment(): Promise<never> {
+    throw new TypeError('Failed to fetch')
+  }
+}
+
 const money = (node: HTMLElement) => node.textContent!.replace(/\s/g, ' ')
 
 describe('ExpensePanel', () => {
@@ -207,6 +213,25 @@ describe('ExpensePanel', () => {
     await userEvent.click(screen.getByRole('button', { name: /Quitar el pago de 200,00/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Sí, quitarlo' }))
     await waitFor(() => expect(repo.calls).toContain('removePayment'))
+  })
+
+  it('does not promise to send later a payment that was never queued', async () => {
+    renderWithBoard(
+      <ExpensePanel
+        proposal={proposal()}
+        participants={people}
+        meId="alice"
+        onChanged={() => {}}
+      />,
+      { repo: new OfflinePayment() },
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar lo que he puesto' }))
+    await userEvent.type(screen.getByLabelText('¿Cuánto has puesto? (€)'), '20')
+    await userEvent.click(screen.getByRole('button', { name: 'Apuntar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Sin conexión: hace falta para esto. Inténtalo cuando vuelvas a tenerla.',
+    )
   })
 
   it('refuses an amount with three decimals', async () => {

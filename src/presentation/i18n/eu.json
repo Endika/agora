@@ -276,7 +276,7 @@
     "dismiss": "Ez, eskerrik asko"
   },
   "sync": {
-    "offline": "Konexiorik gabe. Egiten duzuna itzultzean bidaliko da.",
+    "offline": "Konexiorik gabe. Botoak eta iruzkinak itzultzean bidaliko dira.",
     "failedExplain": "Berandu iritsi dira: bozketa itxita zegoen edo txanda aldatu zen.",
     "dismissFailed": "Ulertuta",
     "pending_one": "{{count}} bidali gabe",

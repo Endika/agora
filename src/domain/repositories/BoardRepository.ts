@@ -128,3 +128,12 @@ export function notAParticipant(cause: unknown): boolean {
   const message = cause instanceof Error ? cause.message : String(cause)
   return code === 'PT403' || /unknown participant/i.test(message)
 }
+
+/**
+ * A refusal from the server (PT4xx) is final; anything else is treated as "the network was not there".
+ * The queue, its replayer and the cache all have to draw that line in the same place.
+ */
+export function refused(cause: unknown): boolean {
+  const code = (cause as { code?: string } | null)?.code
+  return typeof code === 'string' && /^PT4/.test(code)
+}

@@ -9,7 +9,7 @@ import type {
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
-import { notAParticipant } from '@/domain/repositories/BoardRepository'
+import { notAParticipant, refused } from '@/domain/repositories/BoardRepository'
 import { sortProposals } from '@/domain/services/ProposalSorter'
 import { KEPT_AGORAS, type BoardStore } from '@/infrastructure/persistence/BoardStore'
 
@@ -77,12 +77,19 @@ export class CachingBoardRepository implements BoardRepository {
   /**
    * After a write, refresh the cache from the delta the server already owes us. This is one call,
    * not a board fetch, and it is what makes the UI show your own action without a round trip.
+   *
+   * By the time it runs the write has landed or been queued, so a dead network here is not the write
+   * failing: the cached version stays behind and the next read fetches the delta. A refusal still throws.
    */
   private async refresh(slug: string): Promise<void> {
     const cached = await this.store.load(slug)
     if (!cached) return
-    const delta = await this.remote.getBoardSince(slug, cached.version)
-    await this.keep(slug, merge(cached, delta))
+    try {
+      const delta = await this.remote.getBoardSince(slug, cached.version)
+      await this.keep(slug, merge(cached, delta))
+    } catch (cause) {
+      if (refused(cause)) throw cause
+    }
   }
 
   private async slugOf(proposalId: string): Promise<string | null> {

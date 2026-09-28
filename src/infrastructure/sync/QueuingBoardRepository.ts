@@ -10,13 +10,8 @@ import type {
   Identity,
   NewProposal,
 } from '@/domain/repositories/BoardRepository'
+import { refused } from '@/domain/repositories/BoardRepository'
 import type { OnlineDetector } from '@/domain/ports/OnlineDetector'
-
-/** A refusal from the server (PT4xx) is final; anything else is treated as "the network was not there". */
-function isRefusal(cause: unknown): boolean {
-  const code = (cause as { code?: string }).code
-  return typeof code === 'string' && /^PT4/.test(code)
-}
 
 /**
  * Voting and commenting with no coverage, which is most of a bus ride.
@@ -41,7 +36,7 @@ export class QueuingBoardRepository implements BoardRepository {
     try {
       await run()
     } catch (cause) {
-      if (isRefusal(cause)) throw cause
+      if (refused(cause)) throw cause
       await this.queue.enqueue(action)
     }
   }
