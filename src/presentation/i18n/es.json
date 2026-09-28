@@ -276,7 +276,7 @@
     "dismiss": "No, gracias"
   },
   "sync": {
-    "offline": "Sin conexión. Lo que hagas se envía al volver.",
+    "offline": "Sin conexión. Los votos y comentarios se envían al volver.",
     "failedExplain": "Llegaron tarde: la votación ya se había cerrado o la ronda había cambiado.",
     "dismissFailed": "Entendido",
     "pending_one": "{{count}} sin enviar",

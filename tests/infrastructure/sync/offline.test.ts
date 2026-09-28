@@ -94,6 +94,48 @@ describe('voting offline', () => {
   })
 })
 
+describe('writing offline through the whole stack', () => {
+  async function stack() {
+    const { remote, queue, network, repo: queuing, slug, proposalId } = await agora()
+    const store = new InMemoryBoardStore()
+    const repo = new CachingBoardRepository(queuing, store)
+    await repo.getBoard(slug)
+    return { remote, queue, network, repo, store, slug, proposalId }
+  }
+
+  it('queues votes, threads and expense shares without failing on the refresh after them', async () => {
+    const { remote, queue, network, repo, store, slug, proposalId } = await stack()
+    const before = await store.load(slug)
+    const offline = () => Promise.reject(new TypeError('Failed to fetch'))
+    remote.getBoardSince = offline
+    remote.getVersion = offline
+
+    network.goOffline()
+    await expect(repo.castVote({ proposalId, round: 1, value: 'up' })).resolves.toBeUndefined()
+    await expect(
+      repo.addThread({ threadId: 't1', proposalId, commentId: 'c1', body: 'first' }),
+    ).resolves.toBeUndefined()
+    await expect(repo.setExpenseShare({ proposalId, optedIn: true })).resolves.toBeUndefined()
+
+    expect((await queue.pending()).map((entry) => entry.action.kind)).toEqual([
+      'castVote',
+      'addThread',
+      'setExpenseShare',
+    ])
+    expect(await store.load(slug)).toEqual(before)
+  })
+
+  it('still reports a refusal from the refresh after a write', async () => {
+    const { remote, repo, proposalId } = await stack()
+    remote.getBoardSince = () =>
+      Promise.reject(Object.assign(new Error('unknown participant'), { code: 'PT403' }))
+
+    await expect(repo.castVote({ proposalId, round: 1, value: 'up' })).rejects.toMatchObject({
+      code: 'PT403',
+    })
+  })
+})
+
 describe('reading offline', () => {
   it('opens the board from the device when the network is gone', async () => {
     const remote = new InMemoryBoardRepository()

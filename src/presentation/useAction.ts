@@ -44,7 +44,9 @@ export function useAction() {
         if (success !== undefined) setDone((current) => ({ ...current, [key]: success }))
         after?.()
       })
-      .catch((cause: unknown) => setError(errorMessage(cause, t)))
+      // Queued writes, and the cache refresh after any write, ride out a dead network, so a network
+      // error here comes from a write that was never queued.
+      .catch((cause: unknown) => setError(errorMessage(cause, t, 'write')))
       // Only this request's own entry, found by value: a second write under the same key must not
       // be cleared by the first one finishing.
       .finally(() =>

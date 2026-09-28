@@ -276,7 +276,7 @@
     "dismiss": "No thanks"
   },
   "sync": {
-    "offline": "Offline. What you do now is sent when you are back.",
+    "offline": "Offline. Votes and comments are sent when you are back.",
     "failedExplain": "They arrived late: the vote had closed or the round had moved on.",
     "dismissFailed": "Got it",
     "pending_one": "{{count}} not sent yet",
