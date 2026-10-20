@@ -1257,21 +1257,22 @@ describe('BoardPage, el relleno de marca', () => {
   // --brand under --brand-ink is 3.08:1. The token file has carried --brand-strong for a while;
   // what these two assert is that the call sites actually reach for it, which is the half the
   // token-level contrast test cannot see.
+  // Read off the inline style: jsdom resolves no custom property, so a shorthand holding a var()
+  // comes back empty from getComputedStyle and toHaveStyle cannot see it (`background` too since
+  // jsdom 30.1.3).
   it('la llamada principal se rellena con --brand-strong', async () => {
     await board()
 
-    expect(screen.getByRole('button', { name: 'Nueva propuesta' })).toHaveStyle({
-      background: 'var(--brand-strong)',
-    })
+    expect(screen.getByRole('button', { name: 'Nueva propuesta' }).style.background).toBe(
+      'var(--brand-strong)',
+    )
   })
 
   it('el filtro activo también, borde incluido', async () => {
     await board()
 
     const chip = screen.getByRole('button', { name: 'Todo' })
-    expect(chip).toHaveStyle({ background: 'var(--brand-strong)' })
-    // Read off the inline style: jsdom resolves no custom property, so a `border-color` shorthand
-    // holding a var() comes back empty from getComputedStyle and toHaveStyle cannot see it.
+    expect(chip.style.background).toBe('var(--brand-strong)')
     expect(chip.style.borderColor).toBe('var(--brand-strong)')
   })
 })
