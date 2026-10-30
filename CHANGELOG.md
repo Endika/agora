@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.8](https://github.com/Endika/agora/compare/v0.23.7...v0.23.8) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** bump fast-uri to 3.1.9 and serialize-javascript to 7.1.3 ([3720f08](https://github.com/Endika/agora/commit/3720f08b2084eec4a094a431034129b80c10ee08))
+
 ## [0.23.7](https://github.com/Endika/agora/compare/v0.23.6...v0.23.7) (2026-09-28)
 
 
