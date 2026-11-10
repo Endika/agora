@@ -534,7 +534,12 @@ describe('PsephoiRow', () => {
     const own = screen.getByTestId('pebble-mine')
     expect(own).toHaveAttribute('data-motion', 'pebble-land')
     // Pinned: 180 ms is a landing, 4 s is a distraction nobody asked for.
-    expect(own.style.animation).toBe('pebble-land 180ms ease-out both')
+    expect(own.style).toMatchObject({
+      animationName: 'pebble-land',
+      animationDuration: '180ms',
+      animationTimingFunction: 'ease-out',
+      animationFillMode: 'both',
+    })
     unmount()
 
     render(
