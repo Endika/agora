@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.9](https://github.com/Endika/agora/compare/v0.23.8...v0.23.9) (2026-11-23)
+
+
+### Bug Fixes
+
+* **pwa:** precache the app again so installed apps update ([9f1ef30](https://github.com/Endika/agora/commit/9f1ef301004664c0fe0d39909d590019dec3a5a6))
+
 ## [0.23.8](https://github.com/Endika/agora/compare/v0.23.7...v0.23.8) (2026-10-30)
 
 
